@@ -14,14 +14,23 @@ export const pool = new pg.Pool({
   options: `-c search_path=${env.DATABASE_SCHEMA},public`,
 });
 
-const txStore = new AsyncLocalStorage<pg.PoolClient>();
+interface Tx {
+  client: pg.PoolClient;
+  /** Tail of the query queue: a transaction client must run one query at a time. */
+  tail: Promise<unknown>;
+}
+
+const txStore = new AsyncLocalStorage<Tx>();
 
 export type Row = Record<string, any>;
 
 /** Runs a parameterised query on the active transaction (if any) or the pool. */
 export async function query<T extends Row = Row>(sql: string, params: unknown[] = []) {
-  const client = txStore.getStore() ?? pool;
-  return client.query<T>(sql, params);
+  const tx = txStore.getStore();
+  if (!tx) return pool.query<T>(sql, params);
+  const run = tx.tail.then(() => tx.client.query<T>(sql, params));
+  tx.tail = run.catch(() => undefined);
+  return run;
 }
 
 export async function many<T extends Row = Row>(sql: string, params: unknown[] = []) {
@@ -38,7 +47,7 @@ export async function transaction<T>(fn: () => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const result = await txStore.run(client, fn);
+    const result = await txStore.run({ client, tail: Promise.resolve() }, fn);
     await client.query('COMMIT');
     return result;
   } catch (error) {
