@@ -1,0 +1,32 @@
+{
+  "name": "know-crm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source CRM: leads, sales pipeline, nurtures, projects, client portal, meetings, invoicing and reports.",
+  "license": "AGPL-3.0-only",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @know-crm/shared && concurrently -k -n shared,api,web -c gray,blue,magenta \"npm run dev -w @know-crm/shared\" \"npm run dev -w @know-crm/api\" \"npm run dev -w @know-crm/web\"",
+    "build": "npm run build -w @know-crm/shared && npm run build -w @know-crm/api && npm run build -w @know-crm/web",
+    "start": "concurrently -k -n api,web \"npm run start -w @know-crm/api\" \"npm run start -w @know-crm/web\"",
+    "typecheck": "npm run build -w @know-crm/shared && npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run build -w @know-crm/shared && npm run test -w @know-crm/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d --wait postgres mailpit",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run migrate -w @know-crm/api",
+    "db:seed": "npm run seed -w @know-crm/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

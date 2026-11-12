@@ -1,0 +1,27 @@
+name: know-crm
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-knowcrm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-knowcrm-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-knowcrm}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5440}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  # Local mail catcher: every email the CRM sends lands here (web UI on :8030).
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - '127.0.0.1:${SMTP_PORT:-1030}:1025'
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8030}:8025'
+    restart: unless-stopped
+volumes:
+  postgres_data:
