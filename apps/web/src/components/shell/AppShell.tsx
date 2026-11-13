@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen lg:pl-60">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r border-line bg-card lg:block">{sidebar}</aside>
+      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-60 border-r border-line bg-card lg:block">{sidebar}</aside>
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
