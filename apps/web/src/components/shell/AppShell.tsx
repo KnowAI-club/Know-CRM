@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { Avatar, Spinner } from '@/components/ui';
 import { BRAND } from '@/lib/brand';
 import { NAV } from './nav';
+import { BrandMark } from './BrandMark';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
 
@@ -56,7 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebar = (
     <nav className="flex h-full flex-col">
       <Link href="/" className="flex items-center gap-2.5 px-4 py-4">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-acc text-sm font-bold text-acc-ink">K</span>
+        <BrandMark />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{BRAND}</span>
           {workspace?.name && <span className="block truncate text-xs text-mute">{workspace.name}</span>}
