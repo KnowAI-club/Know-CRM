@@ -17,10 +17,13 @@ import { router as documents } from './documents/routes.js';
 import { router as forms, publicRouter as publicForms } from './forms/routes.js';
 import { router as emailTemplates } from './templates/routes.js';
 import { router as finance } from './finance/routes.js';
+import { router as search } from './search/routes.js';
+import { router as dashboard } from './dashboard/routes.js';
+import { router as reports } from './reports/routes.js';
 import { router as booking, publicRouter as publicBooking } from './booking/routes.js';
 
 /** Routers reachable without a session (they enforce their own access rules). */
 export const publicRouters: Router[] = [auth, publicBooking, publicForms];
 
 /** Routers mounted behind requireAuth. */
-export const privateRouters: Router[] = [workspace, contacts, projectStages, projects, projectWork, tasks, files, invoices, leadStages, leads, nurtures, meetings, booking, reminders, documents, forms, emailTemplates, finance];
+export const privateRouters: Router[] = [workspace, contacts, projectStages, projects, projectWork, tasks, files, invoices, leadStages, leads, nurtures, meetings, booking, reminders, documents, forms, emailTemplates, finance, search, dashboard, reports];
