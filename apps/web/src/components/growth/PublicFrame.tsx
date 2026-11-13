@@ -14,7 +14,7 @@ export function PublicFrame({ workspace, children, wide }: { workspace?: string;
           </div>
         )}
         {children}
-        <p className="mt-8 text-center text-xs text-faint">Powered by Know CRM</p>
+        <p className="mt-8 text-center text-xs text-faint">Powered by KnowBook CRM</p>
       </div>
     </div>
   );

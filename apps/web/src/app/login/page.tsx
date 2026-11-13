@@ -2,6 +2,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { post, ApiError } from '@/lib/api';
+import { BRAND } from '@/lib/brand';
 import { useSession } from '@/lib/session';
 import { Button, Field, Spinner } from '@/components/ui';
 import { CURRENCIES } from '@know-crm/shared';
@@ -41,7 +42,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-6 flex items-center gap-2.5">
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-acc text-sm font-bold text-acc-ink">K</span>
-          <span className="text-lg font-semibold">Know CRM</span>
+          <span className="text-lg font-semibold">{BRAND}</span>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">{setup ? 'Set up your workspace' : 'Welcome back'}</h1>
         <p className="mt-1 mb-6 text-sm text-mute">

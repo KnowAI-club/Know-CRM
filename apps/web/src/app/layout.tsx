@@ -4,7 +4,7 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: { default: 'Know CRM', template: '%s · Know CRM' },
+  title: { default: 'KnowBook CRM', template: '%s · KnowBook CRM' },
   description: 'Leads, follow-ups, delivery, client updates and invoicing in one workspace.',
 };
 export const viewport: Viewport = {

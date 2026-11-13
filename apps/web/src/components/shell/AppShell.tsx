@@ -6,6 +6,7 @@ import { LogOut, Menu as MenuIcon, Moon, Sun, X } from 'lucide-react';
 import { useSession } from '@/lib/session';
 import { cn } from '@/lib/cn';
 import { Avatar, Spinner } from '@/components/ui';
+import { BRAND } from '@/lib/brand';
 import { NAV } from './nav';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
@@ -55,10 +56,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebar = (
     <nav className="flex h-full flex-col">
       <Link href="/" className="flex items-center gap-2.5 px-4 py-4">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-acc text-sm font-bold text-acc-ink">
-          {(workspace?.name || 'K').slice(0, 1).toUpperCase()}
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-acc text-sm font-bold text-acc-ink">K</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold">{BRAND}</span>
+          {workspace?.name && <span className="block truncate text-xs text-mute">{workspace.name}</span>}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold">{workspace?.name || 'Know CRM'}</span>
       </Link>
       <div className="flex-1 space-y-4 overflow-y-auto px-2 pb-4">
         {NAV.map((section) => (
