@@ -7,6 +7,7 @@ import { post } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { Avatar, Button, Field, Menu, Modal, Spinner, useToast, PasswordInput } from '@/components/ui';
 import { fieldErrors } from '@/components/projects/util';
+import { BrandMark } from '@/components/shell/BrandMark';
 
 function PasswordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const toast = useToast();
@@ -90,9 +91,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       <header className="no-print sticky top-0 z-20 border-b border-line bg-card/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <Link href="/portal" className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-acc text-sm font-bold text-acc-ink">
-              {(workspace?.name || 'K').slice(0, 1).toUpperCase()}
-            </span>
+            <BrandMark />
             <span className="truncate text-sm font-semibold">{workspace?.name}</span>
             <span className="hidden text-sm text-mute sm:inline">· Client portal</span>
           </Link>
