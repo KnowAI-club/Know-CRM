@@ -53,7 +53,7 @@ router.get('/search', requireStaff, async (req, res) => {
       [patterns],
     ),
     contacts: many(
-      `SELECT id, name AS title, concat_ws(' · ', NULLIF(company,''), NULLIF(email,'')) AS sub, '/clients?contact=' || id AS link, updated_at AS at
+      `SELECT id, name AS title, concat_ws(' · ', NULLIF(company,''), NULLIF(email,'')) AS sub, '/clients/' || id AS link, updated_at AS at
          FROM contacts WHERE ${match('name, email, company, phone, business_name, business_email, personal_email, poc_name, poc_email')} LIMIT 30`,
       [patterns],
     ),

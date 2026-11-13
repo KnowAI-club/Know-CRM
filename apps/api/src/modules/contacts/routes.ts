@@ -160,6 +160,6 @@ router.post('/contacts/:id/comments', async (req, res) => {
     'INSERT INTO contact_comments(contact_id, body, author_id, author_name) VALUES($1,$2,$3,$4) RETURNING *',
     [id, body, me.id, me.name],
   );
-  await notifyMentions({ author: me, after: body, where: `a comment on ${contact.name}`, link: `/contacts?contact=${id}` });
+  await notifyMentions({ author: me, after: body, where: `a comment on ${contact.name}`, link: `/clients/${id}` });
   res.status(201).json(comment);
 });

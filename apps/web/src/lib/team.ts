@@ -4,7 +4,7 @@ import { get } from './api';
 import type { User } from './session';
 
 export interface TeamMember extends User {
-  disabled_at?: string | null;
+  active?: boolean;
 }
 
 let cache: Promise<TeamMember[]> | null = null;
@@ -17,7 +17,7 @@ export function useTeam() {
       cache = null;
       throw e;
     });
-    cache.then((list) => setTeam(list.filter((u) => u.role !== 'client' && !u.disabled_at))).catch(() => undefined);
+    cache.then((list) => setTeam(list.filter((u) => u.role !== 'client' && u.active !== false))).catch(() => undefined);
   }, []);
   return team;
 }
