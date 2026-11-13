@@ -1,5 +1,5 @@
 import { env } from '../config/env.js';
-import { query } from '../db/pool.js';
+import { pool, query } from '../db/pool.js';
 
 export interface Job {
   name: string;
@@ -14,11 +14,15 @@ export const registerJob = (job: Job) => jobs.push(job);
 /** Runs every due job once; jobs are serialised with a Postgres advisory lock. */
 export async function tick() {
   for (const job of jobs) {
-    const lock = await query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtext($1)) AS ok', [
-      `know-crm-job:${job.name}`,
-    ]);
-    if (!lock.rows[0]?.ok) continue;
+    // Session-level advisory locks belong to one connection, so hold a dedicated client.
+    const client = await pool.connect();
+    let locked = false;
     try {
+      const lock = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtext($1)) AS ok', [
+        `know-crm-job:${job.name}`,
+      ]);
+      locked = !!lock.rows[0]?.ok;
+      if (!locked) continue;
       const due = await query(
         `SELECT 1 FROM worker_runs WHERE job=$1 AND last_run_at > now() - make_interval(secs => $2)`,
         [job.name, job.every],
@@ -37,7 +41,8 @@ export async function tick() {
         [job.name, error],
       );
     } finally {
-      await query('SELECT pg_advisory_unlock(hashtext($1))', [`know-crm-job:${job.name}`]);
+      if (locked) await client.query('SELECT pg_advisory_unlock(hashtext($1))', [`know-crm-job:${job.name}`]).catch(() => undefined);
+      client.release();
     }
   }
 }
