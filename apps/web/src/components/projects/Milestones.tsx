@@ -244,9 +244,6 @@ export function Milestones({
                     </option>
                   ))}
                 </select>
-                <Badge tone={MILESTONE_TONE[m.status]} className="hidden md:inline-flex">
-                  {MILESTONE_LABEL[m.status]}
-                </Badge>
               </li>
             ))}
           </ol>

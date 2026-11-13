@@ -22,7 +22,7 @@ export function PageHeader({
           <ChevronLeft className="h-4 w-4" /> {back.label}
         </Link>
       )}
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow mb-1">{eyebrow}</p>}
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>

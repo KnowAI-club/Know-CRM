@@ -43,6 +43,10 @@ export function OverviewTab({
   };
 
   const openTasks = detail.tasks.filter((t) => !t.completed).length;
+  // Milestones are the source of truth for delivery progress; the stored percentage is a fallback.
+  const progress = detail.milestones.length
+    ? Math.round((detail.milestones.filter((m) => m.status === 'done').length / detail.milestones.length) * 100)
+    : project.progress;
   const outstanding = detail.invoices.filter((i) => i.status !== 'void' && i.status !== 'draft').reduce((a, i) => a + i.balance, 0);
 
   return (
@@ -114,9 +118,9 @@ export function OverviewTab({
               <dd>{project.project_type || '—'}</dd>
             </div>
             <div className="col-span-2">
-              <dt className="mb-1 text-xs text-mute">Progress · {project.progress}%</dt>
+              <dt className="mb-1 text-xs text-mute">Progress · {progress}%</dt>
               <dd className="h-1.5 overflow-hidden rounded-full bg-subtle">
-                <div className="h-full rounded-full bg-acc" style={{ width: `${project.progress}%` }} />
+                <div className="h-full rounded-full bg-acc" style={{ width: `${progress}%` }} />
               </dd>
             </div>
             {project.archive_reason && (

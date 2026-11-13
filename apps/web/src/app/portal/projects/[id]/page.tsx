@@ -85,8 +85,12 @@ function Overview({ d, onTasks }: { d: PortalDetail; onTasks: (t: Task[]) => voi
                   <li key={m.id} className="relative">
                     <span
                       className={cn(
-                        'absolute top-0.5 -left-[33px] grid h-4 w-4 place-items-center rounded-full border-2 bg-card',
-                        m.status === 'done' ? 'border-acc bg-acc text-acc-ink' : m.status === 'in_progress' ? 'border-acc' : 'border-line',
+                        'absolute top-0.5 -left-[33px] grid h-4 w-4 place-items-center rounded-full border-2',
+                        m.status === 'done'
+                          ? 'border-acc bg-acc text-acc-ink'
+                          : m.status === 'in_progress'
+                            ? 'border-acc bg-card'
+                            : 'border-line bg-card',
                       )}
                     >
                       {m.status === 'done' && <Check className="h-2.5 w-2.5" />}
