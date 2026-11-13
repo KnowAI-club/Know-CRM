@@ -1,50 +1,27 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { EXIT_HELP, EXIT_LABELS, EXIT_STATUSES, NURTURE_TAGS, NURTURE_TAG_LABELS, type ExitStatus } from '@know-crm/shared';
+import { EXIT_HELP, EXIT_LABELS, EXIT_STATUSES, type ExitStatus } from '@know-crm/shared';
 import { post } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { today } from '@/lib/format';
 import { Button, Field, Modal, MoneyInput, useToast } from '@/components/ui';
 import { cn } from '@/lib/cn';
-import { OwnerSelect } from './OwnerSelect';
 import { isConflict, withDefaults, type Lead, type Stage } from './types';
 
-export type LeadAction = 'exit' | 'nurture' | 'archive' | 'won';
-
-/** Choose 1–3 nurture tags. */
-export function TagPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
-  return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Nurture tags">
-      {NURTURE_TAGS.map((t) => {
-        const on = value.includes(t);
-        return (
-          <button
-            key={t}
-            type="button"
-            aria-pressed={on}
-            onClick={() => onChange(on ? value.filter((x) => x !== t) : [...value, t].slice(0, 3))}
-            className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition',
-              on ? 'border-acc bg-acc-soft text-acc' : 'border-line text-mute hover:text-ink',
-            )}
-          >
-            {NURTURE_TAG_LABELS[t]}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+export type LeadAction = 'exit' | 'archive' | 'won';
 
 const TITLES: Record<LeadAction, { title: string; description: string; cta: string }> = {
-  exit: { title: 'Exit the pipeline', description: 'Record why this lead is leaving. Most exits park it in Nurtures.', cta: 'Exit lead' },
-  nurture: { title: 'Move to Nurtures', description: 'Park this lead with a POC who will follow up later.', cta: 'Move to Nurtures' },
+  exit: {
+    title: 'Exit the pipeline',
+    description: 'Record why this lead is leaving. Exited leads are archived and can be restored later.',
+    cta: 'Exit lead',
+  },
   archive: { title: 'Archive lead', description: 'Archived leads leave the pipeline and can be restored later.', cta: 'Archive' },
   won: { title: 'Close won', description: 'Creates (or links) the delivery project and hands the lead off.', cta: 'Close won' },
 };
 
-/** Exit, nurture, archive and close-won dialogs for a lead. */
+/** Exit, archive and close-won dialogs for a lead. */
 export function LeadActionModal({
   lead,
   action,
@@ -66,10 +43,7 @@ export function LeadActionModal({
   const wonStages = stages.filter((s) => s.kind === 'won');
   const [exitStatus, setExitStatus] = useState<ExitStatus | ''>('');
   const [reason, setReason] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [ownerId, setOwnerId] = useState(data.ownerId);
   const [resumeDate, setResumeDate] = useState('');
-  const [revisitDate, setRevisitDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [value, setValue] = useState<number | null>(null);
   const [stageId, setStageId] = useState('');
@@ -81,10 +55,7 @@ export function LeadActionModal({
     if (!action) return;
     setExitStatus('');
     setReason('');
-    setTags([]);
-    setOwnerId(withDefaults(lead.data).ownerId);
     setResumeDate('');
-    setRevisitDate('');
     setDueDate('');
     setValue(null);
     setStageId(stages.find((s) => s.kind === 'won')?.id ?? '');
@@ -98,16 +69,11 @@ export function LeadActionModal({
   const meta = TITLES[action];
   const archivedExit = action === 'exit' && exitStatus === 'disqualified';
   const onHold = action === 'exit' && exitStatus === 'on_hold';
-  const needsNurture = action === 'nurture' || (action === 'exit' && exitStatus && !archivedExit);
-  const needsRevisit = needsNurture && !onHold && tags.includes('not_ready');
 
   const validate = () => {
     if (action === 'exit' && !exitStatus) return 'Choose an exit status.';
     if (action !== 'won' && !reason.trim()) return 'Add a reason.';
     if (onHold && !resumeDate) return 'Add a resume date.';
-    if (needsNurture && tags.length < 1) return 'Choose at least one nurture tag.';
-    if (needsNurture && !ownerId) return 'Assign a POC for this lead.';
-    if (needsRevisit && !revisitDate) return 'Add a revisit date.';
     if (action === 'won') {
       if (!data.ownerId) return 'Assign an owner before closing won.';
       if (!dueDate) return 'Enter the project due date before closing won.';
@@ -127,12 +93,6 @@ export function LeadActionModal({
       body.exitStatus = exitStatus;
       if (onHold) body.resumeDate = resumeDate;
     }
-    if (needsNurture) {
-      body.tags = tags;
-      body.ownerId = ownerId;
-      if (onHold) body.revisitDate = resumeDate;
-      else if (revisitDate) body.revisitDate = revisitDate;
-    }
     if (action === 'won') {
       body.dueDate = dueDate;
       body.value = value ?? 0;
@@ -144,9 +104,7 @@ export function LeadActionModal({
         setWonProject(updated);
         onDone(updated);
       } else {
-        toast.success(
-          action === 'archive' || archivedExit ? 'Lead archived' : action === 'exit' ? 'Lead moved to Nurtures' : 'Lead moved to Nurtures',
-        );
+        toast.success('Lead archived');
         onDone(updated);
         onClose();
       }
@@ -256,28 +214,9 @@ export function LeadActionModal({
         )}
 
         {onHold && (
-          <Field label="Resume date" required hint="The POC is reminded to revisit on this date.">
+          <Field label="Resume date" required hint="When to revisit this lead.">
             <input className="input" type="date" min={today()} value={resumeDate} onChange={(e) => setResumeDate(e.target.value)} />
           </Field>
-        )}
-
-        {needsNurture && (
-          <>
-            <div>
-              <p className="label">Nurture tags (1–3)</p>
-              <TagPicker value={tags} onChange={setTags} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nurture POC" required>
-                <OwnerSelect value={ownerId} onChange={setOwnerId} emptyLabel="Choose a teammate" />
-              </Field>
-              {!onHold && (
-                <Field label="Revisit date" required={Boolean(needsRevisit)} hint={needsRevisit ? 'Required for Not ready' : 'Optional'}>
-                  <input className="input" type="date" min={today()} value={revisitDate} onChange={(e) => setRevisitDate(e.target.value)} />
-                </Field>
-              )}
-            </div>
-          </>
         )}
 
         {error && (

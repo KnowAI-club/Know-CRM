@@ -39,13 +39,13 @@ test('stage moves bump version, set qualified fit and reject stale saves', async
   assert.equal(detail.body.history[0].action, 'Stage changed');
 });
 
-test('exit parks a lead in nurtures and restore returns it to its entry stage', async () => {
+test('exit archives a lead and restore returns it to its stage', async () => {
   const admin = await adminAgent();
   const lead = await newLead(admin, 'exit@lead.in');
   const moved = await admin.patch(`/api/leads/${lead.id}`).send({ version: lead.version, stage: 'discovery' }).expect(200);
   await admin
     .post(`/api/leads/${lead.id}/action`)
-    .send({ action: 'exit', version: moved.body.version, exitStatus: 'on_hold', reason: 'Budget next quarter', tags: ['not_ready'] })
+    .send({ action: 'exit', version: moved.body.version, exitStatus: 'on_hold', reason: 'Budget next quarter' })
     .expect(400); // on hold needs a resume date
   const parked = await admin
     .post(`/api/leads/${lead.id}/action`)
@@ -54,19 +54,15 @@ test('exit parks a lead in nurtures and restore returns it to its entry stage', 
       version: moved.body.version,
       exitStatus: 'on_hold',
       reason: 'Budget next quarter',
-      tags: ['not_ready'],
       resumeDate: '2030-01-15',
     })
     .expect(200);
-  assert.equal(parked.body.state, 'nurture');
-  assert.equal(parked.body.nurture.status, 'parked');
-  assert.equal(parked.body.nurture.entry_stage, 'discovery');
-  assert.ok(parked.body.nurture.confirmation_due_at);
+  assert.equal(parked.body.state, 'dropped');
+  assert.equal(parked.body.exit_status, 'on_hold');
   const restored = await admin.post(`/api/leads/${lead.id}/action`).send({ action: 'restore', version: parked.body.version }).expect(200);
   assert.equal(restored.body.state, 'active');
   assert.equal(restored.body.stage, 'discovery');
   assert.equal(restored.body.exit_status, '');
-  assert.equal(restored.body.nurture, null);
 });
 
 test('close won creates a project, moves open tasks and freezes the lead', async () => {

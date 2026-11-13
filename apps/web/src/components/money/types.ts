@@ -124,7 +124,6 @@ export interface WorkspaceSettings {
   data: {
     billing?: BillingSettings;
     defaultLeadOwnerId?: string;
-    nurture?: { contactNumber?: string; bookingLink?: string };
   };
 }
 

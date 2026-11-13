@@ -10,7 +10,6 @@ import { router as files } from './files/routes.js';
 import { router as invoices } from './invoices/routes.js';
 import { router as leadStages } from './leads/stages.js';
 import { router as leads } from './leads/routes.js';
-import { router as nurtures } from './nurtures/routes.js';
 import { router as meetings } from './meetings/routes.js';
 import { router as reminders } from './reminders/routes.js';
 import { router as documents } from './documents/routes.js';
@@ -37,7 +36,6 @@ export const privateRouters: Router[] = [
   invoices,
   leadStages,
   leads,
-  nurtures,
   meetings,
   booking,
   reminders,

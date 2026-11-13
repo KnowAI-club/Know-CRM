@@ -159,7 +159,7 @@ export async function onReservationCreated(type: BookingType, r: { id: string; n
        VALUES($1,$2,'inquiry','intake',0,$3,$4,'Booking',$5) RETURNING id`,
       [`${type.title} · ${r.name}`.slice(0, 500), contact.id, await workspaceCurrency(), `Booked through: ${type.title}`, host.id],
     );
-    const open = await one(`SELECT id FROM leads WHERE lower(email)=lower($1) AND state IN ('active','nurture')`, [r.email]);
+    const open = await one(`SELECT id FROM leads WHERE lower(email)=lower($1) AND state='active'`, [r.email]);
     if (open) leadId = open.id;
     else if (!(await one(`SELECT 1 FROM leads WHERE lower(email)=lower($1) AND state='won'`, [r.email]))) {
       const stage = await one(`SELECT id FROM lead_stages WHERE kind='open' ORDER BY position LIMIT 1`);

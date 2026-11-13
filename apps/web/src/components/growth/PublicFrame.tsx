@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BrandMark } from '@/components/shell/BrandMark';
 
 /** Calm, centred layout for pages visitors open without signing in. */
 export function PublicFrame({ workspace, children, wide }: { workspace?: string; children: ReactNode; wide?: boolean }) {
@@ -7,9 +8,7 @@ export function PublicFrame({ workspace, children, wide }: { workspace?: string;
       <div className={wide ? 'mx-auto max-w-3xl' : 'mx-auto max-w-xl'}>
         {workspace && (
           <div className="mb-6 flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-acc text-sm font-bold text-acc-ink">
-              {workspace.slice(0, 1).toUpperCase()}
-            </span>
+            <BrandMark />
             <span className="text-sm font-semibold">{workspace}</span>
           </div>
         )}

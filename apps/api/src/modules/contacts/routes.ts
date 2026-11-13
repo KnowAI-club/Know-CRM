@@ -26,10 +26,10 @@ router.get('/contacts', async (_req, res) => {
         CASE
           WHEN EXISTS (SELECT 1 FROM leads l LEFT JOIN projects p ON p.id=l.project_id
                         WHERE l.state='won' AND (p.contact_id=c.id OR (c.email<>'' AND lower(l.email)=lower(c.email)))) THEN 'won'
-          WHEN c.email<>'' AND EXISTS (SELECT 1 FROM leads l WHERE l.state IN ('active','nurture') AND lower(l.email)=lower(c.email)) THEN 'open'
+          WHEN c.email<>'' AND EXISTS (SELECT 1 FROM leads l WHERE l.state='active' AND lower(l.email)=lower(c.email)) THEN 'open'
           WHEN c.email<>'' AND EXISTS (SELECT 1 FROM leads l WHERE l.state='dropped' AND lower(l.email)=lower(c.email)) THEN 'dropped'
         END AS lead_status,
-        (SELECT l.id FROM leads l WHERE c.email<>'' AND l.state IN ('active','nurture') AND lower(l.email)=lower(c.email)
+        (SELECT l.id FROM leads l WHERE c.email<>'' AND l.state='active' AND lower(l.email)=lower(c.email)
           ORDER BY l.created_at DESC LIMIT 1) AS lead_id,
         COALESCE((SELECT json_agg(json_build_object('id',p.id,'name',p.name,'archived',s.category='archived') ORDER BY p.created_at)
            FROM projects p JOIN project_stages s ON s.id=p.stage WHERE p.contact_id=c.id AND p.phase='delivery'), '[]') AS projects

@@ -19,14 +19,6 @@ services:
       retries: 20
     restart: unless-stopped
 
-  # Local mail catcher: every email the CRM sends lands here (web UI on :8030).
-  mailpit:
-    image: axllent/mailpit:v1.27
-    ports:
-      - '127.0.0.1:${SMTP_PORT:-1030}:1025'
-      - '127.0.0.1:${MAILPIT_UI_PORT:-8030}:8025'
-    restart: unless-stopped
-
   api:
     build:
       context: .
@@ -38,9 +30,12 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SESSION_DAYS: ${SESSION_DAYS:-14}
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
-      MAIL_ENABLED: ${MAIL_ENABLED:-true}
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
       MAIL_FROM: ${MAIL_FROM:-KnowBook CRM <no-reply@knowbook-crm.local>}
       WORKER_ENABLED: 'true'
       DEMO_SEED: ${DEMO_SEED:-false}
@@ -49,8 +44,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mailpit:
-        condition: service_started
     restart: unless-stopped
 
   web:

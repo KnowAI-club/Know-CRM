@@ -68,8 +68,7 @@ router.get('/dashboard', async (req, res) => {
   if (p) {
     const row = await one(
       `SELECT
-         (SELECT count(*)::int FROM leads l LEFT JOIN lead_nurture n ON n.lead_id=l.id
-           WHERE l.created_at >= $1 AND l.created_at < $2 AND COALESCE(n.source,'') <> 'imported') AS new_leads,
+         (SELECT count(*)::int FROM leads WHERE created_at >= $1 AND created_at < $2) AS new_leads,
          (SELECT count(*)::int FROM projects WHERE phase <> 'intake' AND created_at >= $1 AND created_at < $2) AS new_projects,
          (SELECT count(*)::int FROM tasks WHERE NOT completed AND due_date BETWEEN $3::date AND $4::date AND ($5 OR assignee_id=$6)) AS tasks_due,
          (SELECT COALESCE(sum(pm.amount),0)::bigint FROM payments pm JOIN invoices i ON i.id=pm.invoice_id

@@ -134,7 +134,9 @@ export function ReminderModal({
           },
     );
     get<ReminderType[]>('/reminder-types').then(setTypes, () => setTypes([]));
-  }, [open, reminder, user]);
+    // Keyed by id: a background refresh of the list must not wipe edits in an open form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, reminder?.id, user?.id]);
 
   const projectId = fixed?.projectId ?? reminder?.project_id ?? splitTarget(form.target).projectId;
   useEffect(() => {

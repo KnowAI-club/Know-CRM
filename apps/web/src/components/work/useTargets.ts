@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { get } from '@/lib/api';
+import { get, writeCount } from '@/lib/api';
 
 export interface TargetOption {
   id: string;
@@ -14,14 +14,17 @@ export interface Targets {
 }
 
 let cache: Promise<Omit<Targets, 'loaded'>> | null = null;
+let cachedAt = -1;
 
 /** Open leads and live projects that tasks, meetings and reminders can be linked to. */
 export function useTargets(): Targets {
   const [value, setValue] = useState<Targets>({ leads: [], projects: [], loaded: false });
   useEffect(() => {
-    cache ??= Promise.all([get<any[]>('/leads?state=active'), get<any[]>('/leads?state=nurture'), get<any[]>('/projects')])
-      .then(([active, nurture, projects]) => ({
-        leads: [...active, ...nurture]
+    if (cachedAt !== writeCount()) cache = null;
+    cachedAt = writeCount();
+    cache ??= Promise.all([get<any[]>('/leads?state=active'), get<any[]>('/projects')])
+      .then(([active, projects]) => ({
+        leads: active
           .map((l) => ({ id: l.id, name: l.name, sub: l.data?.company || l.email || '' }))
           .sort((a, b) => a.name.localeCompare(b.name)),
         projects: projects

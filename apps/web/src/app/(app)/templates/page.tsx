@@ -13,7 +13,7 @@ import { BlocksEditor, cleanBlocks, newBlock, validateBlocks, type Block } from 
 
 interface EmailTemplate {
   id: string;
-  grp: 'EM' | 'NU';
+  grp: 'EM';
   title: string;
   subject: string;
   body: string;
@@ -28,7 +28,7 @@ interface DocTemplate {
   updated_at: string;
 }
 
-const GROUP_LABEL = { EM: 'Sales emails', NU: 'Nurture emails' } as const;
+const GROUP_LABEL = { EM: 'Sales emails' } as const;
 
 export default function TemplatesPage() {
   const [tab, setTab] = useState<'email' | 'documents'>('email');
@@ -60,7 +60,7 @@ function EmailTemplates() {
   const confirm = useConfirm();
   const list = useLoad((s) => get<EmailTemplate[]>('/email-templates', s), []);
   const [selected, setSelected] = useState<string | null>(null);
-  const [creating, setCreating] = useState<'EM' | 'NU' | null>(null);
+  const [creating, setCreating] = useState<'EM' | null>(null);
   if (list.error) return <ErrorBox error={list.error} retry={list.reload} />;
   if (!list.data) return <Spinner />;
   const current = list.data.find((t) => t.id === selected) ?? list.data[0] ?? null;
@@ -69,7 +69,6 @@ function EmailTemplates() {
     if (
       !(await confirm({
         title: `Delete “${t.title}”?`,
-        description: 'Sequences that copied this text keep their own copy.',
         confirmLabel: 'Delete',
         danger: true,
       }))
@@ -88,7 +87,7 @@ function EmailTemplates() {
   return (
     <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
       <Card bodyClassName="p-0">
-        {(['EM', 'NU'] as const).map((g) => (
+        {(['EM'] as const).map((g) => (
           <div key={g} className="border-b border-line last:border-b-0">
             <div className="flex items-center px-4 pt-3 pb-1">
               <p className="eyebrow flex-1">{GROUP_LABEL[g]}</p>
@@ -127,11 +126,7 @@ function EmailTemplates() {
         />
       ) : (
         <Card>
-          <Empty
-            icon={<Mail className="h-5 w-5" />}
-            title="No email templates"
-            description="Create one to reuse copy across leads and nurture sequences."
-          />
+          <Empty icon={<Mail className="h-5 w-5" />} title="No email templates" description="Create one to reuse copy across leads." />
         </Card>
       )}
       {creating && (
@@ -263,7 +258,7 @@ function EmailEditor({
   );
 }
 
-function NewEmailModal({ group, onClose, onSaved }: { group: 'EM' | 'NU'; onClose: () => void; onSaved: (t: EmailTemplate) => void }) {
+function NewEmailModal({ group, onClose, onSaved }: { group: 'EM'; onClose: () => void; onSaved: (t: EmailTemplate) => void }) {
   const toast = useToast();
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');

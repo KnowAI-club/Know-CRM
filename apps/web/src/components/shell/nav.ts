@@ -12,7 +12,6 @@ import {
   Mail,
   Receipt,
   Settings,
-  Sprout,
   Users,
   Wallet,
   ListChecks,
@@ -44,7 +43,6 @@ export const NAV: { section: string; items: NavItem[] }[] = [
     section: 'Sales',
     items: [
       { href: '/leads', label: 'Leads', icon: Inbox },
-      { href: '/nurtures', label: 'Nurtures', icon: Sprout },
       { href: '/clients', label: 'Clients', icon: Users },
       { href: '/forms', label: 'Lead forms', icon: ClipboardList },
       { href: '/booking', label: 'Booking pages', icon: CalendarClock },

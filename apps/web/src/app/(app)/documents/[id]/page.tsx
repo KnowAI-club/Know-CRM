@@ -92,8 +92,14 @@ export default function DocumentPage() {
     );
 
   const save = async (quiet = false) => {
-    if (!title.trim()) {
-      setErrors({ title: 'Add a title.' });
+    const local: Record<string, string> = {};
+    if (!title.trim()) local.title = 'Add a title.';
+    blocks.forEach((b, i) => {
+      if (b.type === 'service' && !(b.quantity > 0 && b.quantity <= 100000))
+        local[`blocks.${i}.quantity`] = 'Quantity above 0, up to 100000.';
+    });
+    if (Object.keys(local).length) {
+      setErrors(local);
       return false;
     }
     setBusy('save');

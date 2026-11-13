@@ -89,7 +89,9 @@ export function TaskModal({
           }
         : { title: '', dueDate: '', assigneeId: user?.id ?? '', urgent: false, visibility: 'internal', target: defaultTarget },
     );
-  }, [open, task, user, defaultTarget]);
+    // Keyed by id: a background refresh of the list must not wipe edits in an open form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, task?.id, user?.id, defaultTarget]);
 
   const isProject = form.target.startsWith('project:');
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {

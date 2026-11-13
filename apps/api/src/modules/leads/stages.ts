@@ -24,8 +24,7 @@ const stageFields = z.object({
 export const stageCatalog = () =>
   many(
     `SELECT s.*, ps.label AS project_stage_label,
-       (SELECT count(*)::int FROM leads l WHERE l.stage = s.id) AS lead_count,
-       EXISTS (SELECT 1 FROM lead_nurture n WHERE n.entry_stage = s.id) AS used_by_nurture
+       (SELECT count(*)::int FROM leads l WHERE l.stage = s.id) AS lead_count
      FROM lead_stages s LEFT JOIN project_stages ps ON ps.id = s.project_stage_id
      ORDER BY s.position`,
   );
@@ -81,7 +80,7 @@ router.patch('/lead-stages/:id', requireAdmin, async (req, res) => {
     const kind = data.kind ?? current.kind;
     const projectStageId =
       data.projectStageId !== undefined ? data.projectStageId : kind === current.kind ? current.project_stage_id : null;
-    if (kind !== current.kind && (current.system || current.lead_count > 0 || current.used_by_nurture))
+    if (kind !== current.kind && (current.system || current.lead_count > 0))
       throw conflict('Only unused custom stages can change behaviour.');
     await checkHandoff(kind, projectStageId);
     if (data.label && (await one('SELECT 1 FROM lead_stages WHERE lower(label)=lower($1) AND id<>$2', [data.label, current.id])))
@@ -103,7 +102,7 @@ router.delete('/lead-stages/:id', requireAdmin, async (req, res) => {
     const current = (await stageCatalog()).find((s) => s.id === req.params.id);
     if (!current) throw notFound('Stage');
     if (current.system) throw conflict('System stages cannot be deleted.');
-    if (current.lead_count > 0 || current.used_by_nurture) throw conflict('Move every lead out of this stage before deleting it.');
+    if (current.lead_count > 0) throw conflict('Move every lead out of this stage before deleting it.');
     await query('DELETE FROM lead_stages WHERE id=$1', [current.id]);
     await query('UPDATE lead_stages SET position = position - 1 WHERE position > $1', [current.position]);
     return current.label;

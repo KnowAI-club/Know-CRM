@@ -154,13 +154,12 @@ export async function seedDemo() {
       notifications: [{ channel: 'in_app', minutes: 30 }],
     });
 
-    // A lead parked in nurtures and one closed won.
+    // A lead on hold and one closed won.
     await post(`/leads/${leads[4].id}/action`, {
       action: 'exit',
       version: leads[4].version,
       exitStatus: 'on_hold',
       reason: 'Budget opens next quarter.',
-      tags: ['not_ready'],
       resumeDate: day(60),
     });
     const wonLead = await post('/leads', {
@@ -235,7 +234,7 @@ export async function seedDemo() {
     });
     await post('/projects', { name: 'GreenLeaf menu website', contactId: c2.id, value: 18000000, stage: 'inquiry', dueDate: day(30) });
 
-    // Booking page, lead form, nurture, finance.
+    // Booking page, lead form, finance.
     await post('/booking/types', {
       title: 'Intro call',
       description: 'A 30-minute call to understand your goals.',
@@ -255,15 +254,6 @@ export async function seedDemo() {
       ],
     });
     await post(`/lead-forms/${form.id}/publish`);
-    const imported = await post('/nurtures/leads', {
-      source: 'imported',
-      leads: [
-        { name: 'Neha Kapoor', company: 'Kapoor Interiors', email: 'neha@kapoorinteriors.example' },
-        { name: 'Arjun Das', company: 'Das Motors', email: 'arjun@dasmotors.example' },
-      ],
-    });
-    const sequences = await call<any[]>('GET', '/nurtures/sequences');
-    if (sequences[0]) await post('/nurtures/assignments', { leadId: imported.ids[0], sequenceId: sequences[0].id });
     await post('/expenses', { spentOn: day(-3), vendor: 'Cloud hosting', category: 'software', amount: 450000, projectId });
     await post('/expenses', { spentOn: day(-10), vendor: 'Co-working space', category: 'rent', amount: 2500000 });
     await post('/services', {

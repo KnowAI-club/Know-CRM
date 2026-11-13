@@ -11,6 +11,12 @@ export class ApiError extends Error {
 
 type Body = Record<string, unknown> | unknown[] | FormData | undefined;
 
+/** Fired on window after every successful write so open views can refresh. */
+export const DATA_CHANGED = 'crm:data-changed';
+let writes = 0;
+/** Bumps after every successful create/update/delete; shared caches compare it to know they are stale. */
+export const writeCount = () => writes;
+
 /** Calls the CRM API (same origin, proxied by Next.js) with the session cookie. */
 export async function api<T = unknown>(path: string, options: { method?: string; body?: Body; signal?: AbortSignal } = {}): Promise<T> {
   const { method = options.body ? 'POST' : 'GET', body, signal } = options;
@@ -22,6 +28,10 @@ export async function api<T = unknown>(path: string, options: { method?: string;
     headers: body && !isForm ? { 'Content-Type': 'application/json' } : undefined,
     body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   });
+  if (res.ok && method !== 'GET') {
+    writes++;
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(DATA_CHANGED));
+  }
   if (res.status === 204) return undefined as T;
   const type = res.headers.get('content-type') || '';
   const data = type.includes('application/json') ? await res.json() : await res.text();

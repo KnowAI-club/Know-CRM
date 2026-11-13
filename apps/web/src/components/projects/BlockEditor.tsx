@@ -1,7 +1,7 @@
 'use client';
 import { ArrowDown, ArrowUp, Heading, ListChecks, PenLine, Receipt, Trash2, Type } from 'lucide-react';
 import { CURRENCIES } from '@know-crm/shared';
-import { Button, Field, MoneyInput } from '@/components/ui';
+import { Button, Field, MoneyInput, NumberInput } from '@/components/ui';
 import type { Block } from './documentTypes';
 import { blockId } from './util';
 
@@ -133,14 +133,7 @@ export function BlockEditor({
                 <MoneyInput value={b.unitPrice} currency={b.currency} onChange={(v) => set(i, { unitPrice: v ?? 0 })} />
               </Field>
               <Field label="Quantity" error={err(i, 'quantity')}>
-                <input
-                  className="input"
-                  type="number"
-                  min={0.01}
-                  step="any"
-                  value={b.quantity}
-                  onChange={(e) => set(i, { quantity: Number(e.target.value) })}
-                />
+                <NumberInput min={0} step="any" value={b.quantity} onChange={(e) => set(i, { quantity: Number(e.target.value) })} />
               </Field>
               <Field label="Currency">
                 <select className="input" value={b.currency} onChange={(e) => set(i, { currency: e.target.value })}>

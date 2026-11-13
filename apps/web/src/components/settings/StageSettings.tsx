@@ -28,7 +28,6 @@ interface LeadStage {
   project_stage_id: string | null;
   project_stage_label: string | null;
   lead_count: number;
-  used_by_nurture: boolean;
 }
 
 function useReorder<T extends { id: string }>(path: string, setData: (fn: (d: T[] | undefined) => T[] | undefined) => void) {
@@ -126,7 +125,7 @@ export function LeadStageSettings() {
                     size="icon"
                     variant="ghost"
                     aria-label={`Delete ${s.label}`}
-                    disabled={s.system || s.lead_count > 0 || s.used_by_nurture}
+                    disabled={s.system || s.lead_count > 0}
                     title={s.system ? 'System stages cannot be deleted' : s.lead_count ? 'Move leads out first' : undefined}
                     onClick={() => remove(s)}
                   >
@@ -171,7 +170,7 @@ function LeadStageModal({
   const [projectStageId, setProjectStageId] = useState(stage?.project_stage_id ?? projectStages[0]?.id ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const kindLocked = !!stage && (stage.system || stage.lead_count > 0 || stage.used_by_nurture);
+  const kindLocked = !!stage && (stage.system || stage.lead_count > 0);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

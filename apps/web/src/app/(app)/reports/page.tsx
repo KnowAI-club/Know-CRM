@@ -18,7 +18,7 @@ interface Stage {
 }
 interface Lead {
   id: string;
-  state: 'active' | 'nurture' | 'won' | 'dropped';
+  state: 'active' | 'won' | 'dropped';
   stage: string;
   created_at: string;
   data: { source?: string; ownerId?: string };
@@ -197,14 +197,14 @@ function LeadReport({ from, to }: { from: string; to: string }) {
       };
     });
 
-    const bySource = new Map<string, { total: number; won: number; active: number; nurture: number }>();
+    const bySource = new Map<string, { total: number; won: number; active: number; dropped: number }>();
     for (const l of inRange) {
       const k = l.data.source?.trim() || 'Not set';
-      const row = bySource.get(k) ?? { total: 0, won: 0, active: 0, nurture: 0 };
+      const row = bySource.get(k) ?? { total: 0, won: 0, active: 0, dropped: 0 };
       row.total++;
       if (l.state === 'won') row.won++;
       if (l.state === 'active') row.active++;
-      if (l.state === 'nurture') row.nurture++;
+      if (l.state === 'dropped') row.dropped++;
       bySource.set(k, row);
     }
     const calls = [...factMap.values()].reduce(
@@ -220,7 +220,6 @@ function LeadReport({ from, to }: { from: string; to: string }) {
       total: inRange.length,
       won,
       active: inRange.filter((l) => l.state === 'active').length,
-      nurture: inRange.filter((l) => l.state === 'nurture').length,
       dropped: inRange.filter((l) => l.state === 'dropped').length,
       funnel,
       timing,
@@ -264,7 +263,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
         <Stat label="New leads" value={report.total} />
         <Stat label="Won" value={report.won} hint={`Win rate ${pct(report.won, report.total)}`} />
         <Stat label="Still open" value={report.active} />
-        <Stat label="In nurture" value={report.nurture} hint={report.dropped ? `${report.dropped} disqualified` : undefined} />
+        <Stat label="Archived" value={report.dropped} />
         <Stat
           label="Calls attended"
           value={`${report.calls.attended}/${report.calls.booked}`}
@@ -319,7 +318,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
                     <th>Source</th>
                     <th className="text-right">Leads</th>
                     <th className="text-right">Open</th>
-                    <th className="text-right">Nurture</th>
+                    <th className="text-right">Archived</th>
                     <th className="text-right">Won</th>
                     <th className="text-right">Win rate</th>
                     <th className="w-1/3">Share</th>
@@ -331,7 +330,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
                       <td className="font-medium">{name}</td>
                       <td className="text-right tabular-nums">{r.total}</td>
                       <td className="text-right tabular-nums">{r.active}</td>
-                      <td className="text-right tabular-nums">{r.nurture}</td>
+                      <td className="text-right tabular-nums">{r.dropped}</td>
                       <td className="text-right tabular-nums">{r.won}</td>
                       <td className="text-right tabular-nums">{pct(r.won, r.total)}</td>
                       <td>
@@ -349,24 +348,26 @@ function LeadReport({ from, to }: { from: string; to: string }) {
         {data.data.sources.length === 0 ? (
           <Empty title="No projects yet" />
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th className="text-right">Projects</th>
-                <th className="text-right">Booked work</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.sources.map((s) => (
-                <tr key={s.source}>
-                  <td>{s.source}</td>
-                  <td className="text-right tabular-nums">{s.projects}</td>
-                  <td className="text-right tabular-nums">{s.booked}</td>
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th className="text-right">Projects</th>
+                  <th className="text-right">Booked work</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.data.sources.map((s) => (
+                  <tr key={s.source}>
+                    <td>{s.source}</td>
+                    <td className="text-right tabular-nums">{s.projects}</td>
+                    <td className="text-right tabular-nums">{s.booked}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

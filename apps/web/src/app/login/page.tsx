@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { post, ApiError } from '@/lib/api';
 import { BRAND } from '@/lib/brand';
 import { useSession } from '@/lib/session';
-import { Button, Field, Spinner } from '@/components/ui';
+import { Button, Field, Spinner, PasswordInput } from '@/components/ui';
 import { CURRENCIES } from '@know-crm/shared';
 import { BrandMark } from '@/components/shell/BrandMark';
 
@@ -64,9 +64,7 @@ export default function LoginPage() {
             <input className="input" type="email" value={form.email} onChange={set('email')} required autoComplete="email" />
           </Field>
           <Field label="Password" required hint={setup ? 'At least 12 characters.' : undefined}>
-            <input
-              className="input"
-              type="password"
+            <PasswordInput
               value={form.password}
               onChange={set('password')}
               required

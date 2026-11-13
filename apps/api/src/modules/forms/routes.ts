@@ -222,7 +222,7 @@ publicRouter.post('/public/forms/:token/submissions', rateLimit('public-form-sub
 
     // Inquiry lands in the sales pipeline as a lead (unless one is already open) with an intake project.
     let leadId: string | null =
-      (await one(`SELECT id FROM leads WHERE lower(email)=$1 AND state IN ('active','nurture')`, [body.email]))?.id ?? null;
+      (await one(`SELECT id FROM leads WHERE lower(email)=$1 AND state='active'`, [body.email]))?.id ?? null;
     if (!leadId && !(await one(`SELECT 1 FROM leads WHERE lower(email)=$1 AND state='won'`, [body.email]))) {
       const stage = await one(`SELECT id FROM lead_stages WHERE kind='open' ORDER BY position LIMIT 1`);
       const notes = f.published.fields

@@ -24,10 +24,12 @@ export function MessageThread({
   const toast = useToast();
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
 
+  // Scroll only the message list; scrollIntoView would also scroll the page.
   useEffect(() => {
-    end.current?.scrollIntoView({ block: 'nearest' });
+    const el = list.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   const send = async () => {
@@ -46,8 +48,8 @@ export function MessageThread({
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="max-h-[55vh] min-h-40 space-y-3 overflow-y-auto p-4">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div ref={list} className="max-h-[55vh] min-h-40 flex-1 space-y-3 overflow-y-auto p-4">
         {!messages.length ? (
           <Empty title="No messages" description={emptyText} />
         ) : (
@@ -71,9 +73,8 @@ export function MessageThread({
             );
           })
         )}
-        <div ref={end} />
       </div>
-      <div className="flex items-end gap-2 border-t border-line p-3">
+      <div className="mt-auto flex items-end gap-2 border-t border-line p-3">
         <textarea
           className="input min-h-10 flex-1 resize-y"
           rows={2}

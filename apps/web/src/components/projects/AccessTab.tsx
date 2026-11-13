@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { KeyRound, Link2, UserMinus } from 'lucide-react';
 import { del, get, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
-import { Avatar, Button, Card, Empty, Field, useConfirm, useToast } from '@/components/ui';
+import { Avatar, Button, Card, Empty, Field, useConfirm, useToast, PasswordInput } from '@/components/ui';
 import type { Participant } from './types';
 import { fieldErrors } from './util';
 
@@ -153,9 +153,7 @@ export function AccessTab({
             error={errors.password}
             hint="At least 12 characters. The client can change it after signing in."
           >
-            <input
-              className="input"
-              type="password"
+            <PasswordInput
               autoComplete="new-password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}

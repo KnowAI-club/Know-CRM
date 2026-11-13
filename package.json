@@ -2,7 +2,7 @@
   "name": "know-crm",
   "version": "0.1.0",
   "private": true,
-  "description": "Open-source CRM: leads, sales pipeline, nurtures, projects, client portal, meetings, invoicing and reports.",
+  "description": "Open-source CRM: leads, sales pipeline, projects, client portal, meetings, invoicing and reports.",
   "license": "AGPL-3.0-only",
   "workspaces": [
     "packages/*",
@@ -17,7 +17,7 @@
     "test": "npm run build -w @know-crm/shared && npm run test -w @know-crm/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "docker compose up -d --wait postgres mailpit",
+    "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
     "db:migrate": "npm run migrate -w @know-crm/api",
     "db:seed": "npm run seed -w @know-crm/api"

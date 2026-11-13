@@ -10,5 +10,7 @@ export { PageHeader } from './PageHeader';
 export { Menu, type MenuItem } from './Menu';
 export { MentionText, MentionTextarea } from './Mention';
 export { MoneyInput } from './MoneyInput';
+export { NumberInput } from './NumberInput';
+export { PasswordInput } from './PasswordInput';
 export { useToast } from './Toast';
 export { useConfirm } from './Confirm';
