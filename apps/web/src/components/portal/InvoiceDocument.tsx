@@ -142,34 +142,36 @@ export function InvoiceDocument({ invoice: i }: { invoice: InvoiceView }) {
       {i.installments.length > 0 && (
         <section className="mt-8">
           <p className="eyebrow mb-2">Payment schedule</p>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Instalment</th>
-                <th>Due</th>
-                <th className="text-right">Amount</th>
-                <th className="text-right">Balance</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {i.installments.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.label}</td>
-                  <td className="text-mute">{date(s.due_date)}</td>
-                  <td className="text-right tabular-nums">{money(s.amount, c)}</td>
-                  <td className="text-right tabular-nums">{money(s.balance, c)}</td>
-                  <td>
-                    <Badge
-                      tone={s.status === 'paid' ? 'ok' : s.status === 'overdue' ? 'danger' : s.status === 'partial' ? 'warn' : 'neutral'}
-                    >
-                      {titleCase(s.status)}
-                    </Badge>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Instalment</th>
+                  <th>Due</th>
+                  <th className="text-right">Amount</th>
+                  <th className="text-right">Balance</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {i.installments.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.label}</td>
+                    <td className="text-mute">{date(s.due_date)}</td>
+                    <td className="text-right tabular-nums">{money(s.amount, c)}</td>
+                    <td className="text-right tabular-nums">{money(s.balance, c)}</td>
+                    <td>
+                      <Badge
+                        tone={s.status === 'paid' ? 'ok' : s.status === 'overdue' ? 'danger' : s.status === 'partial' ? 'warn' : 'neutral'}
+                      >
+                        {titleCase(s.status)}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
       {i.payments.filter((p) => !p.reversed).length > 0 && (

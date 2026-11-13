@@ -150,18 +150,20 @@ export function InvoiceDocument({
       {invoice.installments.length > 1 && (
         <section className="border-t border-line py-6">
           <p className="eyebrow mb-2">Payment schedule</p>
-          <table className="table">
-            <tbody>
-              {invoice.installments.map((i) => (
-                <tr key={i.id}>
-                  <td>{i.label}</td>
-                  <td className="text-mute">{date(i.due_date)}</td>
-                  <td className="text-right tabular-nums">{money(i.amount, c)}</td>
-                  <td className="text-right text-xs text-mute capitalize">{i.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="table">
+              <tbody>
+                {invoice.installments.map((i) => (
+                  <tr key={i.id}>
+                    <td>{i.label}</td>
+                    <td className="text-mute">{date(i.due_date)}</td>
+                    <td className="text-right tabular-nums">{money(i.amount, c)}</td>
+                    <td className="text-right text-xs text-mute capitalize">{i.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 

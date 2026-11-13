@@ -348,24 +348,26 @@ function LeadReport({ from, to }: { from: string; to: string }) {
         {data.data.sources.length === 0 ? (
           <Empty title="No projects yet" />
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th className="text-right">Projects</th>
-                <th className="text-right">Booked work</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.sources.map((s) => (
-                <tr key={s.source}>
-                  <td>{s.source}</td>
-                  <td className="text-right tabular-nums">{s.projects}</td>
-                  <td className="text-right tabular-nums">{s.booked}</td>
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th className="text-right">Projects</th>
+                  <th className="text-right">Booked work</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.data.sources.map((s) => (
+                  <tr key={s.source}>
+                    <td>{s.source}</td>
+                    <td className="text-right tabular-nums">{s.projects}</td>
+                    <td className="text-right tabular-nums">{s.booked}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>
