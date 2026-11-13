@@ -8,6 +8,7 @@ const api = process.env.API_INTERNAL_URL || 'http://127.0.0.1:4010';
 const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  agentRules: false,
   transpilePackages: ['@know-crm/shared'],
   // The browser always talks to the same origin; Next proxies API calls to Express.
   async rewrites() {
