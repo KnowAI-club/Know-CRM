@@ -61,7 +61,12 @@ export function NotesTab({ projectId, notes, onChange }: { projectId: string; no
   return (
     <div className="space-y-4">
       <Card title="New note" icon={<StickyNote className="h-4 w-4" />}>
-        <MentionTextarea value={body} onChange={setBody} onSubmit={add} placeholder="Write a note. Type @ to mention a teammate (internal notes only)." />
+        <MentionTextarea
+          value={body}
+          onChange={setBody}
+          onSubmit={add}
+          placeholder="Write a note. Type @ to mention a teammate (internal notes only)."
+        />
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Segmented
             value={vis}
@@ -113,7 +118,12 @@ export function NotesTab({ projectId, notes, onChange }: { projectId: string; no
                   </Badge>
                 )}
               </span>
-              <Button size="icon" variant="ghost" aria-label="Edit note" onClick={() => setEdit({ id: n.id, body: n.body, visibility: n.visibility })}>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Edit note"
+                onClick={() => setEdit({ id: n.id, body: n.body, visibility: n.visibility })}
+              >
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button size="icon" variant="ghost" aria-label="Delete note" onClick={() => remove(n)}>

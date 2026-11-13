@@ -6,7 +6,15 @@ import { Button, Field, Modal, useToast } from '@/components/ui';
 const REASONS = ['No response after sequence', 'Not a fit', 'Asked not to be contacted', 'Bounced email', 'Went with someone else'];
 
 /** Moves one or more parked nurture leads to Discard with a reason. */
-export function DiscardModal({ leads, onClose, onDone }: { leads: { id: string; name: string }[]; onClose: () => void; onDone: () => void }) {
+export function DiscardModal({
+  leads,
+  onClose,
+  onDone,
+}: {
+  leads: { id: string; name: string }[];
+  onClose: () => void;
+  onDone: () => void;
+}) {
   const toast = useToast();
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');

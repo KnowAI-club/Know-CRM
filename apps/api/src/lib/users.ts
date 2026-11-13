@@ -5,10 +5,7 @@ import { badRequest } from './errors.js';
 export async function assertActiveStaff(id: string | null | undefined, message: string, previous?: string | null) {
   if (!id) return;
   if (previous && id === previous) return;
-  const u = await one(
-    `SELECT 1 FROM users WHERE id=$1 AND role <> 'client' AND disabled_at IS NULL`,
-    [id],
-  );
+  const u = await one(`SELECT 1 FROM users WHERE id=$1 AND role <> 'client' AND disabled_at IS NULL`, [id]);
   if (!u) throw badRequest(message);
 }
 

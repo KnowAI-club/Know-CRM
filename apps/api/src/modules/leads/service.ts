@@ -20,7 +20,12 @@ export const dataSchema = z.object({
   funnel: z.enum(['inbound', 'outbound']).default('inbound'),
   temperature: z.enum(['warm', 'cold']).default('warm'),
   company: short,
-  phone: z.string().trim().max(40).regex(/^[0-9+()\-. ]*$/, 'Use digits, spaces and + ( ) - only.').default(''),
+  phone: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^[0-9+()\-. ]*$/, 'Use digits, spaces and + ( ) - only.')
+    .default(''),
   website: url,
   socials: long,
   budget: short,
@@ -151,10 +156,8 @@ export async function validateNurture(
   const owner = await one(`SELECT 1 FROM users WHERE id=$1 AND role <> 'client' AND disabled_at IS NULL`, [ownerId]);
   if (!owner) throw badRequest('Assign a POC for this lead.');
   const revisitDate = body.revisitDate || null;
-  if (!archived && !revisitDate && (tags.includes('not_ready') || body.exitStatus === 'on_hold'))
-    throw badRequest('Add a revisit date.');
-  if (revisitDate && body.resumeDate && revisitDate !== body.resumeDate)
-    throw badRequest('Revisit and resume dates must match.');
+  if (!archived && !revisitDate && (tags.includes('not_ready') || body.exitStatus === 'on_hold')) throw badRequest('Add a revisit date.');
+  if (revisitDate && body.resumeDate && revisitDate !== body.resumeDate) throw badRequest('Revisit and resume dates must match.');
   return { reason, tags: archived ? ['archived'] : tags, ownerId, revisitDate };
 }
 
@@ -194,10 +197,10 @@ export async function enterNurture(
 
 /** Ends the active nurture sequence assignment, if any. */
 export async function endAssignment(leadId: string, reason: string) {
-  await query(
-    `UPDATE nurture_assignments SET status='ended', ended_at=now(), end_reason=$2 WHERE lead_id=$1 AND status='active'`,
-    [leadId, reason],
-  );
+  await query(`UPDATE nurture_assignments SET status='ended', ended_at=now(), end_reason=$2 WHERE lead_id=$1 AND status='active'`, [
+    leadId,
+    reason,
+  ]);
 }
 
 /**
@@ -239,8 +242,7 @@ export async function convertWonLead(
         AND NOT EXISTS (SELECT 1 FROM leads x WHERE x.project_id = p.id)`,
     [lead.email],
   );
-  if (intake.length > 1)
-    throw conflict('Multiple intake projects exist for this email. Archive the extras before closing won.');
+  if (intake.length > 1) throw conflict('Multiple intake projects exist for this email. Archive the extras before closing won.');
 
   let projectId: string;
   let reused = false;
@@ -275,10 +277,7 @@ export async function convertWonLead(
   }
 
   await query('UPDATE leads SET project_id=$2, contact_id=$3 WHERE id=$1', [lead.id, projectId, contact.id]);
-  const moved = await query(
-    'UPDATE tasks SET lead_id=NULL, project_id=$2 WHERE lead_id=$1 AND NOT completed',
-    [lead.id, projectId],
-  );
+  const moved = await query('UPDATE tasks SET lead_id=NULL, project_id=$2 WHERE lead_id=$1 AND NOT completed', [lead.id, projectId]);
   await query('UPDATE meetings SET project_id=$2 WHERE lead_id=$1', [lead.id, projectId]);
   const n = moved.rowCount ?? 0;
   await projectActivity(
@@ -293,8 +292,7 @@ export async function convertWonLead(
 
 /** Only admins may change a lead's phone number once set. */
 export function assertPhoneChange(user: SessionUser, before: LeadData, after: LeadData) {
-  if (user.role !== 'admin' && before.phone !== after.phone)
-    throw forbidden("Only an admin can change a client's phone.");
+  if (user.role !== 'admin' && before.phone !== after.phone) throw forbidden("Only an admin can change a client's phone.");
 }
 
 export interface CycleSegment {
@@ -308,10 +306,7 @@ export interface CycleSegment {
 export async function leadCycle(leadId: string) {
   const lead = await one('SELECT l.*, w.won_at FROM leads l LEFT JOIN lead_won w ON w.lead_id=l.id WHERE l.id=$1', [leadId]);
   if (!lead) throw notFound('Lead');
-  const history = await many(
-    'SELECT action, detail, created_at FROM lead_history WHERE lead_id=$1 ORDER BY created_at, id',
-    [leadId],
-  );
+  const history = await many('SELECT action, detail, created_at FROM lead_history WHERE lead_id=$1 ORDER BY created_at, id', [leadId]);
   const firstMove = history.find((h) => h.detail?.previousStage);
   let stage: string = firstMove?.detail.previousStage ?? lead.stage;
   let nurture = false;

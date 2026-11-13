@@ -124,7 +124,11 @@ export default function HomePage() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat label="Active projects" value={d.metrics.activeProjects} hint={`${d.period?.newProjects ?? 0} new ${RANGE_LABEL[range]}`} />
+            <Stat
+              label="Active projects"
+              value={d.metrics.activeProjects}
+              hint={`${d.period?.newProjects ?? 0} new ${RANGE_LABEL[range]}`}
+            />
             <Stat label="Pipeline value" value={money(d.metrics.pipelineValue, currency)} hint="Open projects in delivery" />
             {isAdmin && d.metrics.unpaidBalance !== undefined ? (
               <Stat
@@ -143,7 +147,9 @@ export default function HomePage() {
             {[
               { href: '/leads', label: 'Leads', icon: UserPlus, hint: `${d.period?.newLeads ?? 0} new ${RANGE_LABEL[range]}` },
               { href: '/projects', label: 'Projects', icon: Briefcase, hint: `${d.metrics.activeProjects} active` },
-              ...(isAdmin ? [{ href: '/invoices', label: 'Invoices', icon: Receipt, hint: 'Billing & payments' }] : [{ href: '/clients', label: 'Clients', icon: Users, hint: 'Contacts' }]),
+              ...(isAdmin
+                ? [{ href: '/invoices', label: 'Invoices', icon: Receipt, hint: 'Billing & payments' }]
+                : [{ href: '/clients', label: 'Clients', icon: Users, hint: 'Contacts' }]),
               { href: '/reports', label: 'Reports', icon: FileText, hint: 'Sales & delivery' },
             ].map((q) => (
               <Link key={q.href} href={q.href} className="card group flex items-center gap-3 p-3 transition hover:border-acc/40">
@@ -354,7 +360,12 @@ export default function HomePage() {
           dash.reload();
         }}
       />
-      <TaskModal open={!!editing} task={editing} onClose={() => setEditing(null)} onSaved={(n) => setTasks((list) => list.map((x) => (x.id === n.id ? n : x)))} />
+      <TaskModal
+        open={!!editing}
+        task={editing}
+        onClose={() => setEditing(null)}
+        onSaved={(n) => setTasks((list) => list.map((x) => (x.id === n.id ? n : x)))}
+      />
       <MeetingModal
         open={newMeeting}
         onClose={() => setNewMeeting(false)}

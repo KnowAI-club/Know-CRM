@@ -38,7 +38,10 @@ export function TasksTab({
   const [editing, setEditing] = useState<{ id: string; form: Form } | null>(null);
   const [showDone, setShowDone] = useState(false);
 
-  const assignees = [...team.map((u) => ({ id: u.id, label: u.name, client: false })), ...participants.map((p) => ({ id: p.id, label: `${p.name} (client)`, client: true }))];
+  const assignees = [
+    ...team.map((u) => ({ id: u.id, label: u.name, client: false })),
+    ...participants.map((p) => ({ id: p.id, label: `${p.name} (client)`, client: true })),
+  ];
 
   const submit = async (e: FormEvent, f: Form, id?: string) => {
     e.preventDefault();
@@ -129,7 +132,11 @@ export function TasksTab({
         <p className={cn('text-sm', t.completed && 'text-mute line-through')}>{t.title}</p>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-mute">
           {t.assignee_name && <span>{t.assignee_name}</span>}
-          {t.due_date && <span className={cn(!t.completed && t.due_date < today && 'font-medium text-danger')}>Due {date(t.due_date, { year: undefined })}</span>}
+          {t.due_date && (
+            <span className={cn(!t.completed && t.due_date < today && 'font-medium text-danger')}>
+              Due {date(t.due_date, { year: undefined })}
+            </span>
+          )}
           {t.urgent && <Badge tone="danger">Urgent</Badge>}
           {t.visibility === 'client' && (
             <Badge tone="info">
@@ -145,7 +152,16 @@ export function TasksTab({
           aria-label="Edit task"
           onClick={() => {
             setErrors({});
-            setEditing({ id: t.id, form: { title: t.title, dueDate: t.due_date ?? '', assigneeId: t.assignee_id ?? '', visibility: t.visibility, urgent: t.urgent } });
+            setEditing({
+              id: t.id,
+              form: {
+                title: t.title,
+                dueDate: t.due_date ?? '',
+                assigneeId: t.assignee_id ?? '',
+                visibility: t.visibility,
+                urgent: t.urgent,
+              },
+            });
           }}
         >
           <Pencil className="h-4 w-4" />
@@ -162,7 +178,13 @@ export function TasksTab({
       <Card title="Add task" icon={<CheckSquare className="h-4 w-4" />}>
         <form onSubmit={(e) => submit(e, form)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto_auto]" noValidate>
           <Field label="Task" error={editing ? undefined : errors.title} className="sm:col-span-2 lg:col-span-1">
-            <input className="input" value={form.title} maxLength={500} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="What needs doing?" />
+            <input
+              className="input"
+              value={form.title}
+              maxLength={500}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="What needs doing?"
+            />
           </Field>
           {fields(form, setForm)}
           <Button type="submit" loading={saving && !editing} className="self-end">
@@ -171,7 +193,11 @@ export function TasksTab({
         </form>
       </Card>
       <Card title={`Open tasks (${open.length})`} bodyClassName="px-4 py-1">
-        {open.length ? <ul className="divide-y divide-line">{open.map(row)}</ul> : <Empty title="All clear" description="No open tasks on this project." />}
+        {open.length ? (
+          <ul className="divide-y divide-line">{open.map(row)}</ul>
+        ) : (
+          <Empty title="All clear" description="No open tasks on this project." />
+        )}
       </Card>
       {done.length > 0 && (
         <Card
@@ -204,7 +230,12 @@ export function TasksTab({
         {editing && (
           <form id="edit-task" onSubmit={(e) => submit(e, editing.form, editing.id)} className="grid gap-3 sm:grid-cols-2" noValidate>
             <Field label="Task" error={errors.title} className="sm:col-span-2">
-              <input className="input" value={editing.form.title} maxLength={500} onChange={(e) => setEditing({ ...editing, form: { ...editing.form, title: e.target.value } })} />
+              <input
+                className="input"
+                value={editing.form.title}
+                maxLength={500}
+                onChange={(e) => setEditing({ ...editing, form: { ...editing.form, title: e.target.value } })}
+              />
             </Field>
             {fields(editing.form, (f) => setEditing({ ...editing, form: f }))}
           </form>

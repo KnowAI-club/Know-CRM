@@ -12,10 +12,7 @@ export class ApiError extends Error {
 type Body = Record<string, unknown> | unknown[] | FormData | undefined;
 
 /** Calls the CRM API (same origin, proxied by Next.js) with the session cookie. */
-export async function api<T = unknown>(
-  path: string,
-  options: { method?: string; body?: Body; signal?: AbortSignal } = {},
-): Promise<T> {
+export async function api<T = unknown>(path: string, options: { method?: string; body?: Body; signal?: AbortSignal } = {}): Promise<T> {
   const { method = options.body ? 'POST' : 'GET', body, signal } = options;
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   const res = await fetch(`/api${path}`, {
@@ -29,19 +26,18 @@ export async function api<T = unknown>(
   const type = res.headers.get('content-type') || '';
   const data = type.includes('application/json') ? await res.json() : await res.text();
   if (!res.ok) {
-    if (res.status === 401 && typeof window !== 'undefined')
-      window.dispatchEvent(new Event('crm:session-expired'));
+    if (res.status === 401 && typeof window !== 'undefined') window.dispatchEvent(new Event('crm:session-expired'));
     const err = typeof data === 'object' && data ? data : { error: String(data) };
     throw new ApiError(res.status, err.error || `Request failed (${res.status})`, err.code, err.details);
   }
   return data as T;
 }
 
-export const get = <T,>(path: string, signal?: AbortSignal) => api<T>(path, { signal });
-export const post = <T,>(path: string, body?: Body) => api<T>(path, { method: 'POST', body: body ?? {} });
-export const patch = <T,>(path: string, body: Body) => api<T>(path, { method: 'PATCH', body });
-export const put = <T,>(path: string, body: Body) => api<T>(path, { method: 'PUT', body });
-export const del = <T,>(path: string) => api<T>(path, { method: 'DELETE' });
+export const get = <T>(path: string, signal?: AbortSignal) => api<T>(path, { signal });
+export const post = <T>(path: string, body?: Body) => api<T>(path, { method: 'POST', body: body ?? {} });
+export const patch = <T>(path: string, body: Body) => api<T>(path, { method: 'PATCH', body });
+export const put = <T>(path: string, body: Body) => api<T>(path, { method: 'PUT', body });
+export const del = <T>(path: string) => api<T>(path, { method: 'DELETE' });
 
 export function errorMessage(e: unknown) {
   return e instanceof Error ? e.message : String(e);

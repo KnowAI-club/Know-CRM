@@ -28,7 +28,9 @@ router.get('/reminders', async (req, res) => {
     ? await many(`${SELECT} WHERE r.meeting_id=$1 ORDER BY r.run_at DESC LIMIT 200`, [meetingId])
     : leadId
       ? await many(`${SELECT} WHERE r.lead_id=$1 ORDER BY r.run_at DESC LIMIT 200`, [leadId])
-      : await many(`${SELECT} WHERE (r.created_by=$1 OR r.recipient_id=$1) AND NOT r.auto_notice ORDER BY r.run_at DESC LIMIT 500`, [me.id]);
+      : await many(`${SELECT} WHERE (r.created_by=$1 OR r.recipient_id=$1) AND NOT r.auto_notice ORDER BY r.run_at DESC LIMIT 500`, [
+          me.id,
+        ]);
   res.json(rows);
 });
 
@@ -56,9 +58,9 @@ async function validate(r: { run_at: Date; type_id?: string | null; channel: str
   const t = r.run_at.getTime();
   if (t < Date.now() - 60_000 || t > Date.now() + 366 * 86_400_000) throw badRequest('Schedule within the next year.');
   if (r.channel === 'email' && !env.MAIL_ENABLED) throw conflict('Email sending is turned off. Use an in-app reminder instead.');
-  if (r.type_id && !(await one('SELECT 1 FROM reminder_types WHERE id=$1', [r.type_id]))) throw badRequest('Choose an existing reminder type.');
-  if (!(await reminderContext(target)))
-    throw badRequest('Choose an active recipient with access to an unfinished, shared resource.');
+  if (r.type_id && !(await one('SELECT 1 FROM reminder_types WHERE id=$1', [r.type_id])))
+    throw badRequest('Choose an existing reminder type.');
+  if (!(await reminderContext(target))) throw badRequest('Choose an active recipient with access to an unfinished, shared resource.');
 }
 
 router.post('/reminders', async (req, res) => {
@@ -79,7 +81,10 @@ router.post('/reminders', async (req, res) => {
   const result = await transaction(async () => {
     const existing = await one('SELECT * FROM reminders WHERE id=$1', [body.id]);
     if (existing) {
-      const same = existing.created_by === me.id && existing.title === body.title && existing.recipient_id === body.recipientId &&
+      const same =
+        existing.created_by === me.id &&
+        existing.title === body.title &&
+        existing.recipient_id === body.recipientId &&
         new Date(existing.run_at).getTime() === new Date(body.runAt).getTime();
       if (!same) throw conflict('This reminder was already saved with different details.');
       return { row: existing, created: false };
@@ -90,12 +95,30 @@ router.post('/reminders', async (req, res) => {
       if (lead.state === 'won') throw conflict('This lead has been handed off. Continue work in its linked project.');
     }
     if (body.meetingId && !(await one('SELECT 1 FROM meetings WHERE id=$1', [body.meetingId]))) throw notFound('Meeting');
-    const target = { recipient_id: body.recipientId, created_by: me.id, project_id: body.projectId, lead_id: body.leadId, meeting_id: body.meetingId };
+    const target = {
+      recipient_id: body.recipientId,
+      created_by: me.id,
+      project_id: body.projectId,
+      lead_id: body.leadId,
+      meeting_id: body.meetingId,
+    };
     await validate({ run_at: new Date(body.runAt), type_id: body.typeId, channel: body.channel }, target);
     const row = await one(
       `INSERT INTO reminders(id, created_by, recipient_id, project_id, lead_id, meeting_id, type_id, title, body, channel, run_at)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [body.id, me.id, body.recipientId, body.projectId ?? null, body.leadId ?? null, body.meetingId ?? null, body.typeId ?? null, body.title, body.body, body.channel, body.runAt],
+      [
+        body.id,
+        me.id,
+        body.recipientId,
+        body.projectId ?? null,
+        body.leadId ?? null,
+        body.meetingId ?? null,
+        body.typeId ?? null,
+        body.title,
+        body.body,
+        body.channel,
+        body.runAt,
+      ],
     );
     if (body.leadId) await leadHistory(body.leadId, me.id, `Reminder scheduled: ${body.title}`);
     return { row: row!, created: true };
@@ -112,7 +135,13 @@ async function mine(req: Parameters<typeof currentUser>[0], id: string) {
 
 router.patch('/reminders/:id', async (req, res) => {
   const me = currentUser(req);
-  const body = parse(z.object(fields).partial().refine((b) => Object.keys(b).length > 0, 'Nothing to change.'), req.body);
+  const body = parse(
+    z
+      .object(fields)
+      .partial()
+      .refine((b) => Object.keys(b).length > 0, 'Nothing to change.'),
+    req.body,
+  );
   const id = parse(uuid, req.params.id);
   await transaction(async () => {
     const r = await mine(req, id);

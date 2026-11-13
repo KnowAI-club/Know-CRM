@@ -24,7 +24,7 @@ export function DocumentView({
       {blocks.map((b) => {
         switch (b.type) {
           case 'heading': {
-            const H = (`h${b.level}` as 'h1' | 'h2' | 'h3');
+            const H = `h${b.level}` as 'h1' | 'h2' | 'h3';
             const size = b.level === 1 ? 'text-2xl' : b.level === 2 ? 'text-xl' : 'text-base';
             return (
               <H key={b.id} className={`${size} mt-6 mb-2 font-semibold tracking-tight first:mt-0`}>
@@ -49,7 +49,9 @@ export function DocumentView({
                   <p className="text-xs whitespace-nowrap text-mute tabular-nums">
                     {b.quantity} × {money(b.unitPrice, b.currency)}
                   </p>
-                  <p className="w-28 text-right text-sm font-medium tabular-nums">{money(Math.round(b.quantity * b.unitPrice), b.currency)}</p>
+                  <p className="w-28 text-right text-sm font-medium tabular-nums">
+                    {money(Math.round(b.quantity * b.unitPrice), b.currency)}
+                  </p>
                 </div>
                 {b === lastService && totals.length > 0 && (
                   <div className="flex justify-end gap-6 py-3 text-sm">
@@ -70,7 +72,11 @@ export function DocumentView({
                   <div className="mt-2">{renderQuestion(b)}</div>
                 ) : (
                   <p className="mt-1 text-xs text-faint">
-                    {b.questionType === 'choice' ? `Choice: ${b.options.join(' · ')}` : b.questionType === 'long' ? 'Long answer' : 'Short answer'}
+                    {b.questionType === 'choice'
+                      ? `Choice: ${b.options.join(' · ')}`
+                      : b.questionType === 'long'
+                        ? 'Long answer'
+                        : 'Short answer'}
                   </p>
                 )}
               </div>

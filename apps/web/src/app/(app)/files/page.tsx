@@ -101,7 +101,11 @@ export default function FilesPage() {
       ) : (
         <Card bodyClassName="p-0" title={`${rows.length} files · ${bytes(total)}`}>
           {!rows.length ? (
-            <Empty icon={<FolderOpen className="h-5 w-5" />} title={data?.files.length ? 'No files match' : 'No files yet'} description="Upload files from a project or lead." />
+            <Empty
+              icon={<FolderOpen className="h-5 w-5" />}
+              title={data?.files.length ? 'No files match' : 'No files yet'}
+              description="Upload files from a project or lead."
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="table">
@@ -149,7 +153,11 @@ export default function FilesPage() {
                       <td className="text-right text-mute tabular-nums">{bytes(Number(f.size))}</td>
                       <td className="whitespace-nowrap text-mute">{relative(f.created_at)}</td>
                       <td className="w-10">
-                        <a href={href(f)} className="inline-flex rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink" aria-label={`Download ${f.title}`}>
+                        <a
+                          href={href(f)}
+                          className="inline-flex rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink"
+                          aria-label={`Download ${f.title}`}
+                        >
                           <Download className="h-4 w-4" />
                         </a>
                       </td>

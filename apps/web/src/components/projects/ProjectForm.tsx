@@ -49,7 +49,11 @@ export function NewProjectModal({
   useEffect(() => {
     if (!open) return;
     setErrors({});
-    setForm((f) => ({ ...f, stage: defaultStage || stages.find((s) => s.category === 'inquiry')?.id || 'inquiry', ownerId: f.ownerId || user?.id || '' }));
+    setForm((f) => ({
+      ...f,
+      stage: defaultStage || stages.find((s) => s.category === 'inquiry')?.id || 'inquiry',
+      ownerId: f.ownerId || user?.id || '',
+    }));
     get<Contact[]>('/contacts')
       .then((list) => {
         setContacts(list);
@@ -150,7 +154,12 @@ export function NewProjectModal({
                 <input className="input" value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
               </Field>
               <Field label="Email" error={errors['contact.email']}>
-                <input className="input" type="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
+                <input
+                  className="input"
+                  type="email"
+                  value={contact.email}
+                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                />
               </Field>
               <Field label="Company" error={errors['contact.company']}>
                 <input className="input" value={contact.company} onChange={(e) => setContact({ ...contact, company: e.target.value })} />
@@ -183,7 +192,13 @@ export function NewProjectModal({
           </select>
         </Field>
         <Field label="Description" error={errors.description} className="sm:col-span-2">
-          <textarea className="input" rows={3} value={form.description} onChange={(e) => set('description', e.target.value)} maxLength={20000} />
+          <textarea
+            className="input"
+            rows={3}
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            maxLength={20000}
+          />
         </Field>
       </form>
     </Modal>

@@ -2,18 +2,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Download } from 'lucide-react';
-import {
-  Badge,
-  Card,
-  Empty,
-  ErrorBox,
-  Field,
-  PageHeader,
-  Segmented,
-  Spinner,
-  Stat,
-  Tabs,
-} from '@/components/ui';
+import { Badge, Card, Empty, ErrorBox, Field, PageHeader, Segmented, Spinner, Stat, Tabs } from '@/components/ui';
 import { get, qs } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useTeam } from '@/lib/team';
@@ -55,15 +44,11 @@ interface SourceRow {
 type Tab = 'leads' | 'projects';
 type Preset = 'month' | 'last_month' | 'quarter' | 'year' | 'all' | 'custom';
 
-function presetRange(
-  p: Preset,
-  custom: { from: string; to: string },
-): { from: string; to: string } {
+function presetRange(p: Preset, custom: { from: string; to: string }): { from: string; to: string } {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const iso = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const tomorrow = iso(new Date(y, m, now.getDate() + 1));
   switch (p) {
     case 'month':
@@ -79,9 +64,7 @@ function presetRange(
     default:
       return {
         from: custom.from,
-        to: custom.to
-          ? iso(new Date(new Date(`${custom.to}T00:00:00`).getTime() + 86_400_000))
-          : tomorrow,
+        to: custom.to ? iso(new Date(new Date(`${custom.to}T00:00:00`).getTime() + 86_400_000)) : tomorrow,
       };
   }
 }
@@ -114,12 +97,7 @@ export default function ReportsPage() {
       <div className="mb-5 flex flex-wrap items-end gap-3">
         <div>
           <span className="label">Period</span>
-          <select
-            className="input w-44"
-            value={preset}
-            onChange={(e) => setPreset(e.target.value as Preset)}
-            aria-label="Report period"
-          >
+          <select className="input w-44" value={preset} onChange={(e) => setPreset(e.target.value as Preset)} aria-label="Report period">
             <option value="month">This month</option>
             <option value="last_month">Last month</option>
             <option value="quarter">This quarter</option>
@@ -185,12 +163,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
     const toT = new Date(`${to}T00:00:00`).getTime();
     const inRange = leads.filter((l) => {
       const t = new Date(l.created_at).getTime();
-      return (
-        t >= fromT &&
-        t < toT &&
-        (!owner || l.data.ownerId === owner) &&
-        (!source || (l.data.source || 'Not set') === source)
-      );
+      return t >= fromT && t < toT && (!owner || l.data.ownerId === owner) && (!source || (l.data.source || 'Not set') === source);
     });
     const ids = new Set(inRange.map((l) => l.id));
     const factMap = new Map(facts.filter((f) => ids.has(f.lead_id)).map((f) => [f.lead_id, f]));
@@ -199,10 +172,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
     const won = inRange.filter((l) => l.state === 'won').length;
     const funnel = openStages.map((s, i) => {
       const later = new Set(openStages.slice(i).map((x) => x.id));
-      const count = inRange.filter(
-        (l) =>
-          l.state === 'won' || (factMap.get(l.id)?.reached ?? [l.stage]).some((r) => later.has(r)),
-      ).length;
+      const count = inRange.filter((l) => l.state === 'won' || (factMap.get(l.id)?.reached ?? [l.stage]).some((r) => later.has(r))).length;
       return { id: s.id, label: s.label, color: s.color, count };
     });
     funnel.push({ id: 'won', label: 'Won', color: '#2f5d50', count: won });
@@ -227,10 +197,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
       };
     });
 
-    const bySource = new Map<
-      string,
-      { total: number; won: number; active: number; nurture: number }
-    >();
+    const bySource = new Map<string, { total: number; won: number; active: number; nurture: number }>();
     for (const l of inRange) {
       const k = l.data.source?.trim() || 'Not set';
       const row = bySource.get(k) ?? { total: 0, won: 0, active: 0, nurture: 0 };
@@ -297,11 +264,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
         <Stat label="New leads" value={report.total} />
         <Stat label="Won" value={report.won} hint={`Win rate ${pct(report.won, report.total)}`} />
         <Stat label="Still open" value={report.active} />
-        <Stat
-          label="In nurture"
-          value={report.nurture}
-          hint={report.dropped ? `${report.dropped} disqualified` : undefined}
-        />
+        <Stat label="In nurture" value={report.nurture} hint={report.dropped ? `${report.dropped} disqualified` : undefined} />
         <Stat
           label="Calls attended"
           value={`${report.calls.attended}/${report.calls.booked}`}
@@ -312,17 +275,11 @@ function LeadReport({ from, to }: { from: string; to: string }) {
 
       {report.total === 0 ? (
         <Card>
-          <Empty
-            title="No leads in this period"
-            description="Pick a longer period or clear the filters."
-          />
+          <Empty title="No leads in this period" description="Pick a longer period or clear the filters." />
         </Card>
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Card
-            title="Pipeline funnel"
-            action={<span className="text-xs text-mute">Leads that reached each stage</span>}
-          >
+          <Card title="Pipeline funnel" action={<span className="text-xs text-mute">Leads that reached each stage</span>}>
             <ul className="space-y-2.5">
               {report.funnel.map((f, i) => (
                 <li key={f.id}>
@@ -330,27 +287,15 @@ function LeadReport({ from, to }: { from: string; to: string }) {
                     <span>{f.label}</span>
                     <span className="tabular-nums text-mute">
                       {f.count}
-                      {i > 0 && (
-                        <span className="ml-2 text-xs">
-                          {pct(f.count, report.funnel[0]!.count)}
-                        </span>
-                      )}
+                      {i > 0 && <span className="ml-2 text-xs">{pct(f.count, report.funnel[0]!.count)}</span>}
                     </span>
                   </div>
-                  <Bar
-                    value={f.count}
-                    max={maxFunnel}
-                    color={f.color}
-                    label={`${f.label}: ${f.count}`}
-                  />
+                  <Bar value={f.count} max={maxFunnel} color={f.color} label={`${f.label}: ${f.count}`} />
                 </li>
               ))}
             </ul>
           </Card>
-          <Card
-            title="Time in stage"
-            action={<span className="text-xs text-mute">Average days per lead</span>}
-          >
+          <Card title="Time in stage" action={<span className="text-xs text-mute">Average days per lead</span>}>
             <ul className="space-y-2.5">
               {report.timing.map((t) => (
                 <li key={t.id}>
@@ -358,17 +303,10 @@ function LeadReport({ from, to }: { from: string; to: string }) {
                     <span>{t.label}</span>
                     <span className="tabular-nums text-mute">
                       {t.avg === null ? '—' : `${t.avg.toFixed(1)} d`}
-                      {t.median !== null && (
-                        <span className="ml-2 text-xs">median {t.median.toFixed(1)}</span>
-                      )}
+                      {t.median !== null && <span className="ml-2 text-xs">median {t.median.toFixed(1)}</span>}
                     </span>
                   </div>
-                  <Bar
-                    value={t.avg ?? 0}
-                    max={maxDays}
-                    color={t.color}
-                    label={`${t.label}: ${t.avg?.toFixed(1) ?? 0} days`}
-                  />
+                  <Bar value={t.avg ?? 0} max={maxDays} color={t.color} label={`${t.label}: ${t.avg?.toFixed(1) ?? 0} days`} />
                 </li>
               ))}
             </ul>
@@ -397,11 +335,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
                       <td className="text-right tabular-nums">{r.won}</td>
                       <td className="text-right tabular-nums">{pct(r.won, r.total)}</td>
                       <td>
-                        <Bar
-                          value={r.total}
-                          max={report.total}
-                          label={`${name}: ${pct(r.total, report.total)}`}
-                        />
+                        <Bar value={r.total} max={report.total} label={`${name}: ${pct(r.total, report.total)}`} />
                       </td>
                     </tr>
                   ))}
@@ -411,11 +345,7 @@ function LeadReport({ from, to }: { from: string; to: string }) {
           </Card>
         </div>
       )}
-      <Card
-        title="Projects by source"
-        bodyClassName="p-0"
-        action={<span className="text-xs text-mute">All time</span>}
-      >
+      <Card title="Projects by source" bodyClassName="p-0" action={<span className="text-xs text-mute">All time</span>}>
         {data.data.sources.length === 0 ? (
           <Empty title="No projects yet" />
         ) : (
@@ -443,24 +373,11 @@ function LeadReport({ from, to }: { from: string; to: string }) {
   );
 }
 
-function Bar({
-  value,
-  max,
-  color,
-  label,
-}: {
-  value: number;
-  max: number;
-  color?: string;
-  label: string;
-}) {
+function Bar({ value, max, color, label }: { value: number; max: number; color?: string; label: string }) {
   const width = max > 0 ? Math.max(value > 0 ? 2 : 0, (value / max) * 100) : 0;
   return (
     <div className="h-2.5 overflow-hidden rounded-full bg-subtle" role="img" aria-label={label}>
-      <div
-        className={cn('h-full rounded-full', !color && 'bg-acc')}
-        style={{ width: `${width}%`, background: color }}
-      />
+      <div className={cn('h-full rounded-full', !color && 'bg-acc')} style={{ width: `${width}%`, background: color }} />
     </div>
   );
 }
@@ -555,28 +472,16 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
         <Stat
           label="Went live"
           value={d.wentLive}
-          hint={
-            d.closeToLiveDays === null
-              ? 'Close-to-live: —'
-              : `Close-to-live ${Math.round(d.closeToLiveDays)} days avg`
-          }
+          hint={d.closeToLiveDays === null ? 'Close-to-live: —' : `Close-to-live ${Math.round(d.closeToLiveDays)} days avg`}
         />
         <Stat
           label="Milestones on time"
           value={onTime === null ? '—' : `${onTime}%`}
           hint={`${d.milestonesOnTime} of ${d.milestonesDue} due in period`}
         />
-        <Stat
-          label="Outstanding"
-          value={money(d.outstanding, c)}
-          tone={d.outstanding ? 'warn' : undefined}
-        />
+        <Stat label="Outstanding" value={money(d.outstanding, c)} tone={d.outstanding ? 'warn' : undefined} />
         <Stat label="Milestones due this week" value={d.milestonesDueThisWeek} />
-        <Stat
-          label="Milestones overdue"
-          value={d.milestonesOverdue}
-          tone={d.milestonesOverdue ? 'danger' : undefined}
-        />
+        <Stat label="Milestones overdue" value={d.milestonesOverdue} tone={d.milestonesOverdue ? 'danger' : undefined} />
         <Stat label="Repeat clients" value={d.repeatClients.length} />
       </div>
 
@@ -589,25 +494,15 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
                   <span>{s.label}</span>
                   <span className="tabular-nums text-mute">
                     {s.count}
-                    {s.avg_days !== null && (
-                      <span className="ml-2 text-xs">{s.avg_days.toFixed(1)} d avg</span>
-                    )}
+                    {s.avg_days !== null && <span className="ml-2 text-xs">{s.avg_days.toFixed(1)} d avg</span>}
                   </span>
                 </div>
-                <Bar
-                  value={s.count}
-                  max={maxStage}
-                  color={s.color}
-                  label={`${s.label}: ${s.count}`}
-                />
+                <Bar value={s.count} max={maxStage} color={s.color} label={`${s.label}: ${s.count}`} />
               </li>
             ))}
           </ul>
         </Card>
-        <Card
-          title="Receivables aging"
-          action={<span className="text-xs text-mute">{money(agingTotal, c)} open</span>}
-        >
+        <Card title="Receivables aging" action={<span className="text-xs text-mute">{money(agingTotal, c)} open</span>}>
           <ul className="space-y-2.5">
             {(
               [
@@ -622,12 +517,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
                   <span>{label}</span>
                   <span className="tabular-nums">{money(v, c)}</span>
                 </div>
-                <Bar
-                  value={v}
-                  max={Math.max(agingTotal, 1)}
-                  color={color}
-                  label={`${label}: ${money(v, c)}`}
-                />
+                <Bar value={v} max={Math.max(agingTotal, 1)} color={color} label={`${label}: ${money(v, c)}`} />
               </li>
             ))}
           </ul>
@@ -650,10 +540,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
       >
         {view === 'health' ? (
           d.health.length === 0 ? (
-            <Empty
-              title="Everything is on track"
-              description="No overdue milestones, overdue tasks or quiet projects."
-            />
+            <Empty title="Everything is on track" description="No overdue milestones, overdue tasks or quiet projects." />
           ) : (
             <ul className="divide-y divide-line">
               {d.health.map((p) => (
@@ -707,9 +594,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
                     </td>
                     <td className="text-right tabular-nums">
                       {p.done}/{p.milestones}
-                      {p.overdueMilestones > 0 && (
-                        <p className="text-xs text-danger">{p.overdueMilestones} overdue</p>
-                      )}
+                      {p.overdueMilestones > 0 && <p className="text-xs text-danger">{p.overdueMilestones} overdue</p>}
                     </td>
                     <td className="text-right tabular-nums">{money(p.value, p.currency)}</td>
                     <td className="text-right tabular-nums">{money(p.invoiced, p.currency)}</td>
@@ -732,10 +617,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
               {d.money.map((m) => (
                 <li key={m.id} className="px-4 py-3">
                   <div className="mb-1.5 flex justify-between gap-3 text-sm">
-                    <Link
-                      href={`/projects/${m.id}`}
-                      className="truncate font-medium hover:underline"
-                    >
+                    <Link href={`/projects/${m.id}`} className="truncate font-medium hover:underline">
                       {m.name}
                     </Link>
                     <span className="shrink-0 text-xs text-mute tabular-nums">
@@ -776,12 +658,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
                     <Link href={`/projects/${s.id}`} className="hover:underline">
                       {s.name}
                     </Link>
-                    <span
-                      className={cn(
-                        'tabular-nums',
-                        s.daysLeft !== null && s.daysLeft < 14 ? 'text-warn' : 'text-mute',
-                      )}
-                    >
+                    <span className={cn('tabular-nums', s.daysLeft !== null && s.daysLeft < 14 ? 'text-warn' : 'text-mute')}>
                       {s.daysLeft === null ? 'No end date' : `${s.daysLeft} days left`}
                     </span>
                   </li>
@@ -791,9 +668,7 @@ function ProjectReport({ from, to }: { from: string; to: string }) {
           </Card>
           <Card title="Repeat clients" bodyClassName="p-0">
             {d.repeatClients.length === 0 ? (
-              <p className="px-4 py-4 text-sm text-mute">
-                No client has more than one project yet.
-              </p>
+              <p className="px-4 py-4 text-sm text-mute">No client has more than one project yet.</p>
             ) : (
               <ul className="divide-y divide-line">
                 {d.repeatClients.map((rc) => (

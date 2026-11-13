@@ -9,8 +9,7 @@ const transport = nodemailer.createTransport({
   auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
 });
 
-const escape = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+const escape = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 /** Minimal Markdown-lite → HTML: **bold**, *italic*, [label](url), paragraphs and line breaks. */
 export function markdownLite(text: string) {
@@ -91,10 +90,12 @@ export async function deliverOutbox(limit = 20) {
       await query(`UPDATE mail_outbox SET status='sent', sent_at=now(), error=NULL WHERE id=$1`, [row.id]);
     } catch (e) {
       const failed = row.attempts >= 5;
-      await query(
-        `UPDATE mail_outbox SET status=$2, error=$3, send_after = now() + make_interval(mins => $4) WHERE id=$1`,
-        [row.id, failed ? 'failed' : 'queued', String((e as Error).message).slice(0, 500), 2 ** row.attempts],
-      );
+      await query(`UPDATE mail_outbox SET status=$2, error=$3, send_after = now() + make_interval(mins => $4) WHERE id=$1`, [
+        row.id,
+        failed ? 'failed' : 'queued',
+        String((e as Error).message).slice(0, 500),
+        2 ** row.attempts,
+      ]);
     }
   }
 }

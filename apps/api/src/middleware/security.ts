@@ -15,8 +15,7 @@ export function rateLimit(bucket: string, max: number, windowMs: number): Reques
     }
     entry.count++;
     if (hits.size > 10_000) for (const [k, v] of hits) if (v.reset < now) hits.delete(k);
-    if (entry.count > max)
-      throw new HttpError(429, 'Too many attempts. Please wait a few minutes and try again.', 'rate_limited');
+    if (entry.count > max) throw new HttpError(429, 'Too many attempts. Please wait a few minutes and try again.', 'rate_limited');
     next();
   };
 }

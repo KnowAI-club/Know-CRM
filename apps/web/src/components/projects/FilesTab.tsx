@@ -12,7 +12,15 @@ export function useFileTypes() {
   return useLoad((s) => get<FileType[]>('/file-types', s), []);
 }
 
-export function FilesTab({ projectId, files, onChange }: { projectId: string; files: ProjectFile[]; onChange: (f: ProjectFile[]) => void }) {
+export function FilesTab({
+  projectId,
+  files,
+  onChange,
+}: {
+  projectId: string;
+  files: ProjectFile[];
+  onChange: (f: ProjectFile[]) => void;
+}) {
   const toast = useToast();
   const confirm = useConfirm();
   const { data: types } = useFileTypes();
@@ -70,7 +78,14 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
   };
 
   const remove = async (f: ProjectFile) => {
-    if (!(await confirm({ title: `Delete ${f.name}?`, description: 'The file is removed from storage. This cannot be undone.', confirmLabel: 'Delete', danger: true })))
+    if (
+      !(await confirm({
+        title: `Delete ${f.name}?`,
+        description: 'The file is removed from storage. This cannot be undone.',
+        confirmLabel: 'Delete',
+        danger: true,
+      }))
+    )
       return;
     try {
       await del(`/files/${f.id}`);
@@ -121,7 +136,11 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
               </select>
             </Field>
             <Field label="Visibility">
-              <select className="input" value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value as Visibility })}>
+              <select
+                className="input"
+                value={form.visibility}
+                onChange={(e) => setForm({ ...form, visibility: e.target.value as Visibility })}
+              >
                 <option value="internal">Internal</option>
                 <option value="client">Shared with client</option>
               </select>
@@ -143,7 +162,12 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
         title={`Files (${files.length})`}
         bodyClassName="p-0"
         action={
-          <select className="input h-8 w-auto py-0 text-xs" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} aria-label="Filter by type">
+          <select
+            className="input h-8 w-auto py-0 text-xs"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            aria-label="Filter by type"
+          >
             <option value="">All types</option>
             {types?.map((t) => (
               <option key={t.id} value={t.id}>
@@ -177,7 +201,11 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
                     <Lock className="h-3 w-3" /> Internal
                   </Badge>
                 )}
-                <a href={`/api/files/${f.id}/download`} className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink" aria-label={`Download ${f.name}`}>
+                <a
+                  href={`/api/files/${f.id}/download`}
+                  className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink"
+                  aria-label={`Download ${f.name}`}
+                >
                   <Download className="h-4 w-4" />
                 </a>
                 <Menu
@@ -197,7 +225,11 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
                       icon: <Share2 className="h-4 w-4" />,
                       onSelect: () => void update(f, { toShare: !f.to_share }),
                     },
-                    { label: 'Rename / refile', icon: <Pencil className="h-4 w-4" />, onSelect: () => setRename({ id: f.id, name: f.name, fileTypeId: f.file_type_id ?? '' }) },
+                    {
+                      label: 'Rename / refile',
+                      icon: <Pencil className="h-4 w-4" />,
+                      onSelect: () => setRename({ id: f.id, name: f.name, fileTypeId: f.file_type_id ?? '' }),
+                    },
                     { label: 'Delete', icon: <Trash2 className="h-4 w-4" />, danger: true, onSelect: () => void remove(f) },
                   ]}
                 />
@@ -220,7 +252,12 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
             <Button
               onClick={async () => {
                 const f = files.find((x) => x.id === rename?.id);
-                if (f && rename && (await update(f, { name: rename.name, ...(rename.fileTypeId ? { fileTypeId: rename.fileTypeId } : {}) }))) setRename(null);
+                if (
+                  f &&
+                  rename &&
+                  (await update(f, { name: rename.name, ...(rename.fileTypeId ? { fileTypeId: rename.fileTypeId } : {}) }))
+                )
+                  setRename(null);
               }}
             >
               Save
@@ -231,7 +268,12 @@ export function FilesTab({ projectId, files, onChange }: { projectId: string; fi
         {rename && (
           <div className="space-y-3">
             <Field label="Name" hint="The original extension is kept.">
-              <input className="input" value={rename.name} maxLength={200} onChange={(e) => setRename({ ...rename, name: e.target.value })} />
+              <input
+                className="input"
+                value={rename.name}
+                maxLength={200}
+                onChange={(e) => setRename({ ...rename, name: e.target.value })}
+              />
             </Field>
             <Field label="File type">
               <select className="input" value={rename.fileTypeId} onChange={(e) => setRename({ ...rename, fileTypeId: e.target.value })}>

@@ -51,7 +51,5 @@ export const env = load();
 
 /** Absolute storage directory (relative paths resolve from the repository root). */
 export const storageRoot = path.resolve(
-  path.isAbsolute(env.STORAGE_DIR)
-    ? env.STORAGE_DIR
-    : path.join(import.meta.dirname, '../../../..', env.STORAGE_DIR),
+  path.isAbsolute(env.STORAGE_DIR) ? env.STORAGE_DIR : path.join(import.meta.dirname, '../../../..', env.STORAGE_DIR),
 );

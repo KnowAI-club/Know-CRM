@@ -92,7 +92,16 @@ export function ReminderModal({
   const editing = !!reminder;
   const [types, setTypes] = useState<ReminderType[]>([]);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
-  const [form, setForm] = useState({ id: '', title: '', body: '', runAt: '', recipientId: '', typeId: '', channel: 'in_app' as 'in_app' | 'email', target: '' as TargetValue });
+  const [form, setForm] = useState({
+    id: '',
+    title: '',
+    body: '',
+    runAt: '',
+    recipientId: '',
+    typeId: '',
+    channel: 'in_app' as 'in_app' | 'email',
+    target: '' as TargetValue,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [general, setGeneral] = useState('');
   const [saving, setSaving] = useState(false);
@@ -113,7 +122,16 @@ export function ReminderModal({
             channel: reminder.channel,
             target: reminder.project_id ? `project:${reminder.project_id}` : reminder.lead_id ? `lead:${reminder.lead_id}` : '',
           }
-        : { id: newId(), title: '', body: '', runAt: defaultRunAt(), recipientId: user?.id ?? '', typeId: '', channel: 'in_app', target: '' },
+        : {
+            id: newId(),
+            title: '',
+            body: '',
+            runAt: defaultRunAt(),
+            recipientId: user?.id ?? '',
+            typeId: '',
+            channel: 'in_app',
+            target: '',
+          },
     );
     get<ReminderType[]>('/reminder-types').then(setTypes, () => setTypes([]));
   }, [open, reminder, user]);
@@ -142,7 +160,13 @@ export function ReminderModal({
     setSaving(true);
     setGeneral('');
     try {
-      const common = { title: form.title.trim(), body: form.body.trim(), runAt, recipientId: form.recipientId, typeId: form.typeId || null };
+      const common = {
+        title: form.title.trim(),
+        body: form.body.trim(),
+        runAt,
+        recipientId: form.recipientId,
+        typeId: form.typeId || null,
+      };
       let saved: Reminder;
       if (reminder) saved = await patch<Reminder>(`/reminders/${reminder.id}`, common);
       else {
@@ -188,10 +212,21 @@ export function ReminderModal({
       <form id="reminder-form" onSubmit={submit} className="space-y-4" noValidate>
         {general && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{general}</p>}
         <Field label="Subject" required error={errors.title}>
-          <input className="input" value={form.title} maxLength={200} onChange={(e) => set('title', e.target.value)} placeholder="Follow up on the proposal" />
+          <input
+            className="input"
+            value={form.title}
+            maxLength={200}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder="Follow up on the proposal"
+          />
         </Field>
         {!fixed && (
-          <Field label="About" required={!editing} error={errors.target} hint={editing ? 'The linked record cannot be changed.' : undefined}>
+          <Field
+            label="About"
+            required={!editing}
+            error={errors.target}
+            hint={editing ? 'The linked record cannot be changed.' : undefined}
+          >
             <TargetSelect targets={targets} value={form.target} onChange={(v) => set('target', v)} disabled={editing} />
           </Field>
         )}
@@ -221,14 +256,25 @@ export function ReminderModal({
             </select>
           </Field>
           <Field label="Delivery" hint={editing ? 'Delivery channel is fixed once scheduled.' : undefined}>
-            <select className="input" value={form.channel} disabled={editing} onChange={(e) => set('channel', e.target.value as 'in_app' | 'email')}>
+            <select
+              className="input"
+              value={form.channel}
+              disabled={editing}
+              onChange={(e) => set('channel', e.target.value as 'in_app' | 'email')}
+            >
               <option value="in_app">In-app notification</option>
               <option value="email">Email</option>
             </select>
           </Field>
         </div>
         <Field label="Note" error={errors.body}>
-          <textarea className="input min-h-24" value={form.body} maxLength={5000} onChange={(e) => set('body', e.target.value)} placeholder="Optional details for the recipient" />
+          <textarea
+            className="input min-h-24"
+            value={form.body}
+            maxLength={5000}
+            onChange={(e) => set('body', e.target.value)}
+            placeholder="Optional details for the recipient"
+          />
         </Field>
       </form>
     </Modal>

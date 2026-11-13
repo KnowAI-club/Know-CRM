@@ -41,8 +41,19 @@ export function CreateLeadModal({
   const router = useRouter();
   const toast = useToast();
   const blank = (): Form => ({
-    name: '', email: '', company: '', phone: '', website: '', source: '', industry: '', ownerId: user?.id ?? '',
-    funnel: 'inbound', temperature: 'warm', budget: '', timeline: '', problem: '',
+    name: '',
+    email: '',
+    company: '',
+    phone: '',
+    website: '',
+    source: '',
+    industry: '',
+    ownerId: user?.id ?? '',
+    funnel: 'inbound',
+    temperature: 'warm',
+    budget: '',
+    timeline: '',
+    problem: '',
   });
   const [form, setForm] = useState<Form>(blank);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -118,7 +129,13 @@ export function CreateLeadModal({
           <OptionSelect kind="source" value={form.source} options={sources} onChange={(v) => set('source', v)} onAdded={onOptionsChanged} />
         </Field>
         <Field label="Industry" error={errors.industry}>
-          <OptionSelect kind="industry" value={form.industry} options={industries} onChange={(v) => set('industry', v)} onAdded={onOptionsChanged} />
+          <OptionSelect
+            kind="industry"
+            value={form.industry}
+            options={industries}
+            onChange={(v) => set('industry', v)}
+            onAdded={onOptionsChanged}
+          />
         </Field>
         <Field label="Funnel">
           <select className="input" value={form.funnel} onChange={(e) => set('funnel', e.target.value as Form['funnel'])}>

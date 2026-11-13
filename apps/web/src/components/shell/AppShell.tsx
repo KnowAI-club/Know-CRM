@@ -25,7 +25,11 @@ function ThemeToggle() {
     setDark(!dark);
   };
   return (
-    <button onClick={toggle} className="grid h-9 w-9 place-items-center rounded-lg text-mute hover:bg-subtle hover:text-ink" aria-label="Toggle dark mode">
+    <button
+      onClick={toggle}
+      className="grid h-9 w-9 place-items-center rounded-lg text-mute hover:bg-subtle hover:text-ink"
+      aria-label="Toggle dark mode"
+    >
       {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </button>
   );
@@ -84,7 +88,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <p className="truncate text-sm font-medium">{user.name}</p>
           <p className="truncate text-xs text-mute capitalize">{user.role}</p>
         </div>
-        <button onClick={logout} className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink" aria-label="Sign out" title="Sign out">
+        <button
+          onClick={logout}
+          className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink"
+          aria-label="Sign out"
+          title="Sign out"
+        >
           <LogOut className="h-4 w-4" />
         </button>
       </div>
@@ -98,7 +107,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-64 border-r border-line bg-card shadow-xl">
-            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-3 rounded-md p-1 text-mute" aria-label="Close menu">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-4 right-3 rounded-md p-1 text-mute"
+              aria-label="Close menu"
+            >
               <X className="h-4 w-4" />
             </button>
             {sidebar}

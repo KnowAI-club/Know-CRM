@@ -70,7 +70,10 @@ async function trackedLeads(where: string, params: unknown[] = []): Promise<Trac
       steps.filter((s) => s.assignment_id === r.id),
     );
     const sent = cells.filter((c) => c.sent_at);
-    const lastSent = sent.map((c) => c.sent_at!).sort().at(-1);
+    const lastSent = sent
+      .map((c) => c.sent_at!)
+      .sort()
+      .at(-1);
     return {
       ...r,
       plan: cells,
@@ -163,7 +166,10 @@ router.get('/nurtures/overview', async (_req, res) => {
 });
 
 router.get('/nurtures/general', async (_req, res) => {
-  res.json({ leads: await generalList(), sequences: (await sequencesWithEmails()).map(({ emails, ...s }) => ({ ...s, email_count: emails.length })) });
+  res.json({
+    leads: await generalList(),
+    sequences: (await sequencesWithEmails()).map(({ emails, ...s }) => ({ ...s, email_count: emails.length })),
+  });
 });
 
 router.get('/nurtures/tracking', async (_req, res) => {
@@ -187,7 +193,11 @@ router.get('/nurtures/discard', async (_req, res) => {
 });
 
 // ── Sequences ────────────────────────────────────────────────────────────────
-const senderName = z.string().trim().max(80).regex(/^[^"<>\r\n]*$/, 'Sender name cannot contain quotes, < > or line breaks.');
+const senderName = z
+  .string()
+  .trim()
+  .max(80)
+  .regex(/^[^"<>\r\n]*$/, 'Sender name cannot contain quotes, < > or line breaks.');
 const sequenceSchema = z
   .object({
     name: z.string().trim().min(1, 'Name the sequence.').max(100),
@@ -216,9 +226,17 @@ const sequenceSchema = z
   .superRefine((s, ctx) => {
     s.emails.forEach((e, i) => {
       if (i > 0 && e.day < s.emails[i - 1]!.day)
-        ctx.addIssue({ code: 'custom', path: ['emails', i, 'day'], message: 'Each email must go out on the same day as the one before it or later.' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['emails', i, 'day'],
+          message: 'Each email must go out on the same day as the one before it or later.',
+        });
       if (s.status === 'active' && (!e.subject || !e.body.trim()))
-        ctx.addIssue({ code: 'custom', path: ['emails', i], message: `Email ${i + 1} needs a subject and a body before the sequence can be active.` });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['emails', i],
+          message: `Email ${i + 1} needs a subject and a body before the sequence can be active.`,
+        });
       if (s.status === 'active' && e.sender === 'person' && !e.senderName)
         ctx.addIssue({ code: 'custom', path: ['emails', i, 'senderName'], message: `Email ${i + 1} needs a sender name.` });
     });
@@ -231,7 +249,18 @@ async function saveEmails(sequenceId: string, emails: z.infer<typeof sequenceSch
   await query('DELETE FROM nurture_sequence_emails WHERE sequence_id=$1 AND NOT (id = ANY($2::uuid[]))', [sequenceId, keep]);
   const ids: string[] = [];
   for (const [i, e] of emails.entries()) {
-    const values = [i, e.day, e.sendTime, e.sender, e.sender === 'person' ? e.senderName : '', e.subject, e.preview, e.body, e.signature, e.note];
+    const values = [
+      i,
+      e.day,
+      e.sendTime,
+      e.sender,
+      e.sender === 'person' ? e.senderName : '',
+      e.subject,
+      e.preview,
+      e.body,
+      e.signature,
+      e.note,
+    ];
     const row = e.id
       ? await one(
           `UPDATE nurture_sequence_emails SET position=$2, day=$3, send_time=$4, sender=$5, sender_name=$6, subject=$7,
@@ -327,10 +356,11 @@ router.post('/nurtures/assignments', async (req, res) => {
         [leadId, seq.id],
       );
       if (before) throw conflict(`${lead.name} has already had ${seq.name}. Choose a different sequence.`);
-      const row = await one(
-        'INSERT INTO nurture_assignments(lead_id, sequence_id, created_by) VALUES($1,$2,$3) RETURNING id',
-        [leadId, seq.id, me.id],
-      );
+      const row = await one('INSERT INTO nurture_assignments(lead_id, sequence_id, created_by) VALUES($1,$2,$3) RETURNING id', [
+        leadId,
+        seq.id,
+        me.id,
+      ]);
       await leadHistory(leadId, me.id, 'Added to nurture sequence', { reason: seq.name });
       out.push(row!.id);
     }
@@ -363,7 +393,9 @@ for (const op of ['pause', 'resume'] as const) {
     const a = await activeAssignment(idOf(req.params.id));
     if ((op === 'pause') === !!a.paused_at) throw conflict(op === 'pause' ? 'Already paused.' : 'Not paused.');
     await query('UPDATE nurture_assignments SET paused_at=$2 WHERE id=$1', [a.id, op === 'pause' ? new Date() : null]);
-    await leadHistory(a.lead_id, me.id, op === 'pause' ? 'Nurture sequence paused' : 'Nurture sequence resumed', { reason: a.sequence_name });
+    await leadHistory(a.lead_id, me.id, op === 'pause' ? 'Nurture sequence paused' : 'Nurture sequence resumed', {
+      reason: a.sequence_name,
+    });
     res.json({ ok: true });
   });
 }
@@ -371,14 +403,22 @@ for (const op of ['pause', 'resume'] as const) {
 router.post('/nurtures/assignments/:id/emails/:emailId', async (req, res) => {
   const me = currentUser(req);
   const body = parse(
-    z.object({ sent: z.boolean().optional(), replied: z.boolean().optional() }).refine((b) => b.sent !== undefined || b.replied !== undefined, 'Nothing to change.'),
+    z
+      .object({ sent: z.boolean().optional(), replied: z.boolean().optional() })
+      .refine((b) => b.sent !== undefined || b.replied !== undefined, 'Nothing to change.'),
     req.body,
   );
   const a = await activeAssignment(idOf(req.params.id));
-  const email = await one('SELECT * FROM nurture_sequence_emails WHERE id=$1 AND sequence_id=$2', [idOf(req.params.emailId), a.sequence_id]);
+  const email = await one('SELECT * FROM nurture_sequence_emails WHERE id=$1 AND sequence_id=$2', [
+    idOf(req.params.emailId),
+    a.sequence_id,
+  ]);
   if (!email) throw notFound('Email');
   await transaction(async () => {
-    const step = (await one('SELECT * FROM nurture_assignment_steps WHERE assignment_id=$1 AND email_id=$2 FOR UPDATE', [a.id, email.id])) ?? {
+    const step = (await one('SELECT * FROM nurture_assignment_steps WHERE assignment_id=$1 AND email_id=$2 FOR UPDATE', [
+      a.id,
+      email.id,
+    ])) ?? {
       sent_at: null,
       replied_at: null,
     };
@@ -400,8 +440,10 @@ router.post('/nurtures/assignments/:id/emails/:emailId', async (req, res) => {
       [a.id, email.id, sent, replied, me.id],
     );
     const label = `Email ${email.position + 1} (${email.subject || 'no subject'})`;
-    if (!!sent !== !!step.sent_at) await leadHistory(a.lead_id, me.id, sent ? 'Nurture email marked sent' : 'Nurture email unmarked', { reason: label });
-    if (!!replied !== !!step.replied_at) await leadHistory(a.lead_id, me.id, replied ? 'Nurture reply recorded' : 'Nurture reply removed', { reason: label });
+    if (!!sent !== !!step.sent_at)
+      await leadHistory(a.lead_id, me.id, sent ? 'Nurture email marked sent' : 'Nurture email unmarked', { reason: label });
+    if (!!replied !== !!step.replied_at)
+      await leadHistory(a.lead_id, me.id, replied ? 'Nurture reply recorded' : 'Nurture reply removed', { reason: label });
   });
   const [row] = await trackedLeads('a.id=$1', [a.id]);
   res.json(row);
@@ -413,10 +455,15 @@ router.post('/nurtures/leads/:leadId/discard', async (req, res) => {
   const leadId = idOf(req.params.leadId);
   const { reason } = parse(z.object({ reason: z.string().trim().min(1, 'Add a reason.').max(200) }), req.body);
   await transaction(async () => {
-    const n = await one(`SELECT n.* FROM lead_nurture n JOIN leads l ON l.id=n.lead_id WHERE n.lead_id=$1 AND ${PARKED} FOR UPDATE OF n`, [leadId]);
+    const n = await one(`SELECT n.* FROM lead_nurture n JOIN leads l ON l.id=n.lead_id WHERE n.lead_id=$1 AND ${PARKED} FOR UPDATE OF n`, [
+      leadId,
+    ]);
     if (!n) throw conflict('Only parked nurture leads can be discarded.');
     if (n.discarded_at) throw conflict('Already in Discard.');
-    await query(`UPDATE nurture_assignments SET status='ended', ended_at=now(), end_reason='discarded' WHERE lead_id=$1 AND status='active'`, [leadId]);
+    await query(
+      `UPDATE nurture_assignments SET status='ended', ended_at=now(), end_reason='discarded' WHERE lead_id=$1 AND status='active'`,
+      [leadId],
+    );
     await query('UPDATE lead_nurture SET discarded_at=now(), discard_reason=$2 WHERE lead_id=$1', [leadId, reason]);
     await leadHistory(leadId, me.id, 'Moved to nurture Discard', { reason });
   });
@@ -449,7 +496,13 @@ router.post('/nurtures/leads', async (req, res) => {
     z.object({
       source: z.enum(['inbound', 'imported', 'replied']).default('imported'),
       leads: z
-        .array(z.object({ name: z.string().trim().min(1, 'Name is required').max(200), company: z.string().trim().max(200).default(''), email: zs.email }))
+        .array(
+          z.object({
+            name: z.string().trim().min(1, 'Name is required').max(200),
+            company: z.string().trim().max(200).default(''),
+            email: zs.email,
+          }),
+        )
         .min(1, 'Add at least one lead.')
         .max(1000, 'Import 1000 leads or fewer at a time.'),
     }),
@@ -500,35 +553,31 @@ router.get('/nurtures/leads/:leadId', async (req, res) => {
 });
 
 // ── Test send (to the signed-in user, via the local SMTP server) ─────────────
-router.post(
-  '/nurtures/test-email',
-  rateLimit('nurture-test', 1, 10_000),
-  async (req, res) => {
-    const me = currentUser(req);
-    const body = parse(
-      z.object({
-        subject: z.string().trim().min(1, 'Add a subject.').max(300),
-        body: z.string().min(1, 'Write the email body.').max(20000),
-        signature: z.string().max(2000).default(''),
-      }),
-      req.body,
-    );
-    const settings = await getSettings();
-    const values = {
-      first_name: 'Asha',
-      company: 'Sample Co',
-      industry: 'Retail',
-      problem: 'slow manual reporting',
-      owner_name: me.name,
-      booking_link: settings?.data?.nurture?.bookingLink ?? '',
-      contact_number: settings?.data?.nurture?.contactNumber ?? '',
-    };
-    const text = fillMerge(body.body, values) + (body.signature ? `\n\n--\n${fillMerge(body.signature, values)}` : '');
-    try {
-      await sendNow({ to: me.email, subject: `[Test] ${fillMerge(body.subject, values)}`, text });
-    } catch (error) {
-      throw new HttpError(409, error instanceof Error ? error.message : 'Could not send the test email.');
-    }
-    res.json({ sent: true, to: me.email });
-  },
-);
+router.post('/nurtures/test-email', rateLimit('nurture-test', 1, 10_000), async (req, res) => {
+  const me = currentUser(req);
+  const body = parse(
+    z.object({
+      subject: z.string().trim().min(1, 'Add a subject.').max(300),
+      body: z.string().min(1, 'Write the email body.').max(20000),
+      signature: z.string().max(2000).default(''),
+    }),
+    req.body,
+  );
+  const settings = await getSettings();
+  const values = {
+    first_name: 'Asha',
+    company: 'Sample Co',
+    industry: 'Retail',
+    problem: 'slow manual reporting',
+    owner_name: me.name,
+    booking_link: settings?.data?.nurture?.bookingLink ?? '',
+    contact_number: settings?.data?.nurture?.contactNumber ?? '',
+  };
+  const text = fillMerge(body.body, values) + (body.signature ? `\n\n--\n${fillMerge(body.signature, values)}` : '');
+  try {
+    await sendNow({ to: me.email, subject: `[Test] ${fillMerge(body.subject, values)}`, text });
+  } catch (error) {
+    throw new HttpError(409, error instanceof Error ? error.message : 'Could not send the test email.');
+  }
+  res.json({ sent: true, to: me.email });
+});

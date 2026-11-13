@@ -18,7 +18,12 @@ function dayLabel(d: Date) {
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Tomorrow';
   if (diff === -1) return 'Yesterday';
-  return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: d.getFullYear() === start.getFullYear() ? undefined : 'numeric' });
+  return d.toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: d.getFullYear() === start.getFullYear() ? undefined : 'numeric',
+  });
 }
 
 export default function MeetingsPage() {
@@ -40,7 +45,9 @@ export default function MeetingsPage() {
     );
     const live = base.filter((m) => m.status !== 'cancelled');
     return {
-      upcoming: live.filter((m) => meetingEnd(m).getTime() >= now && m.source !== 'upload').sort((a, b) => a.start_at.localeCompare(b.start_at)),
+      upcoming: live
+        .filter((m) => meetingEnd(m).getTime() >= now && m.source !== 'upload')
+        .sort((a, b) => a.start_at.localeCompare(b.start_at)),
       outcome: live.filter((m) => meetingEnd(m).getTime() < now && m.source !== 'upload' && !m.outcome),
       past: live.filter((m) => meetingEnd(m).getTime() < now || m.source === 'upload'),
       cancelled: base.filter((m) => m.status === 'cancelled'),
@@ -90,7 +97,13 @@ export default function MeetingsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full sm:w-56">
             <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-faint" />
-            <input className="input pl-8" placeholder="Search meetings" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search meetings" />
+            <input
+              className="input pl-8"
+              placeholder="Search meetings"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              aria-label="Search meetings"
+            />
           </div>
           <Segmented
             value={scope}

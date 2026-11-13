@@ -66,9 +66,7 @@ export default function ExpensesPage() {
     [expenses.data, from, to, category, projectId],
   );
   const total = shown.reduce((a, e) => a + e.amount, 0);
-  const thisMonth = (expenses.data ?? [])
-    .filter((e) => e.spent_on >= monthStart())
-    .reduce((a, e) => a + e.amount, 0);
+  const thisMonth = (expenses.data ?? []).filter((e) => e.spent_on >= monthStart()).reduce((a, e) => a + e.amount, 0);
   const byCategory = useMemo(() => {
     const m = new Map<string, number>();
     for (const e of shown) m.set(e.category, (m.get(e.category) ?? 0) + e.amount);
@@ -103,10 +101,7 @@ export default function ExpensesPage() {
         description="Track what the business spends, optionally against a project."
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => window.open('/api/expenses/export.csv', '_blank')}
-            >
+            <Button variant="secondary" onClick={() => window.open('/api/expenses/export.csv', '_blank')}>
               <Download className="h-4 w-4" /> Export CSV
             </Button>
             <Button onClick={() => setEditing('new')}>
@@ -135,10 +130,7 @@ export default function ExpensesPage() {
                     <span className="tabular-nums text-mute">{money(v, currency)}</span>
                   </div>
                   <div className="mt-0.5 h-1.5 rounded-full bg-subtle">
-                    <div
-                      className="h-full rounded-full bg-acc"
-                      style={{ width: `${(v / (byCategory[0]![1] || 1)) * 100}%` }}
-                    />
+                    <div className="h-full rounded-full bg-acc" style={{ width: `${(v / (byCategory[0]![1] || 1)) * 100}%` }} />
                   </div>
                 </li>
               ))}
@@ -150,28 +142,13 @@ export default function ExpensesPage() {
       <Card bodyClassName="p-0">
         <div className="grid gap-3 border-b border-line p-4 sm:grid-cols-2 lg:grid-cols-5">
           <Field label="From">
-            <input
-              type="date"
-              className="input"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
+            <input type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
           </Field>
           <Field label="To">
-            <input
-              type="date"
-              className="input"
-              value={to}
-              min={from}
-              onChange={(e) => setTo(e.target.value)}
-            />
+            <input type="date" className="input" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
           </Field>
           <Field label="Category">
-            <select
-              className="input"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
+            <select className="input" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">All categories</option>
               {Object.entries(EXPENSE_CATEGORIES).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -181,11 +158,7 @@ export default function ExpensesPage() {
             </select>
           </Field>
           <Field label="Project">
-            <select
-              className="input"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-            >
+            <select className="input" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
               <option value="">All</option>
               <option value="none">No project (overheads)</option>
               {(projects.data ?? []).map((p) => (
@@ -220,16 +193,8 @@ export default function ExpensesPage() {
           <Empty
             icon={<Receipt className="h-5 w-5" />}
             title={expenses.data.length ? 'No expenses match' : 'No expenses yet'}
-            description={
-              expenses.data.length
-                ? 'Adjust the filters.'
-                : 'Log software, rent, contractors and other spend.'
-            }
-            action={
-              !expenses.data.length && (
-                <Button onClick={() => setEditing('new')}>Add expense</Button>
-              )
-            }
+            description={expenses.data.length ? 'Adjust the filters.' : 'Log software, rent, contractors and other spend.'}
+            action={!expenses.data.length && <Button onClick={() => setEditing('new')}>Add expense</Button>}
           />
         ) : (
           <div className="overflow-x-auto">
@@ -250,24 +215,15 @@ export default function ExpensesPage() {
                     <td className="whitespace-nowrap">{date(e.spent_on)}</td>
                     <td>
                       <p className="font-medium">{e.vendor}</p>
-                      {e.description && (
-                        <p className="max-w-72 truncate text-xs text-mute">{e.description}</p>
-                      )}
+                      {e.description && <p className="max-w-72 truncate text-xs text-mute">{e.description}</p>}
                     </td>
                     <td className="text-mute">{EXPENSE_CATEGORIES[e.category] ?? e.category}</td>
                     <td className="text-mute">{e.project_name ?? '—'}</td>
-                    <td className="text-right font-medium tabular-nums">
-                      {money(e.amount, e.currency)}
-                    </td>
+                    <td className="text-right font-medium tabular-nums">{money(e.amount, e.currency)}</td>
                     <td className="w-10 text-right">
                       <Menu
                         trigger={(open) => (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label="Expense actions"
-                            onClick={open}
-                          >
+                          <Button size="icon" variant="ghost" aria-label="Expense actions" onClick={open}>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         )}
@@ -298,9 +254,7 @@ export default function ExpensesPage() {
                   <td colSpan={4} className="px-3 py-2.5 text-right text-sm text-mute">
                     Total
                   </td>
-                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums">
-                    {money(total, currency)}
-                  </td>
+                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums">{money(total, currency)}</td>
                   <td />
                 </tr>
               </tfoot>
@@ -352,10 +306,8 @@ function ExpenseModal({
   const [amount, setAmount] = useState<number | null>(expense?.amount ?? null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const set =
-    (k: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-      setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -369,9 +321,7 @@ function ExpenseModal({
     setSaving(true);
     try {
       const body = { ...form, vendor: form.vendor.trim(), amount };
-      const saved = expense
-        ? await patch<Expense>(`/expenses/${expense.id}`, body)
-        : await post<Expense>('/expenses', body);
+      const saved = expense ? await patch<Expense>(`/expenses/${expense.id}`, body) : await post<Expense>('/expenses', body);
       toast.success(expense ? 'Expense updated.' : 'Expense added.');
       onSaved(saved);
     } catch (err) {
@@ -429,13 +379,7 @@ function ExpenseModal({
           </select>
         </Field>
         <Field label="Notes" className="sm:col-span-2" error={errors.description}>
-          <textarea
-            className="input"
-            rows={2}
-            value={form.description}
-            onChange={set('description')}
-            maxLength={2000}
-          />
+          <textarea className="input" rows={2} value={form.description} onChange={set('description')} maxLength={2000} />
         </Field>
       </form>
     </Modal>

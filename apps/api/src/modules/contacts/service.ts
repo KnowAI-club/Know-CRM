@@ -70,11 +70,27 @@ export function normalizeTax<T extends { gstin?: string; pan?: string }>(c: T) {
 }
 
 export const COLUMNS: Record<keyof ContactInput, string> = {
-  name: 'name', email: 'email', company: 'company', phone: 'phone', jobTitle: 'job_title', website: 'website',
-  address: 'address', tags: 'tags', businessName: 'business_name', businessEmail: 'business_email',
-  personalEmail: 'personal_email', pocName: 'poc_name', pocRole: 'poc_role', pocEmail: 'poc_email',
-  pocPhone: 'poc_phone', billingName: 'billing_name', billingEmail: 'billing_email',
-  billingAddress: 'billing_address', gstin: 'gstin', pan: 'pan', alternatePhones: 'alternate_phones',
+  name: 'name',
+  email: 'email',
+  company: 'company',
+  phone: 'phone',
+  jobTitle: 'job_title',
+  website: 'website',
+  address: 'address',
+  tags: 'tags',
+  businessName: 'business_name',
+  businessEmail: 'business_email',
+  personalEmail: 'personal_email',
+  pocName: 'poc_name',
+  pocRole: 'poc_role',
+  pocEmail: 'poc_email',
+  pocPhone: 'poc_phone',
+  billingName: 'billing_name',
+  billingEmail: 'billing_email',
+  billingAddress: 'billing_address',
+  gstin: 'gstin',
+  pan: 'pan',
+  alternatePhones: 'alternate_phones',
 };
 
 export async function insertContact(c: ContactInput) {
@@ -96,10 +112,7 @@ export async function ensureContact(
   return transaction(async () => {
     const email = details.email.trim().toLowerCase();
     await query('SELECT pg_advisory_xact_lock(hashtext($1))', [`contact:${email}`]);
-    const existing = await one(
-      'SELECT * FROM contacts WHERE lower(email)=$1 ORDER BY created_at LIMIT 1',
-      [email],
-    );
+    const existing = await one('SELECT * FROM contacts WHERE lower(email)=$1 ORDER BY created_at LIMIT 1', [email]);
     let website = (details.website ?? '').trim().split(/\s+/)[0] ?? '';
     if (website && !/^https?:\/\//.test(website)) website = `https://${website}`;
     if (website && !website.includes('.')) website = '';

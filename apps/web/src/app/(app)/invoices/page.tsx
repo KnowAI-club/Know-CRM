@@ -3,18 +3,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Download, FileText, Plus, Repeat, Search } from 'lucide-react';
-import {
-  Button,
-  Card,
-  Empty,
-  ErrorBox,
-  Menu,
-  PageHeader,
-  Spinner,
-  Stat,
-  Tabs,
-  useToast,
-} from '@/components/ui';
+import { Button, Card, Empty, ErrorBox, Menu, PageHeader, Spinner, Stat, Tabs, useToast } from '@/components/ui';
 import { get, patch } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
@@ -50,17 +39,10 @@ export default function InvoicesPage() {
     return c;
   }, [list, schedules.data]);
   const totals = useMemo(() => {
-    const live = list.filter(
-      (i) => i.currency === currency && i.status !== 'draft' && i.status !== 'void',
-    );
+    const live = list.filter((i) => i.currency === currency && i.status !== 'draft' && i.status !== 'void');
     return {
       outstanding: live.reduce((a, i) => a + i.balance, 0),
-      overdue: live.reduce(
-        (a, i) =>
-          a +
-          i.installments.filter((x) => x.status === 'overdue').reduce((s, x) => s + x.balance, 0),
-        0,
-      ),
+      overdue: live.reduce((a, i) => a + i.installments.filter((x) => x.status === 'overdue').reduce((s, x) => s + x.balance, 0), 0),
       collected: live.reduce((a, i) => a + i.paid, 0),
       invoiced: live.reduce((a, i) => a + i.total, 0),
     };
@@ -68,12 +50,7 @@ export default function InvoicesPage() {
   const shown = list.filter((i) => {
     if (filter !== 'all' && i.status !== filter) return false;
     const term = q.trim().toLowerCase();
-    return (
-      !term ||
-      [i.number, i.title, i.project_name, i.client_name].some((v) =>
-        v?.toLowerCase().includes(term),
-      )
-    );
+    return !term || [i.number, i.title, i.project_name, i.client_name].some((v) => v?.toLowerCase().includes(term));
   });
 
   return (
@@ -108,22 +85,10 @@ export default function InvoicesPage() {
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
-          label="Invoiced"
-          value={money(totals.invoiced, currency)}
-          hint="Published, not void"
-        />
+        <Stat label="Invoiced" value={money(totals.invoiced, currency)} hint="Published, not void" />
         <Stat label="Collected" value={money(totals.collected, currency)} />
-        <Stat
-          label="Outstanding"
-          value={money(totals.outstanding, currency)}
-          tone={totals.outstanding ? 'warn' : undefined}
-        />
-        <Stat
-          label="Overdue"
-          value={money(totals.overdue, currency)}
-          tone={totals.overdue ? 'danger' : undefined}
-        />
+        <Stat label="Outstanding" value={money(totals.outstanding, currency)} tone={totals.outstanding ? 'warn' : undefined} />
+        <Stat label="Overdue" value={money(totals.overdue, currency)} tone={totals.overdue ? 'danger' : undefined} />
       </div>
       <Card bodyClassName="p-0">
         <div className="flex flex-wrap items-center gap-3 px-4 pt-2">
@@ -159,16 +124,8 @@ export default function InvoicesPage() {
             <Empty
               icon={<FileText className="h-5 w-5" />}
               title={list.length ? 'No invoices match' : 'No invoices yet'}
-              description={
-                list.length
-                  ? 'Try another filter or search.'
-                  : 'Create an invoice for a project to bill your client.'
-              }
-              action={
-                !list.length && (
-                  <Button onClick={() => router.push('/invoices/new')}>New invoice</Button>
-                )
-              }
+              description={list.length ? 'Try another filter or search.' : 'Create an invoice for a project to bill your client.'}
+              action={!list.length && <Button onClick={() => router.push('/invoices/new')}>New invoice</Button>}
             />
           ) : (
             <div className="overflow-x-auto">
@@ -185,17 +142,9 @@ export default function InvoicesPage() {
                 </thead>
                 <tbody>
                   {shown.map((i) => (
-                    <tr
-                      key={i.id}
-                      className="clickable"
-                      onClick={() => router.push(`/invoices/${i.id}`)}
-                    >
+                    <tr key={i.id} className="clickable" onClick={() => router.push(`/invoices/${i.id}`)}>
                       <td>
-                        <Link
-                          href={`/invoices/${i.id}`}
-                          className="font-medium hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <Link href={`/invoices/${i.id}`} className="font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
                           {i.number}
                         </Link>
                         <p className="max-w-64 truncate text-xs text-mute">{i.title}</p>
@@ -208,14 +157,10 @@ export default function InvoicesPage() {
                         <InvoiceStatusBadge status={i.status} />
                       </td>
                       <td className="whitespace-nowrap text-mute">
-                        {i.status === 'paid' || i.status === 'void'
-                          ? '—'
-                          : date(i.next_payment_due ?? i.due_date)}
+                        {i.status === 'paid' || i.status === 'void' ? '—' : date(i.next_payment_due ?? i.due_date)}
                       </td>
                       <td className="text-right tabular-nums">{money(i.total, i.currency)}</td>
-                      <td className="text-right font-medium tabular-nums">
-                        {i.status === 'draft' ? '—' : money(i.balance, i.currency)}
-                      </td>
+                      <td className="text-right font-medium tabular-nums">{i.status === 'draft' ? '—' : money(i.balance, i.currency)}</td>
                     </tr>
                   ))}
                 </tbody>

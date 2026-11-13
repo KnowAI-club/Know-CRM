@@ -26,4 +26,26 @@ import { router as booking, publicRouter as publicBooking } from './booking/rout
 export const publicRouters: Router[] = [auth, publicBooking, publicForms];
 
 /** Routers mounted behind requireAuth. */
-export const privateRouters: Router[] = [workspace, contacts, projectStages, projects, projectWork, tasks, files, invoices, leadStages, leads, nurtures, meetings, booking, reminders, documents, forms, emailTemplates, finance, search, dashboard, reports];
+export const privateRouters: Router[] = [
+  workspace,
+  contacts,
+  projectStages,
+  projects,
+  projectWork,
+  tasks,
+  files,
+  invoices,
+  leadStages,
+  leads,
+  nurtures,
+  meetings,
+  booking,
+  reminders,
+  documents,
+  forms,
+  emailTemplates,
+  finance,
+  search,
+  dashboard,
+  reports,
+];

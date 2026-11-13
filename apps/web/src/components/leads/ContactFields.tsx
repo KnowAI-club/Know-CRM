@@ -28,8 +28,17 @@ export function ContactFields({
   /** Only the essentials (for the create dialog). */
   compact?: boolean;
 }) {
-  const input = (k: keyof ContactForm, label: string, opts: { type?: string; max?: number; hint?: string; required?: boolean; upper?: boolean } = {}) => (
-    <Field label={label} error={errors[k]} hint={locked.includes(k as ContactKey) ? 'Only an admin can change this.' : opts.hint} required={opts.required}>
+  const input = (
+    k: keyof ContactForm,
+    label: string,
+    opts: { type?: string; max?: number; hint?: string; required?: boolean; upper?: boolean } = {},
+  ) => (
+    <Field
+      label={label}
+      error={errors[k]}
+      hint={locked.includes(k as ContactKey) ? 'Only an admin can change this.' : opts.hint}
+      required={opts.required}
+    >
       <input
         className={opts.upper ? 'input uppercase' : 'input'}
         type={opts.type ?? 'text'}

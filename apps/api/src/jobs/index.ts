@@ -20,10 +20,9 @@ export async function createRecordOutcomeTasks(limit = 100) {
     [limit],
   );
   for (const m of rows) {
-    const assignee = await many(
-      `SELECT id FROM users WHERE id::text = ANY($1::text[]) AND disabled_at IS NULL AND role <> 'client'`,
-      [[m.owner_id, m.organizer_id].filter(Boolean)],
-    );
+    const assignee = await many(`SELECT id FROM users WHERE id::text = ANY($1::text[]) AND disabled_at IS NULL AND role <> 'client'`, [
+      [m.owner_id, m.organizer_id].filter(Boolean),
+    ]);
     const pick = assignee.find((u) => u.id === m.owner_id) ?? assignee.find((u) => u.id === m.organizer_id);
     if (!pick) continue;
     await query(

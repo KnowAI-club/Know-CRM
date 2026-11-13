@@ -14,7 +14,15 @@ export interface MeetingFile {
 }
 
 /** Files attached to a meeting (team only). */
-export function MeetingFiles({ meetingId, files, onChange }: { meetingId: string; files: MeetingFile[]; onChange: (f: MeetingFile[]) => void }) {
+export function MeetingFiles({
+  meetingId,
+  files,
+  onChange,
+}: {
+  meetingId: string;
+  files: MeetingFile[];
+  onChange: (f: MeetingFile[]) => void;
+}) {
   const toast = useToast();
   const confirm = useConfirm();
   const input = useRef<HTMLInputElement>(null);
@@ -77,7 +85,11 @@ export function MeetingFiles({ meetingId, files, onChange }: { meetingId: string
                   {bytes(Number(f.size))} · {relative(f.created_at)}
                 </p>
               </div>
-              <a href={`/api/meetings/${meetingId}/files/${f.id}/download`} className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink" aria-label={`Download ${f.name}`}>
+              <a
+                href={`/api/meetings/${meetingId}/files/${f.id}/download`}
+                className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink"
+                aria-label={`Download ${f.name}`}
+              >
                 <Download className="h-4 w-4" />
               </a>
               <Button variant="ghost" size="icon" aria-label={`Delete ${f.name}`} onClick={() => remove(f)}>

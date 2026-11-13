@@ -1,20 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Archive, ArchiveRestore, Package, Pencil, Plus } from 'lucide-react';
-import {
-  Badge,
-  Button,
-  Card,
-  Empty,
-  ErrorBox,
-  Field,
-  Modal,
-  MoneyInput,
-  PageHeader,
-  Segmented,
-  Spinner,
-  useToast,
-} from '@/components/ui';
+import { Badge, Button, Card, Empty, ErrorBox, Field, Modal, MoneyInput, PageHeader, Segmented, Spinner, useToast } from '@/components/ui';
 import { ApiError, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
@@ -29,9 +16,7 @@ export default function ServicesPage() {
   const [view, setView] = useState<'active' | 'archived'>('active');
   const [editing, setEditing] = useState<Service | 'new' | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const list = (services.data ?? []).filter((s) =>
-    view === 'archived' ? s.archived : !s.archived,
-  );
+  const list = (services.data ?? []).filter((s) => (view === 'archived' ? s.archived : !s.archived));
 
   const toggleArchive = async (s: Service) => {
     setBusy(s.id);
@@ -77,12 +62,8 @@ export default function ServicesPage() {
           <Empty
             icon={<Package className="h-5 w-5" />}
             title={view === 'archived' ? 'No archived services' : 'No services yet'}
-            description={
-              view === 'archived' ? undefined : 'Add the services you sell with a default price.'
-            }
-            action={
-              view === 'active' && <Button onClick={() => setEditing('new')}>Add service</Button>
-            }
+            description={view === 'archived' ? undefined : 'Add the services you sell with a default price.'}
+            action={view === 'active' && <Button onClick={() => setEditing('new')}>Add service</Button>}
           />
         </Card>
       ) : (
@@ -93,22 +74,13 @@ export default function ServicesPage() {
                 <p className="flex-1 font-medium">{s.name}</p>
                 {s.archived && <Badge>Archived</Badge>}
               </div>
-              <p className="mt-1 line-clamp-3 flex-1 text-sm text-mute">
-                {s.description || 'No description'}
-              </p>
+              <p className="mt-1 line-clamp-3 flex-1 text-sm text-mute">{s.description || 'No description'}</p>
               <div className="mt-3 flex items-center gap-1 border-t border-line pt-3">
                 <p className="flex-1 text-sm">
-                  <span className="font-semibold tabular-nums">
-                    {money(s.unit_price, s.currency)}
-                  </span>{' '}
+                  <span className="font-semibold tabular-nums">{money(s.unit_price, s.currency)}</span>{' '}
                   <span className="text-mute">/ {s.unit}</span>
                 </p>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  aria-label={`Edit ${s.name}`}
-                  onClick={() => setEditing(s)}
-                >
+                <Button size="icon" variant="ghost" aria-label={`Edit ${s.name}`} onClick={() => setEditing(s)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button
@@ -119,12 +91,7 @@ export default function ServicesPage() {
                   loading={busy === s.id}
                   onClick={() => toggleArchive(s)}
                 >
-                  {busy !== s.id &&
-                    (s.archived ? (
-                      <ArchiveRestore className="h-4 w-4" />
-                    ) : (
-                      <Archive className="h-4 w-4" />
-                    ))}
+                  {busy !== s.id && (s.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />)}
                 </Button>
               </div>
             </div>
@@ -137,11 +104,7 @@ export default function ServicesPage() {
           currency={currency}
           onClose={() => setEditing(null)}
           onSaved={(saved) => {
-            services.setData((l) =>
-              [...(l ?? []).filter((x) => x.id !== saved.id), saved].sort((a, b) =>
-                a.name.localeCompare(b.name),
-              ),
-            );
+            services.setData((l) => [...(l ?? []).filter((x) => x.id !== saved.id), saved].sort((a, b) => a.name.localeCompare(b.name)));
             setEditing(null);
           }}
         />
@@ -180,9 +143,7 @@ function ServiceModal({
     setSaving(true);
     try {
       const body = { name: name.trim(), description, unit: unit.trim(), unitPrice: price };
-      const saved = service
-        ? await patch<Service>(`/services/${service.id}`, body)
-        : await post<Service>('/services', body);
+      const saved = service ? await patch<Service>(`/services/${service.id}`, body) : await post<Service>('/services', body);
       toast.success('Service saved.');
       onSaved(saved);
     } catch (err) {
@@ -210,32 +171,16 @@ function ServiceModal({
     >
       <form id="service-form" onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
         <Field label="Name" required error={errors.name} className="sm:col-span-2">
-          <input
-            className="input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={200}
-          />
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={200} />
         </Field>
         <Field label="Price" required error={errors.unitPrice}>
           <MoneyInput value={price} currency={service?.currency ?? currency} onChange={setPrice} />
         </Field>
         <Field label="Per" hint="e.g. project, month, hour" error={errors.unit}>
-          <input
-            className="input"
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            maxLength={100}
-          />
+          <input className="input" value={unit} onChange={(e) => setUnit(e.target.value)} maxLength={100} />
         </Field>
         <Field label="Description" className="sm:col-span-2" error={errors.description}>
-          <textarea
-            className="input"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={10000}
-          />
+          <textarea className="input" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={10000} />
         </Field>
       </form>
     </Modal>

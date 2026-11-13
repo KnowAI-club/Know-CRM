@@ -57,7 +57,13 @@ export default function ClientsPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative min-w-56 flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input className="input pl-9" placeholder="Search name, email, company, tag" aria-label="Search contacts" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input
+            className="input pl-9"
+            placeholder="Search name, email, company, tag"
+            aria-label="Search contacts"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
         <select className="input w-auto" aria-label="Filter" value={filter} onChange={(e) => setFilter(e.target.value as typeof filter)}>
           <option value="all">All contacts</option>
@@ -118,11 +124,7 @@ export default function ClientsPage() {
                     </div>
                   </td>
                   <td className="text-mute">
-                    {c.projects?.length ? (
-                      <span className="line-clamp-1">{c.projects.map((p) => p.name).join(', ')}</span>
-                    ) : (
-                      '—'
-                    )}
+                    {c.projects?.length ? <span className="line-clamp-1">{c.projects.map((p) => p.name).join(', ')}</span> : '—'}
                   </td>
                   <td className="hidden whitespace-nowrap text-mute lg:table-cell">{relative(c.last_interaction_at ?? c.updated_at)}</td>
                 </tr>
@@ -270,15 +272,19 @@ function ImportContacts({ open, onClose, onDone }: { open: boolean; onClose: () 
         </button>
         <input ref={input} type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => void read(e.target.files?.[0])} />
         <p className="text-xs text-mute">
-          Recognised columns: Name (required), Email, Company, Phone, Job title, Website, Address, Tags, GSTIN, PAN, Billing name,
-          Billing email, Billing address.
+          Recognised columns: Name (required), Email, Company, Phone, Job title, Website, Address, Tags, GSTIN, PAN, Billing name, Billing
+          email, Billing address.
         </p>
         {columns.length > 0 && (
           <p className="text-sm">
             Ready to import <strong>{records.length}</strong> rows using: {columns.join(', ')}.
           </p>
         )}
-        {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+        {error && (
+          <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
+            {error}
+          </p>
+        )}
         {problems.length > 0 && (
           <ul className="max-h-48 space-y-1 overflow-y-auto text-xs text-danger">
             {problems.map((p) => (

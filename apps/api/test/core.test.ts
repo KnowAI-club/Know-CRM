@@ -27,10 +27,7 @@ test('team members cannot change contact email; GSTIN derives PAN', async () => 
     .post('/api/team')
     .send({ name: 'Sam Sales', email: 'sam@test.local', password: 'sales-password-123', role: 'sales' })
     .expect(201);
-  const contact = await admin
-    .post('/api/contacts')
-    .send({ name: 'Asha Rao', email: 'asha@acme.in', gstin: '27AAPFU0939F1ZV' })
-    .expect(201);
+  const contact = await admin.post('/api/contacts').send({ name: 'Asha Rao', email: 'asha@acme.in', gstin: '27AAPFU0939F1ZV' }).expect(201);
   assert.equal(contact.body.pan, 'AAPFU0939F');
   assert.deepEqual(contact.body.tags, ['Manual']);
   const sam = await agentFor('sam@test.local', 'sales-password-123');
@@ -42,10 +39,7 @@ test('team members cannot change contact email; GSTIN derives PAN', async () => 
 test('projects get default milestones, start date and activity on stage change', async () => {
   const admin = await adminAgent();
   const contact = await admin.post('/api/contacts').send({ name: 'Ravi', email: 'ravi@b.in' }).expect(201);
-  const project = await admin
-    .post('/api/projects')
-    .send({ name: 'Website', contactId: contact.body.id, value: 1500000 })
-    .expect(201);
+  const project = await admin.post('/api/projects').send({ name: 'Website', contactId: contact.body.id, value: 1500000 }).expect(201);
   assert.equal(project.body.start_date, null);
   const moved = await admin.patch(`/api/projects/${project.body.id}`).send({ stage: 'in_progress' }).expect(200);
   assert.ok(moved.body.start_date);
@@ -55,11 +49,11 @@ test('projects get default milestones, start date and activity on stage change',
 
   // Completing a later milestone completes earlier ones.
   const third = detail.body.milestones[2];
-  const ms = await admin
-    .patch(`/api/projects/${project.body.id}/milestones/${third.id}`)
-    .send({ status: 'done' })
-    .expect(200);
-  assert.deepEqual(ms.body.slice(0, 3).map((m: any) => m.status), ['done', 'done', 'done']);
+  const ms = await admin.patch(`/api/projects/${project.body.id}/milestones/${third.id}`).send({ status: 'done' }).expect(200);
+  assert.deepEqual(
+    ms.body.slice(0, 3).map((m: any) => m.status),
+    ['done', 'done', 'done'],
+  );
 });
 
 test('invoice lifecycle: GST totals, instalments, payments, void rules', async () => {
@@ -96,7 +90,10 @@ test('invoice lifecycle: GST totals, instalments, payments, void rules', async (
     .send({ amount: 5900000, method: 'upi', receivedDate: '2026-01-02', idempotencyKey: 'pay-key-0001' })
     .expect(201);
   assert.equal(paid.body.status, 'partial');
-  assert.deepEqual(paid.body.installments.map((i: any) => i.status), ['paid', 'upcoming']);
+  assert.deepEqual(
+    paid.body.installments.map((i: any) => i.status),
+    ['paid', 'upcoming'],
+  );
   await admin.post(`/api/invoices/${inv.body.id}/void`).send({ reason: 'test' }).expect(409);
   const payment = paid.body.payments[0];
   await admin.post(`/api/payments/${payment.id}/reverse`).send({ reason: 'bounced' }).expect(200);

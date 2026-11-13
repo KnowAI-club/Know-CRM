@@ -124,7 +124,12 @@ export default function LeadFormsPage() {
                 <span className="flex-1" />
                 {f.published_version && !f.archived && (
                   <>
-                    <a href={publicFormPath(f.token)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-ink">
+                    <a
+                      href={publicFormPath(f.token)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 hover:text-ink"
+                    >
                       <ExternalLink className="h-3.5 w-3.5" /> Open
                     </a>
                     <CopyLinkButton path={publicFormPath(f.token)} />
@@ -153,7 +158,13 @@ export default function LeadFormsPage() {
       >
         <form id="new-form" onSubmit={create}>
           <Field label="Title" required error={errors.title}>
-            <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Project inquiry" maxLength={200} />
+            <input
+              className="input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Project inquiry"
+              maxLength={200}
+            />
           </Field>
         </form>
       </Modal>

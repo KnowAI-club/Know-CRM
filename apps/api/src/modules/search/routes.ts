@@ -31,7 +31,11 @@ export function scoreTitle(title: string, q: string, words: string[]) {
 /** GET /search?q= — grouped, scored matches across the workspace. */
 router.get('/search', requireStaff, async (req, res) => {
   const me = currentUser(req);
-  const q = String(req.query.q ?? '').toLowerCase().replace(/\s+/g, ' ').trim().slice(0, 100);
+  const q = String(req.query.q ?? '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 100);
   const words = [...new Set(q.split(' ').filter(Boolean))].slice(0, 6);
   if (!words.length) return void res.json({ groups: [] });
   const patterns = words.map((w) => `%${escapeLike(w)}%`);

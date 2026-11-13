@@ -1,18 +1,7 @@
 'use client';
 import { Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  Activity,
-  Bell,
-  Building2,
-  CreditCard,
-  KanbanSquare,
-  KeyRound,
-  ListChecks,
-  ScrollText,
-  Users,
-  Workflow,
-} from 'lucide-react';
+import { Activity, Bell, Building2, CreditCard, KanbanSquare, KeyRound, ListChecks, ScrollText, Users, Workflow } from 'lucide-react';
 import { ErrorBox, PageHeader, Spinner } from '@/components/ui';
 import { get } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
@@ -55,17 +44,13 @@ function Settings() {
   const visible = SECTIONS.filter((s) => !s.admin || isAdmin);
   const requested = params.get('section') as SectionId | null;
   const active = visible.find((s) => s.id === requested)?.id ?? visible[0]!.id;
-  const settings = useLoad(
-    (s) => (isAdmin ? get<WorkspaceSettings>('/settings', s) : Promise.resolve(null)),
-    [isAdmin],
-  );
+  const settings = useLoad((s) => (isAdmin ? get<WorkspaceSettings>('/settings', s) : Promise.resolve(null)), [isAdmin]);
   const groups = [...new Set(visible.map((s) => s.group))];
   const go = (id: SectionId) => router.replace(`${pathname}?section=${id}`, { scroll: false });
 
   const needsSettings = active === 'workspace' || active === 'billing';
   let body: React.ReactNode;
-  if (needsSettings && settings.error)
-    body = <ErrorBox error={settings.error} retry={settings.reload} />;
+  if (needsSettings && settings.error) body = <ErrorBox error={settings.error} retry={settings.reload} />;
   else if (needsSettings && !settings.data) body = <Spinner />;
   else
     switch (active) {
@@ -143,9 +128,7 @@ function Settings() {
           <div className="hidden space-y-4 lg:block">
             {groups.map((g) => (
               <div key={g}>
-                <p className="px-2.5 pb-1 text-[11px] font-semibold tracking-wider text-faint uppercase">
-                  {g}
-                </p>
+                <p className="px-2.5 pb-1 text-[11px] font-semibold tracking-wider text-faint uppercase">{g}</p>
                 {visible
                   .filter((s) => s.group === g)
                   .map((s) => (
@@ -155,9 +138,7 @@ function Settings() {
                       aria-current={active === s.id ? 'page' : undefined}
                       className={cn(
                         'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm',
-                        active === s.id
-                          ? 'bg-acc-soft font-medium text-acc'
-                          : 'text-mute hover:bg-subtle hover:text-ink',
+                        active === s.id ? 'bg-acc-soft font-medium text-acc' : 'text-mute hover:bg-subtle hover:text-ink',
                       )}
                     >
                       <s.icon className="h-4 w-4" /> {s.label}

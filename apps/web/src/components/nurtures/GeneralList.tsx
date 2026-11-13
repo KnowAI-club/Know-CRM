@@ -23,7 +23,9 @@ export function GeneralList({ version, onChanged }: { version: number; onChanged
 
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return (data?.leads ?? []).filter((l) => !term || [l.name, l.email, l.company, l.industry].some((v) => v?.toLowerCase().includes(term)));
+    return (data?.leads ?? []).filter(
+      (l) => !term || [l.name, l.email, l.company, l.industry].some((v) => v?.toLowerCase().includes(term)),
+    );
   }, [data, q]);
   const done = () => {
     setSelected(new Set());
@@ -49,7 +51,13 @@ export function GeneralList({ version, onChanged }: { version: number; onChanged
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input className="input pl-9" placeholder="Search name, company, email" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search" />
+          <input
+            className="input pl-9"
+            placeholder="Search name, company, email"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search"
+          />
         </div>
         <span className="flex-1" />
         {picked.length > 0 && (
@@ -68,7 +76,11 @@ export function GeneralList({ version, onChanged }: { version: number; onChanged
         <div className="card">
           <Empty
             title={q ? 'No matches' : 'The General list is empty'}
-            description={q ? undefined : 'Leads parked from the pipeline, imported, or restored from Discard wait here until you add them to a sequence.'}
+            description={
+              q
+                ? undefined
+                : 'Leads parked from the pipeline, imported, or restored from Discard wait here until you add them to a sequence.'
+            }
           />
         </div>
       ) : (

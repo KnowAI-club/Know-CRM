@@ -69,7 +69,14 @@ export function AccessTab({
   };
 
   const revoke = async (p: Participant) => {
-    if (!(await confirm({ title: `Revoke ${p.name}'s access?`, description: 'They will no longer see this project in the portal. Their shared tasks become internal.', confirmLabel: 'Revoke', danger: true })))
+    if (
+      !(await confirm({
+        title: `Revoke ${p.name}'s access?`,
+        description: 'They will no longer see this project in the portal. Their shared tasks become internal.',
+        confirmLabel: 'Revoke',
+        danger: true,
+      }))
+    )
       return;
     try {
       await del(`/projects/${projectId}/client-links/${p.id}`);
@@ -85,7 +92,10 @@ export function AccessTab({
     <div className="grid gap-4 lg:grid-cols-2">
       <Card title="People with portal access" icon={<KeyRound className="h-4 w-4" />} bodyClassName="p-0">
         {!participants.length ? (
-          <Empty title="No portal access yet" description="Create a login so the client can follow progress, review documents and pay invoices." />
+          <Empty
+            title="No portal access yet"
+            description="Create a login so the client can follow progress, review documents and pay invoices."
+          />
         ) : (
           <ul className="divide-y divide-line">
             {participants.map((p) => (
@@ -104,7 +114,12 @@ export function AccessTab({
         )}
         {linkable.length > 0 && (
           <div className="flex gap-2 border-t border-line p-4">
-            <select className="input flex-1" value={linkId} onChange={(e) => setLinkId(e.target.value)} aria-label="Existing client account">
+            <select
+              className="input flex-1"
+              value={linkId}
+              onChange={(e) => setLinkId(e.target.value)}
+              aria-label="Existing client account"
+            >
               <option value="">Link an existing client account…</option>
               {linkable.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -124,10 +139,27 @@ export function AccessTab({
             <input className="input" value={form.name} maxLength={120} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
           <Field label="Email" required error={errors.email}>
-            <input className="input" type="email" autoComplete="off" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input
+              className="input"
+              type="email"
+              autoComplete="off"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           </Field>
-          <Field label="Temporary password" required error={errors.password} hint="At least 12 characters. The client can change it after signing in.">
-            <input className="input" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          <Field
+            label="Temporary password"
+            required
+            error={errors.password}
+            hint="At least 12 characters. The client can change it after signing in."
+          >
+            <input
+              className="input"
+              type="password"
+              autoComplete="new-password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
           </Field>
           <Button type="submit" loading={saving}>
             Create login

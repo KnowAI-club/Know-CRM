@@ -11,7 +11,15 @@ export interface MenuItem {
 }
 
 /** A small dropdown menu anchored to a trigger. */
-export function Menu({ trigger, items, align = 'right' }: { trigger: (open: () => void) => ReactNode; items: MenuItem[]; align?: 'left' | 'right' }) {
+export function Menu({
+  trigger,
+  items,
+  align = 'right',
+}: {
+  trigger: (open: () => void) => ReactNode;
+  items: MenuItem[];
+  align?: 'left' | 'right';
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

@@ -61,7 +61,12 @@ export function GuestEmails({
           <span key={email} className="inline-flex items-center gap-1 rounded-full bg-subtle px-2 py-0.5 text-xs">
             {email}
             {!disabled && (
-              <button type="button" onClick={() => onChange(value.filter((v) => v !== email))} aria-label={`Remove ${email}`} className="text-mute hover:text-ink">
+              <button
+                type="button"
+                onClick={() => onChange(value.filter((v) => v !== email))}
+                aria-label={`Remove ${email}`}
+                className="text-mute hover:text-ink"
+              >
                 <X className="h-3 w-3" />
               </button>
             )}

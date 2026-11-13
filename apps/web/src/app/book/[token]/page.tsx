@@ -42,7 +42,12 @@ export default function PublicBookingPage() {
   // Retrying the identical request reuses its ids so a lost response cannot double-book.
   const attempt = useRef<{ key: string; requestId: string; secret: string } | null>(null);
 
-  if (page.loading && !page.data) return <PublicFrame><Spinner /></PublicFrame>;
+  if (page.loading && !page.data)
+    return (
+      <PublicFrame>
+        <Spinner />
+      </PublicFrame>
+    );
   if (page.error || !page.data)
     return (
       <PublicFrame>
@@ -55,7 +60,14 @@ export default function PublicBookingPage() {
   const t = page.data;
   const zone = browserZone();
   const when = (iso: string) =>
-    new Date(iso).toLocaleString('en-IN', { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+    new Date(iso).toLocaleString('en-IN', {
+      timeZone: zone,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

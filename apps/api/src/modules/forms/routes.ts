@@ -16,7 +16,10 @@ const RESERVED = new Set(['name', 'email', '__proto__', 'constructor', 'prototyp
 
 const field = z
   .object({
-    id: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/, 'Invalid field id').refine((id) => !RESERVED.has(id), 'Reserved field id'),
+    id: z
+      .string()
+      .regex(/^[a-z][a-z0-9_]{0,63}$/, 'Invalid field id')
+      .refine((id) => !RESERVED.has(id), 'Reserved field id'),
     label: z.string().trim().min(1, 'Every question needs a label.').max(200),
     type: z.enum(['text', 'email', 'phone', 'textarea', 'select', 'checkbox', 'date']),
     required: z.boolean().default(false),
@@ -67,10 +70,13 @@ const formSchema = z.object({
 router.post('/lead-forms', async (req, res) => {
   const me = currentUser(req);
   const d = parse(formSchema, req.body);
-  const f = await one(
-    `INSERT INTO lead_forms(title, description, fields, token, owner_id) VALUES($1,$2,$3,$4,$5) RETURNING *`,
-    [d.title, d.description, JSON.stringify(d.fields), randomBytes(24).toString('base64url'), me.id],
-  );
+  const f = await one(`INSERT INTO lead_forms(title, description, fields, token, owner_id) VALUES($1,$2,$3,$4,$5) RETURNING *`, [
+    d.title,
+    d.description,
+    JSON.stringify(d.fields),
+    randomBytes(24).toString('base64url'),
+    me.id,
+  ]);
   res.status(201).json(formView(f!));
 });
 
@@ -100,7 +106,14 @@ router.post('/lead-forms/:id/publish', async (req, res) => {
     parse(fields, f.fields);
     if (f.published_revision === f.revision) return f;
     const version = (f.published_version ?? 0) + 1;
-    const snapshot = { title: f.title, description: f.description, fields: f.fields, version, published_at: new Date(), published_by: me.id };
+    const snapshot = {
+      title: f.title,
+      description: f.description,
+      fields: f.fields,
+      version,
+      published_at: new Date(),
+      published_by: me.id,
+    };
     return one(
       `UPDATE lead_forms SET published_version=$2, published_revision=revision, published=$3, updated_at=now() WHERE id=$1 RETURNING *`,
       [id, version, JSON.stringify(snapshot)],
@@ -179,64 +192,83 @@ function cleanAnswers(fieldsList: Field[], answers: Record<string, string | bool
 }
 
 const canonical = (v: unknown): unknown =>
-  Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object'
-    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonical((v as Record<string, unknown>)[k])])) : v;
+  Array.isArray(v)
+    ? v.map(canonical)
+    : v && typeof v === 'object'
+      ? Object.fromEntries(
+          Object.keys(v)
+            .sort()
+            .map((k) => [k, canonical((v as Record<string, unknown>)[k])]),
+        )
+      : v;
 
-publicRouter.post(
-  '/public/forms/:token/submissions',
-  rateLimit('public-form-submit', 20, 60 * 60_000),
-  async (req, res) => {
-    const token = String(req.params.token);
-    const body = parse(submissionSchema, req.body);
-    if (body.website) return void res.status(202).json({ received: true, submissionId: body.submissionId });
-    const hash = createHash('sha256')
-      .update(JSON.stringify(canonical({ name: body.name, email: body.email, answers: body.answers, version: body.version ?? null })))
-      .digest('hex');
-    const result = await transaction(async () => {
-      const f = await liveForm(token);
-      const existing = await one('SELECT request_hash, form_id FROM lead_submissions WHERE id=$1', [body.submissionId]);
-      if (existing) {
-        if (existing.request_hash !== hash || existing.form_id !== f.id) throw conflict('This submission ID has already been used.');
-        return { created: false };
-      }
-      if (body.version && body.version !== f.published_version) throw conflict('This form changed. Refresh it before submitting.');
-      const answers = cleanAnswers(f.published.fields, body.answers);
-      const contact = await ensureContact({ name: body.name, email: body.email }, 'Website');
+publicRouter.post('/public/forms/:token/submissions', rateLimit('public-form-submit', 20, 60 * 60_000), async (req, res) => {
+  const token = String(req.params.token);
+  const body = parse(submissionSchema, req.body);
+  if (body.website) return void res.status(202).json({ received: true, submissionId: body.submissionId });
+  const hash = createHash('sha256')
+    .update(JSON.stringify(canonical({ name: body.name, email: body.email, answers: body.answers, version: body.version ?? null })))
+    .digest('hex');
+  const result = await transaction(async () => {
+    const f = await liveForm(token);
+    const existing = await one('SELECT request_hash, form_id FROM lead_submissions WHERE id=$1', [body.submissionId]);
+    if (existing) {
+      if (existing.request_hash !== hash || existing.form_id !== f.id) throw conflict('This submission ID has already been used.');
+      return { created: false };
+    }
+    if (body.version && body.version !== f.published_version) throw conflict('This form changed. Refresh it before submitting.');
+    const answers = cleanAnswers(f.published.fields, body.answers);
+    const contact = await ensureContact({ name: body.name, email: body.email }, 'Website');
 
-      // Inquiry lands in the sales pipeline as a lead (unless one is already open) with an intake project.
-      let leadId: string | null = (await one(`SELECT id FROM leads WHERE lower(email)=$1 AND state IN ('active','nurture')`, [body.email]))?.id ?? null;
-      if (!leadId && !(await one(`SELECT 1 FROM leads WHERE lower(email)=$1 AND state='won'`, [body.email]))) {
-        const stage = await one(`SELECT id FROM lead_stages WHERE kind='open' ORDER BY position LIMIT 1`);
-        const notes = f.published.fields
-          .map((fl: Field) => `${fl.label}: ${typeof answers[fl.id] === 'boolean' ? (answers[fl.id] ? 'Yes' : 'No') : answers[fl.id] || '—'}`)
-          .join('\n');
-        const lead = await one(
-          `INSERT INTO leads(name, email, stage, data, contact_id) VALUES($1,$2,$3,$4,$5) RETURNING id`,
-          [body.name, body.email, stage!.id, JSON.stringify({ source: 'Lead form', ownerId: f.owner_id, notes: notes.slice(0, 10000) }), contact.id],
-        );
-        leadId = lead!.id;
-        await leadHistory(leadId!, null, 'Lead created', { reason: `Lead form: ${f.title}` });
-      }
-      let project = await one(
-        `SELECT p.id FROM projects p JOIN project_stages s ON s.id=p.stage
+    // Inquiry lands in the sales pipeline as a lead (unless one is already open) with an intake project.
+    let leadId: string | null =
+      (await one(`SELECT id FROM leads WHERE lower(email)=$1 AND state IN ('active','nurture')`, [body.email]))?.id ?? null;
+    if (!leadId && !(await one(`SELECT 1 FROM leads WHERE lower(email)=$1 AND state='won'`, [body.email]))) {
+      const stage = await one(`SELECT id FROM lead_stages WHERE kind='open' ORDER BY position LIMIT 1`);
+      const notes = f.published.fields
+        .map((fl: Field) => `${fl.label}: ${typeof answers[fl.id] === 'boolean' ? (answers[fl.id] ? 'Yes' : 'No') : answers[fl.id] || '—'}`)
+        .join('\n');
+      const lead = await one(`INSERT INTO leads(name, email, stage, data, contact_id) VALUES($1,$2,$3,$4,$5) RETURNING id`, [
+        body.name,
+        body.email,
+        stage!.id,
+        JSON.stringify({ source: 'Lead form', ownerId: f.owner_id, notes: notes.slice(0, 10000) }),
+        contact.id,
+      ]);
+      leadId = lead!.id;
+      await leadHistory(leadId!, null, 'Lead created', { reason: `Lead form: ${f.title}` });
+    }
+    let project = await one(
+      `SELECT p.id FROM projects p JOIN project_stages s ON s.id=p.stage
           WHERE p.contact_id=$1 AND s.category NOT IN ('completed','archived') ORDER BY (p.phase='intake') DESC, p.created_at LIMIT 1`,
-        [contact.id],
-      );
-      if (!project)
-        project = await one(
-          `INSERT INTO projects(name, contact_id, stage, phase, value, currency, description, lead_source, owner_id)
+      [contact.id],
+    );
+    if (!project)
+      project = await one(
+        `INSERT INTO projects(name, contact_id, stage, phase, value, currency, description, lead_source, owner_id)
            VALUES($1,$2,'inquiry','intake',0,$3,$4,'Lead form',$5) RETURNING id`,
-          [`${f.title} · ${body.name}`.slice(0, 500), contact.id, await workspaceCurrency(), `Received through lead form: ${f.title}`, f.owner_id],
-        );
-      await projectActivity({ name: body.name }, project!.id, 'Lead form submitted');
-      await query(
-        `INSERT INTO lead_submissions(id, form_id, version, name, email, answers, request_hash, contact_id, lead_id)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        [body.submissionId, f.id, f.published_version, body.name, body.email, JSON.stringify(answers), hash, contact.id, leadId],
+        [
+          `${f.title} · ${body.name}`.slice(0, 500),
+          contact.id,
+          await workspaceCurrency(),
+          `Received through lead form: ${f.title}`,
+          f.owner_id,
+        ],
       );
-      await notify({ userId: f.owner_id, kind: 'lead_form', title: `New inquiry from ${body.name}`, body: f.title, link: leadId ? `/leads/${leadId}` : '/leads' });
-      return { created: true };
+    await projectActivity({ name: body.name }, project!.id, 'Lead form submitted');
+    await query(
+      `INSERT INTO lead_submissions(id, form_id, version, name, email, answers, request_hash, contact_id, lead_id)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [body.submissionId, f.id, f.published_version, body.name, body.email, JSON.stringify(answers), hash, contact.id, leadId],
+    );
+    await notify({
+      userId: f.owner_id,
+      kind: 'lead_form',
+      title: `New inquiry from ${body.name}`,
+      body: f.title,
+      link: leadId ? `/leads/${leadId}` : '/leads',
     });
-    res.status(result.created ? 201 : 200).json({ received: true, submissionId: body.submissionId });
-  },
-);
+    return { created: true };
+  });
+  res.status(result.created ? 201 : 200).json({ received: true, submissionId: body.submissionId });
+});

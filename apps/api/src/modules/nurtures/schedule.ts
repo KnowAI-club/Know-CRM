@@ -59,8 +59,7 @@ export function plan(
   for (const e of [...emails].sort((a, b) => a.position - b.position)) {
     const step = byEmail.get(e.id);
     let due = dueAt(start, e.day, e.send_time);
-    if (sequence.weekly_cap && previous && due.getTime() < previous.getTime() + 7 * DAY)
-      due = new Date(previous.getTime() + 7 * DAY);
+    if (sequence.weekly_cap && previous && due.getTime() < previous.getTime() + 7 * DAY) due = new Date(previous.getTime() + 7 * DAY);
     let status: CellStatus;
     if (step?.replied_at) status = 'replied';
     else if (step?.sent_at) status = 'sent';
@@ -88,7 +87,13 @@ export function plan(
 export function nextAction(cells: PlanCell[]) {
   if (cells.some((c) => c.status === 'replied')) return { kind: 'reply' as const, group: 'replied' as const };
   const open = cells.find((c) => c.status === 'due' || c.status === 'scheduled');
-  if (open) return { kind: open.status === 'due' ? ('send' as const) : ('wait' as const), at: open.due_at, emailId: open.email_id, group: 'active' as const };
+  if (open)
+    return {
+      kind: open.status === 'due' ? ('send' as const) : ('wait' as const),
+      at: open.due_at,
+      emailId: open.email_id,
+      group: 'active' as const,
+    };
   if (cells.some((c) => c.status === 'paused')) return { kind: 'paused' as const, group: 'paused' as const };
   return { kind: 'decide' as const, group: 'completed' as const };
 }

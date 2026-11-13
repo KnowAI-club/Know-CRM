@@ -26,7 +26,12 @@ export default function ManageBookingPage() {
   const [actionError, setActionError] = useState('');
   const [now] = useState(() => Date.now());
 
-  if (loading && !data) return <PublicFrame><Spinner /></PublicFrame>;
+  if (loading && !data)
+    return (
+      <PublicFrame>
+        <Spinner />
+      </PublicFrame>
+    );
   if (error || !data)
     return (
       <PublicFrame>
@@ -39,12 +44,27 @@ export default function ManageBookingPage() {
   const { reservation: r, session: s } = data;
   const zone = browserZone();
   const when = (iso: string) =>
-    new Date(iso).toLocaleString('en-IN', { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    new Date(iso).toLocaleString('en-IN', {
+      timeZone: zone,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   const started = new Date(r.start_at).getTime() <= now;
   const cancelled = r.status === 'cancelled';
 
   const cancel = async () => {
-    if (!(await confirm({ title: 'Cancel this booking?', description: 'Your host will be told and the time will be released.', confirmLabel: 'Cancel booking', danger: true })))
+    if (
+      !(await confirm({
+        title: 'Cancel this booking?',
+        description: 'Your host will be told and the time will be released.',
+        confirmLabel: 'Cancel booking',
+        danger: true,
+      }))
+    )
       return;
     setBusy(true);
     setActionError('');

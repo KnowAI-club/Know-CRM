@@ -12,15 +12,14 @@ export async function projectActivity(
   description: string,
   visibility: 'internal' | 'client' = 'internal',
 ) {
-  await query(
-    'INSERT INTO activities(project_id, description, actor_name, visibility) VALUES($1,$2,$3,$4)',
-    [projectId, description.slice(0, 2000), actor.name, visibility],
-  );
+  await query('INSERT INTO activities(project_id, description, actor_name, visibility) VALUES($1,$2,$3,$4)', [
+    projectId,
+    description.slice(0, 2000),
+    actor.name,
+    visibility,
+  ]);
   if (actor.role === 'client') {
-    const project = await one<{ owner_id: string; name: string }>(
-      'SELECT owner_id, name FROM projects WHERE id=$1',
-      [projectId],
-    );
+    const project = await one<{ owner_id: string; name: string }>('SELECT owner_id, name FROM projects WHERE id=$1', [projectId]);
     if (project)
       await notify({
         userId: project.owner_id,
@@ -33,12 +32,7 @@ export async function projectActivity(
 }
 
 /** Appends to a lead's history. actorId null means "System". */
-export async function leadHistory(
-  leadId: string,
-  actorId: string | null,
-  action: string,
-  detail: Record<string, unknown> = {},
-) {
+export async function leadHistory(leadId: string, actorId: string | null, action: string, detail: Record<string, unknown> = {}) {
   await query('INSERT INTO lead_history(lead_id, actor_id, action, detail) VALUES($1,$2,$3,$4)', [
     leadId,
     actorId,

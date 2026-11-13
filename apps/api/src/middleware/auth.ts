@@ -36,10 +36,11 @@ export async function startSession(res: Response, userId: string) {
   const token = randomToken();
   const days = env.SESSION_DAYS;
   await query('DELETE FROM sessions WHERE expires_at <= now()');
-  await query(
-    `INSERT INTO sessions(token_hash, user_id, expires_at) VALUES($1,$2, now() + make_interval(days => $3))`,
-    [sha256(token), userId, days],
-  );
+  await query(`INSERT INTO sessions(token_hash, user_id, expires_at) VALUES($1,$2, now() + make_interval(days => $3))`, [
+    sha256(token),
+    userId,
+    days,
+  ]);
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',

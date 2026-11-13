@@ -1,15 +1,5 @@
 'use client';
-import {
-  ArrowDown,
-  ArrowUp,
-  Heading,
-  ListChecks,
-  PenLine,
-  Plus,
-  ShoppingBag,
-  Trash2,
-  Type,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, Heading, ListChecks, PenLine, Plus, ShoppingBag, Trash2, Type } from 'lucide-react';
 import { Button, Field, Menu, MoneyInput } from '@/components/ui';
 import { uuid } from '@/components/money/util';
 
@@ -67,11 +57,7 @@ export function validateBlocks(blocks: Block[]) {
     if (b.type === 'service' && !b.name.trim()) errors[b.id] = 'Name the service.';
     if (b.type === 'service' && !(b.quantity > 0)) errors[b.id] = 'Quantity must be above 0.';
     if (b.type === 'question' && !b.label.trim()) errors[b.id] = 'Questions need a label.';
-    if (
-      b.type === 'question' &&
-      b.questionType === 'choice' &&
-      new Set(b.options.map((o) => o.trim()).filter(Boolean)).size < 2
-    )
+    if (b.type === 'question' && b.questionType === 'choice' && new Set(b.options.map((o) => o.trim()).filter(Boolean)).size < 2)
       errors[b.id] = 'A choice question needs at least two different options.';
     if (b.type === 'signature' && !b.label.trim()) errors[b.id] = 'Signature blocks need a label.';
   }
@@ -98,8 +84,7 @@ export function BlocksEditor({
   currency: string;
   errors?: Record<string, string>;
 }) {
-  const update = (id: string, patch: Partial<Block>) =>
-    onChange(blocks.map((b) => (b.id === id ? ({ ...b, ...patch } as Block) : b)));
+  const update = (id: string, patch: Partial<Block>) => onChange(blocks.map((b) => (b.id === id ? ({ ...b, ...patch } as Block) : b)));
   const move = (i: number, d: -1 | 1) => {
     const next = [...blocks];
     [next[i], next[i + d]] = [next[i + d]!, next[i]!];
@@ -109,44 +94,21 @@ export function BlocksEditor({
 
   return (
     <div className="space-y-3">
-      {blocks.length === 0 && (
-        <p className="rounded-lg bg-subtle px-3 py-4 text-center text-sm text-mute">
-          Add a block to start.
-        </p>
-      )}
+      {blocks.length === 0 && <p className="rounded-lg bg-subtle px-3 py-4 text-center text-sm text-mute">Add a block to start.</p>}
       {blocks.map((b, i) => {
         const Icon = ICON[b.type];
         return (
           <div key={b.id} className="rounded-xl border border-line p-3">
             <div className="mb-2 flex items-center gap-2">
               <Icon className="h-4 w-4 text-acc" />
-              <span className="flex-1 text-xs font-semibold text-mute uppercase">
-                {LABEL[b.type]}
-              </span>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Move up"
-                disabled={i === 0}
-                onClick={() => move(i, -1)}
-              >
+              <span className="flex-1 text-xs font-semibold text-mute uppercase">{LABEL[b.type]}</span>
+              <Button size="icon" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>
                 <ArrowUp className="h-4 w-4" />
               </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Move down"
-                disabled={i === blocks.length - 1}
-                onClick={() => move(i, 1)}
-              >
+              <Button size="icon" variant="ghost" aria-label="Move down" disabled={i === blocks.length - 1} onClick={() => move(i, 1)}>
                 <ArrowDown className="h-4 w-4" />
               </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Remove block"
-                onClick={() => onChange(blocks.filter((x) => x.id !== b.id))}
-              >
+              <Button size="icon" variant="ghost" aria-label="Remove block" onClick={() => onChange(blocks.filter((x) => x.id !== b.id))}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
@@ -184,12 +146,7 @@ export function BlocksEditor({
             {b.type === 'service' && (
               <div className="grid gap-2 sm:grid-cols-[1fr_90px_160px]">
                 <Field label="Service">
-                  <input
-                    className="input"
-                    value={b.name}
-                    maxLength={200}
-                    onChange={(e) => update(b.id, { name: e.target.value })}
-                  />
+                  <input className="input" value={b.name} maxLength={200} onChange={(e) => update(b.id, { name: e.target.value })} />
                 </Field>
                 <Field label="Qty">
                   <input
@@ -200,11 +157,7 @@ export function BlocksEditor({
                   />
                 </Field>
                 <Field label="Unit price">
-                  <MoneyInput
-                    value={b.unitPrice}
-                    currency={b.currency}
-                    onChange={(v) => update(b.id, { unitPrice: v ?? 0 })}
-                  />
+                  <MoneyInput value={b.unitPrice} currency={b.currency} onChange={(v) => update(b.id, { unitPrice: v ?? 0 })} />
                 </Field>
                 <Field label="Description" className="sm:col-span-3">
                   <textarea
@@ -231,9 +184,7 @@ export function BlocksEditor({
                   aria-label="Answer type"
                   className="input"
                   value={b.questionType}
-                  onChange={(e) =>
-                    update(b.id, { questionType: e.target.value as 'short' | 'long' | 'choice' })
-                  }
+                  onChange={(e) => update(b.id, { questionType: e.target.value as 'short' | 'long' | 'choice' })}
                 >
                   <option value="short">Short answer</option>
                   <option value="long">Long answer</option>
@@ -250,12 +201,7 @@ export function BlocksEditor({
                   />
                 )}
                 <label className="flex items-center gap-2 text-sm text-mute">
-                  <input
-                    type="checkbox"
-                    checked={b.required}
-                    onChange={(e) => update(b.id, { required: e.target.checked })}
-                  />{' '}
-                  Required
+                  <input type="checkbox" checked={b.required} onChange={(e) => update(b.id, { required: e.target.checked })} /> Required
                 </label>
               </div>
             )}
@@ -294,8 +240,7 @@ export const cleanBlocks = (blocks: Block[]) =>
     b.type === 'question'
       ? {
           ...b,
-          options:
-            b.questionType === 'choice' ? b.options.map((o) => o.trim()).filter(Boolean) : [],
+          options: b.questionType === 'choice' ? b.options.map((o) => o.trim()).filter(Boolean) : [],
         }
       : b,
   );

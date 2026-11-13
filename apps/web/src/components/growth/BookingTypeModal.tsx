@@ -51,7 +51,17 @@ function zones() {
 }
 
 /** Create or edit a booking page, including its weekly availability. */
-export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boolean; type: BookingType | null; onClose: () => void; onSaved: () => void }) {
+export function BookingTypeModal({
+  open,
+  type,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  type: BookingType | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const toast = useToast();
   const allZones = useMemo(() => zones(), []);
   const blank = () => ({
@@ -93,7 +103,11 @@ export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boole
   }, [open, type]);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const setWindow = (i: number, w: Partial<Window>) => set('availability', form.availability.map((x, j) => (j === i ? { ...x, ...w } : x)));
+  const setWindow = (i: number, w: Partial<Window>) =>
+    set(
+      'availability',
+      form.availability.map((x, j) => (j === i ? { ...x, ...w } : x)),
+    );
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -154,27 +168,50 @@ export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boole
     >
       <form id="booking-type" onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Title" required error={errors.title}>
-          <input className="input" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Intro call" maxLength={200} />
+          <input
+            className="input"
+            value={form.title}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder="Intro call"
+            maxLength={200}
+          />
         </Field>
         <Field label="Description" error={errors.description}>
-          <textarea className="input" rows={2} value={form.description} onChange={(e) => set('description', e.target.value)} maxLength={5000} />
+          <textarea
+            className="input"
+            rows={2}
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            maxLength={5000}
+          />
         </Field>
         <Field label="Location or call link" hint="Shown to the visitor and on the meeting." error={errors.location}>
-          <input className="input" value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="Video call link sent after booking" maxLength={1000} />
+          <input
+            className="input"
+            value={form.location}
+            onChange={(e) => set('location', e.target.value)}
+            placeholder="Video call link sent after booking"
+            maxLength={1000}
+          />
         </Field>
         <div className="grid gap-3 sm:grid-cols-3">
           <Field label="Duration" error={errors.duration}>
             <select className="input" value={form.duration} onChange={(e) => set('duration', Number(e.target.value))}>
-              {[...new Set([...DURATIONS, form.duration])].sort((a, b) => a - b).map((d) => (
-                <option key={d} value={d}>
-                  {d} min
-                </option>
-              ))}
+              {[...new Set([...DURATIONS, form.duration])]
+                .sort((a, b) => a - b)
+                .map((d) => (
+                  <option key={d} value={d}>
+                    {d} min
+                  </option>
+                ))}
             </select>
           </Field>
           <Field label="Minimum notice" error={errors.minimumNotice}>
             <select className="input" value={form.minimumNotice} onChange={(e) => set('minimumNotice', Number(e.target.value))}>
-              {[...NOTICE, ...(NOTICE.some((n) => n.v === form.minimumNotice) ? [] : [{ v: form.minimumNotice, l: `${form.minimumNotice} min` }])].map((n) => (
+              {[
+                ...NOTICE,
+                ...(NOTICE.some((n) => n.v === form.minimumNotice) ? [] : [{ v: form.minimumNotice, l: `${form.minimumNotice} min` }]),
+              ].map((n) => (
                 <option key={n.v} value={n.v}>
                   {n.l}
                 </option>
@@ -182,13 +219,36 @@ export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boole
             </select>
           </Field>
           <Field label="Book up to (days ahead)" error={errors.horizon}>
-            <input className="input" type="number" min={1} max={365} value={form.horizon} onChange={(e) => set('horizon', Number(e.target.value))} />
+            <input
+              className="input"
+              type="number"
+              min={1}
+              max={365}
+              value={form.horizon}
+              onChange={(e) => set('horizon', Number(e.target.value))}
+            />
           </Field>
           <Field label="Buffer before (min)" error={errors.bufferBefore}>
-            <input className="input" type="number" min={0} max={240} step={5} value={form.bufferBefore} onChange={(e) => set('bufferBefore', Number(e.target.value))} />
+            <input
+              className="input"
+              type="number"
+              min={0}
+              max={240}
+              step={5}
+              value={form.bufferBefore}
+              onChange={(e) => set('bufferBefore', Number(e.target.value))}
+            />
           </Field>
           <Field label="Buffer after (min)" error={errors.bufferAfter}>
-            <input className="input" type="number" min={0} max={240} step={5} value={form.bufferAfter} onChange={(e) => set('bufferAfter', Number(e.target.value))} />
+            <input
+              className="input"
+              type="number"
+              min={0}
+              max={240}
+              step={5}
+              value={form.bufferAfter}
+              onChange={(e) => set('bufferAfter', Number(e.target.value))}
+            />
           </Field>
           <Field label="Time zone" error={errors.timezone}>
             <select className="input" value={form.timezone} onChange={(e) => set('timezone', e.target.value)}>
@@ -206,17 +266,44 @@ export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boole
             {form.availability.map((w, i) => (
               <div key={i}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <select className="input w-36" value={w.day} onChange={(e) => setWindow(i, { day: Number(e.target.value) })} aria-label="Day">
+                  <select
+                    className="input w-36"
+                    value={w.day}
+                    onChange={(e) => setWindow(i, { day: Number(e.target.value) })}
+                    aria-label="Day"
+                  >
                     {WEEKDAYS.map((d, n) => (
                       <option key={d} value={n}>
                         {d}
                       </option>
                     ))}
                   </select>
-                  <input className="input w-28" type="time" value={w.start} onChange={(e) => setWindow(i, { start: e.target.value })} aria-label="From" />
+                  <input
+                    className="input w-28"
+                    type="time"
+                    value={w.start}
+                    onChange={(e) => setWindow(i, { start: e.target.value })}
+                    aria-label="From"
+                  />
                   <span className="text-sm text-mute">to</span>
-                  <input className="input w-28" type="time" value={w.end} onChange={(e) => setWindow(i, { end: e.target.value })} aria-label="To" />
-                  <Button variant="ghost" size="icon" onClick={() => set('availability', form.availability.filter((_, j) => j !== i))} aria-label="Remove window">
+                  <input
+                    className="input w-28"
+                    type="time"
+                    value={w.end}
+                    onChange={(e) => setWindow(i, { end: e.target.value })}
+                    aria-label="To"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      set(
+                        'availability',
+                        form.availability.filter((_, j) => j !== i),
+                      )
+                    }
+                    aria-label="Remove window"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -232,7 +319,10 @@ export function BookingTypeModal({ open, type, onClose, onSaved }: { open: boole
             disabled={form.availability.length >= 28}
             onClick={() => {
               const last = form.availability.at(-1);
-              set('availability', [...form.availability, { day: last ? (last.day + 1) % 7 : 1, start: last?.start ?? '10:00', end: last?.end ?? '17:00' }]);
+              set('availability', [
+                ...form.availability,
+                { day: last ? (last.day + 1) % 7 : 1, start: last?.start ?? '10:00', end: last?.end ?? '17:00' },
+              ]);
             }}
           >
             <Plus className="h-3.5 w-3.5" /> Add window

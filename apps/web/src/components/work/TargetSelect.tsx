@@ -20,7 +20,13 @@ export function TargetSelect({
   only?: 'lead' | 'project';
 }) {
   return (
-    <select id={id} className="input" value={value} disabled={disabled || !targets.loaded} onChange={(e) => onChange(e.target.value as TargetValue)}>
+    <select
+      id={id}
+      className="input"
+      value={value}
+      disabled={disabled || !targets.loaded}
+      onChange={(e) => onChange(e.target.value as TargetValue)}
+    >
       <option value="">{targets.loaded ? (allowNone ? 'Not linked' : 'Choose a lead or project…') : 'Loading…'}</option>
       {only !== 'lead' && targets.projects.length > 0 && (
         <optgroup label="Projects">

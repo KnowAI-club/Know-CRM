@@ -18,15 +18,13 @@ export async function tick() {
     const client = await pool.connect();
     let locked = false;
     try {
-      const lock = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtext($1)) AS ok', [
-        `know-crm-job:${job.name}`,
-      ]);
+      const lock = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtext($1)) AS ok', [`know-crm-job:${job.name}`]);
       locked = !!lock.rows[0]?.ok;
       if (!locked) continue;
-      const due = await query(
-        `SELECT 1 FROM worker_runs WHERE job=$1 AND last_run_at > now() - make_interval(secs => $2)`,
-        [job.name, job.every],
-      );
+      const due = await query(`SELECT 1 FROM worker_runs WHERE job=$1 AND last_run_at > now() - make_interval(secs => $2)`, [
+        job.name,
+        job.every,
+      ]);
       if (due.rowCount) continue;
       let error: string | null = null;
       try {

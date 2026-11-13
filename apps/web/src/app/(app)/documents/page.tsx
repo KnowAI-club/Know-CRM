@@ -37,7 +37,13 @@ export default function DocumentsPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input className="input pl-9" placeholder="Search documents" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search documents" />
+          <input
+            className="input pl-9"
+            placeholder="Search documents"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search documents"
+          />
         </div>
         <select className="input w-auto" value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Type">
           <option value="">All types</option>
@@ -102,7 +108,9 @@ export default function DocumentsPage() {
                       </td>
                       <td>
                         {d.last_action ? (
-                          <Badge tone={d.last_action === 'declined' ? 'danger' : d.last_action === 'answered' ? 'info' : 'ok'}>{titleCase(d.last_action)}</Badge>
+                          <Badge tone={d.last_action === 'declined' ? 'danger' : d.last_action === 'answered' ? 'info' : 'ok'}>
+                            {titleCase(d.last_action)}
+                          </Badge>
                         ) : d.status === 'published' ? (
                           <span className="text-xs text-faint">Awaiting</span>
                         ) : (

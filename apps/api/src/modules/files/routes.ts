@@ -20,7 +20,11 @@ const idParam = z.object({ id: z.string().uuid() });
 
 /** Cleans a display filename; keeps the original extension when renaming. */
 export function displayName(original: string, requested?: string) {
-  const clean = (s: string) => s.replace(/[\u0000-\u001f\u007f/\\]/g, '').trim().slice(0, 200);
+  const clean = (s: string) =>
+    s
+      .replace(/[\u0000-\u001f\u007f/\\]/g, '')
+      .trim()
+      .slice(0, 200);
   const ext = path.extname(original).toLowerCase();
   const safeExt = /^\.[a-z0-9]{1,16}$/.test(ext) ? ext : '';
   const base = clean(requested || '') || clean(path.basename(original)) || 'file';
@@ -61,31 +65,36 @@ router.get('/files', requireStaff, async (_req, res) => {
   res.json([...project, ...lead].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)));
 });
 
-router.post('/projects/:id/files', requireStaff, async (req, res, next) => {
-  const { id } = parse(idParam, req.params);
-  await projectFor(req, id, true);
-  upload.single('file')(req, res, next);
-}, async (req, res) => {
-  const me = currentUser(req);
-  const { id } = parse(idParam, req.params);
-  if (!req.file) throw badRequest('Choose a file to upload.');
-  const fileTypeId = await requireFileType(req.body.fileTypeId);
-  const vis = parse(z.enum(['internal', 'client']).default('internal'), req.body.visibility || undefined);
-  const name = displayName(req.file.originalname, req.body.name);
-  const key = await putObject('files', req.file.buffer);
-  try {
-    const file = await one(
-      `INSERT INTO files(project_id,name,size,mime,visibility,file_type_id,storage_key,uploaded_by)
+router.post(
+  '/projects/:id/files',
+  requireStaff,
+  async (req, res, next) => {
+    const { id } = parse(idParam, req.params);
+    await projectFor(req, id, true);
+    upload.single('file')(req, res, next);
+  },
+  async (req, res) => {
+    const me = currentUser(req);
+    const { id } = parse(idParam, req.params);
+    if (!req.file) throw badRequest('Choose a file to upload.');
+    const fileTypeId = await requireFileType(req.body.fileTypeId);
+    const vis = parse(z.enum(['internal', 'client']).default('internal'), req.body.visibility || undefined);
+    const name = displayName(req.file.originalname, req.body.name);
+    const key = await putObject('files', req.file.buffer);
+    try {
+      const file = await one(
+        `INSERT INTO files(project_id,name,size,mime,visibility,file_type_id,storage_key,uploaded_by)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, project_id, name, size, mime, visibility, to_share, file_type_id, created_at`,
-      [id, name, req.file.size, req.file.mimetype || 'application/octet-stream', vis, fileTypeId, key, me.id],
-    );
-    await projectActivity(me, id, `File uploaded: ${name} (${vis === 'client' ? 'shared with the client' : 'internal'})`);
-    res.status(201).json(file);
-  } catch (e) {
-    await deleteObject(key);
-    throw e;
-  }
-});
+        [id, name, req.file.size, req.file.mimetype || 'application/octet-stream', vis, fileTypeId, key, me.id],
+      );
+      await projectActivity(me, id, `File uploaded: ${name} (${vis === 'client' ? 'shared with the client' : 'internal'})`);
+      res.status(201).json(file);
+    } catch (e) {
+      await deleteObject(key);
+      throw e;
+    }
+  },
+);
 
 router.get('/files/:id/download', async (req, res) => {
   const me = currentUser(req);
@@ -129,7 +138,11 @@ router.patch('/files/:id', requireStaff, async (req, res) => {
     await projectActivity(me, file.project_id, `File ${name} filed as ${t?.label}`);
   }
   if (data.visibility && data.visibility !== file.visibility)
-    await projectActivity(me, file.project_id, `File ${name} is now ${data.visibility === 'client' ? 'shared with the client' : 'internal'}`);
+    await projectActivity(
+      me,
+      file.project_id,
+      `File ${name} is now ${data.visibility === 'client' ? 'shared with the client' : 'internal'}`,
+    );
   if (data.toShare !== undefined && data.toShare !== file.to_share)
     await projectActivity(me, file.project_id, `File ${name} ${data.toShare ? 'marked' : 'no longer marked'} to share`);
   res.json(updated);
@@ -165,42 +178,51 @@ router.get('/leads/:id/attachments', requireStaff, async (req, res) => {
   );
 });
 
-router.post('/leads/:id/attachments', requireStaff, async (req, res, next) => {
-  const { id } = parse(idParam, req.params);
-  await openLead(id);
-  upload.array('files', 10)(req, res, next);
-}, async (req, res) => {
-  const me = currentUser(req);
-  const { id } = parse(idParam, req.params);
-  const files = (req.files as Express.Multer.File[] | undefined) ?? [];
-  if (!files.length) throw badRequest('Choose at least one file.');
-  const title = parse(z.string().trim().min(1, 'Add a title.').max(200), req.body.title ?? '');
-  const fileTypeId = await requireFileType(req.body.fileTypeId);
-  const ids: string[] = [];
-  for (const f of files) {
-    if (!f.size) throw badRequest('Files cannot be empty.');
-    const key = await putObject('leads', f.buffer);
-    try {
-      const row = await one(
-        `INSERT INTO lead_attachments(lead_id,title,name,size,mime,file_type_id,storage_key,uploaded_by)
+router.post(
+  '/leads/:id/attachments',
+  requireStaff,
+  async (req, res, next) => {
+    const { id } = parse(idParam, req.params);
+    await openLead(id);
+    upload.array('files', 10)(req, res, next);
+  },
+  async (req, res) => {
+    const me = currentUser(req);
+    const { id } = parse(idParam, req.params);
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+    if (!files.length) throw badRequest('Choose at least one file.');
+    const title = parse(z.string().trim().min(1, 'Add a title.').max(200), req.body.title ?? '');
+    const fileTypeId = await requireFileType(req.body.fileTypeId);
+    const ids: string[] = [];
+    for (const f of files) {
+      if (!f.size) throw badRequest('Files cannot be empty.');
+      const key = await putObject('leads', f.buffer);
+      try {
+        const row = await one(
+          `INSERT INTO lead_attachments(lead_id,title,name,size,mime,file_type_id,storage_key,uploaded_by)
          VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-        [id, title, displayName(f.originalname), f.size, f.mimetype || 'application/octet-stream', fileTypeId, key, me.id],
-      );
-      ids.push(row!.id);
-      await leadHistory(id, me.id, 'Attachment uploaded', { title, name: f.originalname });
-    } catch (e) {
-      await deleteObject(key);
-      throw e;
+          [id, title, displayName(f.originalname), f.size, f.mimetype || 'application/octet-stream', fileTypeId, key, me.id],
+        );
+        ids.push(row!.id);
+        await leadHistory(id, me.id, 'Attachment uploaded', { title, name: f.originalname });
+      } catch (e) {
+        await deleteObject(key);
+        throw e;
+      }
     }
-  }
-  res.status(201).json({ ids });
-});
+    res.status(201).json({ ids });
+  },
+);
 
 router.patch('/lead-attachments/:id', requireStaff, async (req, res) => {
   const me = currentUser(req);
   const { id } = parse(idParam, req.params);
   const data = parse(
-    z.object({ toShare: z.boolean().optional(), title: z.string().trim().min(1).max(200).optional(), fileTypeId: z.string().uuid().optional() }),
+    z.object({
+      toShare: z.boolean().optional(),
+      title: z.string().trim().min(1).max(200).optional(),
+      fileTypeId: z.string().uuid().optional(),
+    }),
     req.body,
   );
   if (!Object.keys(data).length) throw badRequest('Nothing to update.');
@@ -214,7 +236,8 @@ router.patch('/lead-attachments/:id', requireStaff, async (req, res) => {
     [id, data.toShare ?? null, data.title ?? null, data.fileTypeId ?? null],
   );
   if (data.title && data.title !== a.title) await leadHistory(a.lead_id, me.id, 'Attachment renamed', { from: a.title, title: data.title });
-  if (data.fileTypeId && data.fileTypeId !== a.file_type_id) await leadHistory(a.lead_id, me.id, 'Attachment file type changed', { title: a.title });
+  if (data.fileTypeId && data.fileTypeId !== a.file_type_id)
+    await leadHistory(a.lead_id, me.id, 'Attachment file type changed', { title: a.title });
   res.json(updated);
 });
 

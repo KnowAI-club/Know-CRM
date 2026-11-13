@@ -46,7 +46,15 @@ export async function syncNotices(meetingId: string) {
       await query(
         `INSERT INTO reminders(created_by, recipient_id, meeting_id, title, body, channel, run_at, auto_notice)
          VALUES($1,$2,$3,$4,$5,$6,$7,true)`,
-        [m.organizer_id, r.id, meetingId, `${m.title} starts ${whenLabel(n.minutes)}`.slice(0, 200), m.meeting_url || m.location || '', n.channel, runAt],
+        [
+          m.organizer_id,
+          r.id,
+          meetingId,
+          `${m.title} starts ${whenLabel(n.minutes)}`.slice(0, 200),
+          m.meeting_url || m.location || '',
+          n.channel,
+          runAt,
+        ],
       );
   }
 }
@@ -100,10 +108,19 @@ export async function setParticipants(
   await query('DELETE FROM meeting_participants WHERE meeting_id=$1', [meetingId]);
   const userEmails = new Set(users.map((u) => u.email.toLowerCase()));
   for (const u of users)
-    await query('INSERT INTO meeting_participants(meeting_id,email,user_id,name) VALUES($1,$2,$3,$4)', [meetingId, u.email.toLowerCase(), u.id, u.name]);
+    await query('INSERT INTO meeting_participants(meeting_id,email,user_id,name) VALUES($1,$2,$3,$4)', [
+      meetingId,
+      u.email.toLowerCase(),
+      u.id,
+      u.name,
+    ]);
   for (const email of new Set(externalEmails.map((e) => e.toLowerCase())))
     if (!userEmails.has(email))
-      await query('INSERT INTO meeting_participants(meeting_id,email,name) VALUES($1,$2,$3) ON CONFLICT DO NOTHING', [meetingId, email, '']);
+      await query('INSERT INTO meeting_participants(meeting_id,email,name) VALUES($1,$2,$3) ON CONFLICT DO NOTHING', [
+        meetingId,
+        email,
+        '',
+      ]);
 }
 
 export interface NewMeeting {
@@ -131,8 +148,18 @@ export async function createMeeting(organizer: Pick<SessionUser, 'id' | 'name' |
        location, meeting_url, source, notifications, sharing)
      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
     [
-      organizer.id, m.projectId ?? null, m.leadId ?? null, m.bookingReservationId ?? null, m.title, m.kind, m.startAt,
-      m.durationMinutes, m.location ?? '', m.meetingUrl ?? '', m.source ?? 'crm', JSON.stringify(m.notifications ?? []),
+      organizer.id,
+      m.projectId ?? null,
+      m.leadId ?? null,
+      m.bookingReservationId ?? null,
+      m.title,
+      m.kind,
+      m.startAt,
+      m.durationMinutes,
+      m.location ?? '',
+      m.meetingUrl ?? '',
+      m.source ?? 'crm',
+      JSON.stringify(m.notifications ?? []),
       m.sharing ?? 'internal',
     ],
   );

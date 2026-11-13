@@ -9,8 +9,14 @@ import { isoDay, minorToDecimal, sendCsv } from '../../lib/csv.js';
 import { currentUser, requireStaff, type SessionUser } from '../../middleware/auth.js';
 import { projectFor } from '../projects/access.js';
 import {
-  auditAmount, calculateInvoice, invoiceSchema, invoiceView, invoiceViews, nextInvoiceNumber,
-  normalizeInstallments, type InvoiceInput,
+  auditAmount,
+  calculateInvoice,
+  invoiceSchema,
+  invoiceView,
+  invoiceViews,
+  nextInvoiceNumber,
+  normalizeInstallments,
+  type InvoiceInput,
 } from './service.js';
 
 export const router = Router();
@@ -32,7 +38,12 @@ async function writeInvoiceChildren(id: string, data: ReturnType<typeof calculat
 }
 
 /** Inserts a draft invoice (used by the API and the recurring job). */
-export async function createDraft(actor: Pick<SessionUser, 'id' | 'name'> & { role?: string }, projectId: string, input: InvoiceInput, key?: string) {
+export async function createDraft(
+  actor: Pick<SessionUser, 'id' | 'name'> & { role?: string },
+  projectId: string,
+  input: InvoiceInput,
+  key?: string,
+) {
   const project = await one('SELECT p.currency, c.gstin FROM projects p JOIN contacts c ON c.id=p.contact_id WHERE p.id=$1', [projectId]);
   if (!project) throw notFound('Project');
   const data = calculateInvoice(input);
@@ -44,10 +55,31 @@ export async function createDraft(actor: Pick<SessionUser, 'id' | 'name'> & { ro
         service_charge_amount, tax_rate, tax_amount, tax_components, total, currency, due_date, idempotency_key, created_by)
      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) RETURNING id`,
     [
-      projectId, number, data.title, data.heading, data.introduction, data.purchaseOrder, data.taxLabel, data.serviceChargeLabel,
-      data.taxId, data.sellerDetails, data.buyerTaxId || project.gstin || '', data.subtotal, data.discountType, data.discountValue,
-      data.discountAmount, data.serviceChargeRate, data.serviceChargeAmount, data.taxRate, data.taxAmount,
-      JSON.stringify(data.taxComponents), data.total, project.currency, data.dueDate || null, key ?? null, actor.id,
+      projectId,
+      number,
+      data.title,
+      data.heading,
+      data.introduction,
+      data.purchaseOrder,
+      data.taxLabel,
+      data.serviceChargeLabel,
+      data.taxId,
+      data.sellerDetails,
+      data.buyerTaxId || project.gstin || '',
+      data.subtotal,
+      data.discountType,
+      data.discountValue,
+      data.discountAmount,
+      data.serviceChargeRate,
+      data.serviceChargeAmount,
+      data.taxRate,
+      data.taxAmount,
+      JSON.stringify(data.taxComponents),
+      data.total,
+      project.currency,
+      data.dueDate || null,
+      key ?? null,
+      actor.id,
     ],
   );
   await writeInvoiceChildren(inv!.id, data, plan);
@@ -114,15 +146,29 @@ router.patch('/invoices/:id', requireStaff, async (req, res) => {
       return;
     }
     const merged: InvoiceInput = {
-      title: current.title, heading: current.heading, introduction: current.introduction, purchaseOrder: current.purchase_order,
-      taxLabel: current.tax_label, serviceChargeLabel: current.service_charge_label, taxId: current.tax_id,
-      sellerDetails: current.seller_details, buyerTaxId: current.buyer_tax_id, dueDate: current.due_date ?? '',
+      title: current.title,
+      heading: current.heading,
+      introduction: current.introduction,
+      purchaseOrder: current.purchase_order,
+      taxLabel: current.tax_label,
+      serviceChargeLabel: current.service_charge_label,
+      taxId: current.tax_id,
+      sellerDetails: current.seller_details,
+      buyerTaxId: current.buyer_tax_id,
+      dueDate: current.due_date ?? '',
       lines: current.lines.map((l: any) => ({
-        name: l.name, description: l.description, section: l.section, unit: l.unit, quantity: Number(l.quantity),
-        unitPrice: Number(l.unit_price), taxable: l.taxable,
+        name: l.name,
+        description: l.description,
+        section: l.section,
+        unit: l.unit,
+        quantity: Number(l.quantity),
+        unitPrice: Number(l.unit_price),
+        taxable: l.taxable,
       })),
-      discountType: current.discount_type, discountValue: Number(current.discount_value),
-      serviceChargeRate: current.service_charge_rate, taxRate: current.tax_rate,
+      discountType: current.discount_type,
+      discountValue: Number(current.discount_value),
+      serviceChargeRate: current.service_charge_rate,
+      taxRate: current.tax_rate,
       taxComponents: (current.tax_components ?? []).map((c: any) => ({ label: c.label, rate: c.rate })),
       ...data,
     };
@@ -132,7 +178,14 @@ router.patch('/invoices/:id', requireStaff, async (req, res) => {
       const existing = current.installments;
       items =
         existing.length <= 1
-          ? [{ id: existing[0]?.id !== current.id ? existing[0]?.id : undefined, label: existing[0]?.label ?? 'Payment', amount: calc.total, dueDate: calc.dueDate ?? '' }]
+          ? [
+              {
+                id: existing[0]?.id !== current.id ? existing[0]?.id : undefined,
+                label: existing[0]?.label ?? 'Payment',
+                amount: calc.total,
+                dueDate: calc.dueDate ?? '',
+              },
+            ]
           : existing.map((i: any) => ({ id: i.id, label: i.label, amount: i.amount, dueDate: i.due_date ?? '' }));
     }
     const plan = normalizeInstallments(items, calc.total, calc.dueDate);
@@ -145,10 +198,30 @@ router.patch('/invoices/:id', requireStaff, async (req, res) => {
          billed_to=CASE WHEN $23 THEN $24::jsonb ELSE billed_to END, updated_at=now()
        WHERE id=$1`,
       [
-        id, calc.title, calc.heading, calc.introduction, calc.purchaseOrder, calc.taxLabel, calc.serviceChargeLabel, calc.taxId,
-        calc.sellerDetails, calc.buyerTaxId, calc.subtotal, calc.discountType, calc.discountValue, calc.discountAmount,
-        calc.serviceChargeRate, calc.serviceChargeAmount, calc.taxRate, calc.taxAmount, JSON.stringify(calc.taxComponents),
-        calc.total, calc.dueDate || null, publish ? 'sent' : 'draft', publish, JSON.stringify(current.billed_to ?? null),
+        id,
+        calc.title,
+        calc.heading,
+        calc.introduction,
+        calc.purchaseOrder,
+        calc.taxLabel,
+        calc.serviceChargeLabel,
+        calc.taxId,
+        calc.sellerDetails,
+        calc.buyerTaxId,
+        calc.subtotal,
+        calc.discountType,
+        calc.discountValue,
+        calc.discountAmount,
+        calc.serviceChargeRate,
+        calc.serviceChargeAmount,
+        calc.taxRate,
+        calc.taxAmount,
+        JSON.stringify(calc.taxComponents),
+        calc.total,
+        calc.dueDate || null,
+        publish ? 'sent' : 'draft',
+        publish,
+        JSON.stringify(current.billed_to ?? null),
       ],
     );
     await writeInvoiceChildren(id, calc, plan);
@@ -237,11 +310,18 @@ router.post('/payments/:id/reverse', requireStaff, async (req, res) => {
   const me = currentUser(req);
   const { id } = parse(idParam, req.params);
   const { reason } = parse(z.object({ reason: z.string().trim().min(1).max(500) }), req.body);
-  const payment = await one('SELECT pm.*, i.number, i.project_id, i.currency FROM payments pm JOIN invoices i ON i.id=pm.invoice_id WHERE pm.id=$1', [id]);
+  const payment = await one(
+    'SELECT pm.*, i.number, i.project_id, i.currency FROM payments pm JOIN invoices i ON i.id=pm.invoice_id WHERE pm.id=$1',
+    [id],
+  );
   if (!payment) throw notFound('Payment');
   if (payment.reversed) throw conflict('This payment is already reversed.');
   await query('UPDATE payments SET reversed=true, reversal_reason=$2, reversed_at=now(), reversed_by=$3 WHERE id=$1', [id, reason, me.id]);
-  await projectActivity(me, payment.project_id, `Payment of ${auditAmount(payment.amount, payment.currency)} on ${payment.number} reversed: ${reason}`);
+  await projectActivity(
+    me,
+    payment.project_id,
+    `Payment of ${auditAmount(payment.amount, payment.currency)} on ${payment.number} reversed: ${reason}`,
+  );
   res.json(await invoiceView(payment.invoice_id));
 });
 
@@ -270,27 +350,54 @@ router.post('/invoices/:id/recurrence', requireStaff, async (req, res) => {
         dueDays: z.coerce.number().int().min(0).max(90).default(14),
         maxOccurrences: z.coerce.number().int().min(1).max(120).default(12),
       })
-      .refine((d) => !d.endDate || d.endDate >= d.startDate, { message: 'End date must be on or after the start date.', path: ['endDate'] }),
+      .refine((d) => !d.endDate || d.endDate >= d.startDate, {
+        message: 'End date must be on or after the start date.',
+        path: ['endDate'],
+      }),
     req.body,
   );
   const inv = await invoiceView(id);
   if (!inv) throw notFound('Invoice');
   if (inv.status === 'void') throw conflict('A void invoice cannot seed recurring drafts.');
   const template = {
-    title: inv.title, heading: inv.heading, introduction: inv.introduction, purchaseOrder: inv.purchase_order,
-    taxLabel: inv.tax_label, serviceChargeLabel: inv.service_charge_label, taxId: inv.tax_id, sellerDetails: inv.seller_details,
-    buyerTaxId: inv.buyer_tax_id, discountType: inv.discount_type, discountValue: Number(inv.discount_value),
-    serviceChargeRate: inv.service_charge_rate, taxRate: inv.tax_rate,
+    title: inv.title,
+    heading: inv.heading,
+    introduction: inv.introduction,
+    purchaseOrder: inv.purchase_order,
+    taxLabel: inv.tax_label,
+    serviceChargeLabel: inv.service_charge_label,
+    taxId: inv.tax_id,
+    sellerDetails: inv.seller_details,
+    buyerTaxId: inv.buyer_tax_id,
+    discountType: inv.discount_type,
+    discountValue: Number(inv.discount_value),
+    serviceChargeRate: inv.service_charge_rate,
+    taxRate: inv.tax_rate,
     taxComponents: (inv.tax_components ?? []).map((c: any) => ({ label: c.label, rate: c.rate })),
     lines: inv.lines.map((l: any) => ({
-      name: l.name, description: l.description, section: l.section, unit: l.unit, quantity: Number(l.quantity),
-      unitPrice: Number(l.unit_price), taxable: l.taxable,
+      name: l.name,
+      description: l.description,
+      section: l.section,
+      unit: l.unit,
+      quantity: Number(l.quantity),
+      unitPrice: Number(l.unit_price),
+      taxable: l.taxable,
     })),
   };
   const row = await one(
     `INSERT INTO recurring_invoices(project_id, source_invoice_id, created_by, template, interval, start_date, next_date, end_date, due_days, max_occurrences)
      VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8,$9) RETURNING *`,
-    [inv.project_id, id, me.id, JSON.stringify(template), data.interval, data.startDate, data.endDate || null, data.dueDays, data.maxOccurrences],
+    [
+      inv.project_id,
+      id,
+      me.id,
+      JSON.stringify(template),
+      data.interval,
+      data.startDate,
+      data.endDate || null,
+      data.dueDays,
+      data.maxOccurrences,
+    ],
   );
   await projectActivity(me, inv.project_id, `Recurring draft schedule created from ${inv.number} (${data.interval})`);
   res.status(201).json(row);
@@ -339,13 +446,20 @@ export async function runRecurringInvoices(limit = 100) {
         due.setUTCDate(due.getUTCDate() + s.due_days);
         const input = invoiceSchema.parse({ ...s.template, dueDate: due.toISOString().slice(0, 10) });
         const invoiceId = await createDraft({ id: s.created_by, name: 'Scheduled billing' }, s.project_id, input);
-        await query('INSERT INTO recurring_invoice_runs(schedule_id, period_date, invoice_id) VALUES($1,$2,$3)', [s.id, s.next_date, invoiceId]);
+        await query('INSERT INTO recurring_invoice_runs(schedule_id, period_date, invoice_id) VALUES($1,$2,$3)', [
+          s.id,
+          s.next_date,
+          invoiceId,
+        ]);
       }
       const generated = s.generated + 1;
       const nextDate = occurrenceDate(s.start_date, s.interval, generated);
       const completed = generated >= s.max_occurrences || (s.end_date && nextDate > s.end_date);
       await query(`UPDATE recurring_invoices SET generated=$2, next_date=$3, state=$4, updated_at=now() WHERE id=$1`, [
-        s.id, generated, nextDate, completed ? 'completed' : 'active',
+        s.id,
+        generated,
+        nextDate,
+        completed ? 'completed' : 'active',
       ]);
       return false;
     });
@@ -360,11 +474,35 @@ router.get('/exports/invoices.csv', requireStaff, async (_req, res) => {
   sendCsv(
     res,
     `invoices-${isoDay()}.csv`,
-    ['Number', 'Title', 'Project', 'Status', 'Due date', 'Subtotal', 'Discount', 'Service charge', 'Tax', 'Total', 'Paid', 'Balance', 'Currency'],
+    [
+      'Number',
+      'Title',
+      'Project',
+      'Status',
+      'Due date',
+      'Subtotal',
+      'Discount',
+      'Service charge',
+      'Tax',
+      'Total',
+      'Paid',
+      'Balance',
+      'Currency',
+    ],
     rows.map((i) => [
-      i.number, i.title, i.project_name, i.status, i.due_date ?? '', minorToDecimal(i.subtotal), minorToDecimal(i.discount_amount),
-      minorToDecimal(i.service_charge_amount), minorToDecimal(i.tax_amount), minorToDecimal(i.total), minorToDecimal(i.paid),
-      minorToDecimal(i.balance), i.currency,
+      i.number,
+      i.title,
+      i.project_name,
+      i.status,
+      i.due_date ?? '',
+      minorToDecimal(i.subtotal),
+      minorToDecimal(i.discount_amount),
+      minorToDecimal(i.service_charge_amount),
+      minorToDecimal(i.tax_amount),
+      minorToDecimal(i.total),
+      minorToDecimal(i.paid),
+      minorToDecimal(i.balance),
+      i.currency,
     ]),
   );
 });
@@ -378,6 +516,16 @@ router.get('/exports/payments.csv', requireStaff, async (_req, res) => {
     res,
     `payments-${isoDay()}.csv`,
     ['Received', 'Invoice', 'Project', 'Method', 'Reference', 'Amount', 'Currency', 'Status', 'Reversal reason'],
-    rows.map((r) => [r.received_date, r.number, r.project, r.method, r.reference, minorToDecimal(r.amount), r.currency, r.reversed ? 'reversed' : 'recorded', r.reversal_reason ?? '']),
+    rows.map((r) => [
+      r.received_date,
+      r.number,
+      r.project,
+      r.method,
+      r.reference,
+      minorToDecimal(r.amount),
+      r.currency,
+      r.reversed ? 'reversed' : 'recorded',
+      r.reversal_reason ?? '',
+    ]),
   );
 });

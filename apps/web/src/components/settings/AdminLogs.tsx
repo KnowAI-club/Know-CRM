@@ -22,17 +22,7 @@ interface JobRow {
   last_error: string | null;
 }
 
-const ENTITIES = [
-  '',
-  'user',
-  'settings',
-  'contact',
-  'lead_stage',
-  'project_stage',
-  'lead_option',
-  'project',
-  'invoice',
-];
+const ENTITIES = ['', 'user', 'settings', 'contact', 'lead_stage', 'project_stage', 'lead_option', 'project', 'invoice'];
 
 export function AuditLog() {
   const [entity, setEntity] = useState('');
@@ -42,12 +32,7 @@ export function AuditLog() {
       title="Audit log"
       description="The latest 200 administrative changes: team access, settings, stages and records."
       actions={
-        <select
-          aria-label="Filter by record type"
-          className="input w-48"
-          value={entity}
-          onChange={(e) => setEntity(e.target.value)}
-        >
+        <select aria-label="Filter by record type" className="input w-48" value={entity} onChange={(e) => setEntity(e.target.value)}>
           {ENTITIES.map((e) => (
             <option key={e} value={e}>
               {e ? titleCase(e) : 'All record types'}
@@ -145,20 +130,13 @@ export function JobStatus() {
                   {j.last_error ? (
                     <AlertCircle className="mt-0.5 h-4 w-4 text-danger" />
                   ) : (
-                    <CheckCircle2
-                      className={stale ? 'mt-0.5 h-4 w-4 text-warn' : 'mt-0.5 h-4 w-4 text-ok'}
-                    />
+                    <CheckCircle2 className={stale ? 'mt-0.5 h-4 w-4 text-warn' : 'mt-0.5 h-4 w-4 text-ok'} />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">{JOB_LABEL[j.job] ?? j.job}</p>
-                    {j.last_error && (
-                      <p className="mt-0.5 text-xs break-words text-danger">{j.last_error}</p>
-                    )}
+                    {j.last_error && <p className="mt-0.5 text-xs break-words text-danger">{j.last_error}</p>}
                   </div>
-                  <span
-                    className="text-xs whitespace-nowrap text-mute"
-                    title={dateTime(j.last_run_at)}
-                  >
+                  <span className="text-xs whitespace-nowrap text-mute" title={dateTime(j.last_run_at)}>
                     {j.last_run_at ? `Ran ${relative(j.last_run_at)}` : 'Never'}
                   </span>
                 </li>

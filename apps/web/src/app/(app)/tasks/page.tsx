@@ -85,7 +85,13 @@ export default function TasksPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input className="input pl-8" placeholder="Search tasks" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search tasks" />
+          <input
+            className="input pl-8"
+            placeholder="Search tasks"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search tasks"
+          />
         </div>
         {isAdmin && (
           <select className="input w-auto" value={who} onChange={(e) => setWho(e.target.value)} aria-label="Assignee">

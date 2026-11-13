@@ -248,7 +248,13 @@ export function NurtureCard({ lead, onChanged, onConflict }: { lead: Lead; onCha
         <div className="col-span-2">
           <dt className="mb-1 text-xs text-mute">Tags</dt>
           <dd className="flex flex-wrap gap-1">
-            {n.tags.length ? n.tags.map((t) => <Badge key={t} tone="info">{NURTURE_TAG_LABELS[t] ?? t}</Badge>) : '—'}
+            {n.tags.length
+              ? n.tags.map((t) => (
+                  <Badge key={t} tone="info">
+                    {NURTURE_TAG_LABELS[t] ?? t}
+                  </Badge>
+                ))
+              : '—'}
           </dd>
         </div>
         <div className="col-span-2">
@@ -328,7 +334,11 @@ export function NurtureCard({ lead, onChanged, onConflict }: { lead: Lead; onCha
           <Field label="Reason" required>
             <textarea className="input" rows={3} maxLength={10000} value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>
-          {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </Modal>
     </Card>

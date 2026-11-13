@@ -61,11 +61,9 @@ export type InvoiceInput = z.infer<typeof invoiceSchema>;
 export function calculateInvoice(data: InvoiceInput) {
   if (data.discountType === 'percent' && data.discountValue > 10000) throw badRequest('A percentage discount cannot exceed 100%.');
   const discountValue = data.discountType === 'none' ? 0 : data.discountValue;
-  if (data.taxComponents.length && data.taxRate > 0)
-    throw badRequest('Use either named tax components or the single tax rate, not both.');
+  if (data.taxComponents.length && data.taxRate > 0) throw badRequest('Use either named tax components or the single tax rate, not both.');
   const totals = calculateTotals({ ...data, discountValue });
-  if (data.discountType === 'fixed' && discountValue > totals.subtotal)
-    throw badRequest('A discount cannot exceed the invoice subtotal.');
+  if (data.discountType === 'fixed' && discountValue > totals.subtotal) throw badRequest('A discount cannot exceed the invoice subtotal.');
   const nums = [totals.subtotal, totals.discountAmount, totals.serviceChargeAmount, totals.taxAmount, totals.total];
   if (nums.some((n) => !Number.isSafeInteger(n) || n < 0 || n > 1e11) || totals.total <= 0)
     throw badRequest('Invoice amounts must be within the supported limit and the total must be positive.');
@@ -130,7 +128,15 @@ export async function invoiceViews(where: string, params: unknown[], forClient =
           : inv.status !== 'draft' && it.due_date && it.due_date < day
             ? 'overdue'
             : 'upcoming';
-      return { id: it.id, label: it.label, amount: Number(it.amount), due_date: it.due_date, paid: itemPaid, balance: isVoid ? 0 : itemBalance, status };
+      return {
+        id: it.id,
+        label: it.label,
+        amount: Number(it.amount),
+        due_date: it.due_date,
+        paid: itemPaid,
+        balance: isVoid ? 0 : itemBalance,
+        status,
+      };
     });
     const overdue = items.some((i) => i.status === 'overdue');
     const status = isVoid
@@ -176,7 +182,7 @@ export async function invoiceViews(where: string, params: unknown[], forClient =
 }
 
 export const invoiceView = async (id: string, forClient = false) =>
-  (await invoiceViews("i.id=$1", [id], forClient))[0] as Record<string, any> | undefined;
+  (await invoiceViews('i.id=$1', [id], forClient))[0] as Record<string, any> | undefined;
 
 export const invoiceViewsForProject = (projectId: string, forClient: boolean) =>
   invoiceViews(`i.project_id=$1 ${forClient ? `AND i.status<>'draft'` : ''}`, [projectId], forClient);

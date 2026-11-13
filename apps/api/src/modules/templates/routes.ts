@@ -25,12 +25,17 @@ router.post('/email-templates', async (req, res) => {
   );
   const row = await transaction(async () => {
     await query('LOCK TABLE email_templates IN EXCLUSIVE MODE');
-    const max = await one<{ n: number }>(
-      `SELECT COALESCE(max(substring(id from 4)::int), 0) AS n FROM email_templates WHERE id LIKE $1`,
-      [`${d.group}-%`],
-    );
+    const max = await one<{ n: number }>(`SELECT COALESCE(max(substring(id from 4)::int), 0) AS n FROM email_templates WHERE id LIKE $1`, [
+      `${d.group}-%`,
+    ]);
     const id = `${d.group}-${String((max?.n ?? 0) + 1).padStart(2, '0')}`;
-    return one('INSERT INTO email_templates(id, grp, title, subject, body) VALUES($1,$2,$3,$4,$5) RETURNING *', [id, d.group, d.title, d.subject, d.body]);
+    return one('INSERT INTO email_templates(id, grp, title, subject, body) VALUES($1,$2,$3,$4,$5) RETURNING *', [
+      id,
+      d.group,
+      d.title,
+      d.subject,
+      d.body,
+    ]);
   });
   res.status(201).json(row);
 });

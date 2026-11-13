@@ -2,17 +2,7 @@
 import { useState } from 'react';
 import { ArrowDown, ArrowUp, Lock, Pencil, Plus, Trash2 } from 'lucide-react';
 import { PROJECT_CATEGORIES } from '@know-crm/shared';
-import {
-  Badge,
-  Button,
-  Card,
-  ErrorBox,
-  Field,
-  Modal,
-  Spinner,
-  useConfirm,
-  useToast,
-} from '@/components/ui';
+import { Badge, Button, Card, ErrorBox, Field, Modal, Spinner, useConfirm, useToast } from '@/components/ui';
 import { ApiError, del, get, patch, post, put } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { titleCase } from '@/lib/format';
@@ -41,10 +31,7 @@ interface LeadStage {
   used_by_nurture: boolean;
 }
 
-function useReorder<T extends { id: string }>(
-  path: string,
-  setData: (fn: (d: T[] | undefined) => T[] | undefined) => void,
-) {
+function useReorder<T extends { id: string }>(path: string, setData: (fn: (d: T[] | undefined) => T[] | undefined) => void) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const move = async (list: T[], i: number, d: -1 | 1) => {
@@ -76,8 +63,7 @@ export function LeadStageSettings() {
   const { move, busy } = useReorder<LeadStage>('/lead-stages/order', stages.setData);
 
   const remove = async (s: LeadStage) => {
-    if (!(await confirm({ title: `Delete “${s.label}”?`, confirmLabel: 'Delete', danger: true })))
-      return;
+    if (!(await confirm({ title: `Delete “${s.label}”?`, confirmLabel: 'Delete', danger: true }))) return;
     try {
       await del(`/lead-stages/${s.id}`);
       await stages.reload();
@@ -108,39 +94,20 @@ export function LeadStageSettings() {
           <ul className="divide-y divide-line">
             {stages.data.map((s, i, list) => (
               <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ background: s.color }}
-                  aria-hidden
-                />
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: s.color }} aria-hidden />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">
                     {s.label}
-                    {s.system && (
-                      <Lock
-                        className="ml-1.5 inline h-3 w-3 text-faint"
-                        aria-label="System stage"
-                      />
-                    )}
+                    {s.system && <Lock className="ml-1.5 inline h-3 w-3 text-faint" aria-label="System stage" />}
                   </p>
                   <p className="text-xs text-mute">
                     {s.lead_count} lead{s.lead_count === 1 ? '' : 's'}
-                    {s.kind === 'won' &&
-                      s.project_stage_label &&
-                      ` · creates project in ${s.project_stage_label}`}
+                    {s.kind === 'won' && s.project_stage_label && ` · creates project in ${s.project_stage_label}`}
                   </p>
                 </div>
-                <Badge tone={s.kind === 'won' ? 'ok' : 'neutral'}>
-                  {s.kind === 'won' ? 'Won' : 'Open'}
-                </Badge>
+                <Badge tone={s.kind === 'won' ? 'ok' : 'neutral'}>{s.kind === 'won' ? 'Won' : 'Open'}</Badge>
                 <div className="flex">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label="Move up"
-                    disabled={i === 0 || busy}
-                    onClick={() => move(list, i, -1)}
-                  >
+                  <Button size="icon" variant="ghost" aria-label="Move up" disabled={i === 0 || busy} onClick={() => move(list, i, -1)}>
                     <ArrowUp className="h-4 w-4" />
                   </Button>
                   <Button
@@ -152,12 +119,7 @@ export function LeadStageSettings() {
                   >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Edit ${s.label}`}
-                    onClick={() => setEditing(s)}
-                  >
+                  <Button size="icon" variant="ghost" aria-label={`Edit ${s.label}`} onClick={() => setEditing(s)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
@@ -165,13 +127,7 @@ export function LeadStageSettings() {
                     variant="ghost"
                     aria-label={`Delete ${s.label}`}
                     disabled={s.system || s.lead_count > 0 || s.used_by_nurture}
-                    title={
-                      s.system
-                        ? 'System stages cannot be deleted'
-                        : s.lead_count
-                          ? 'Move leads out first'
-                          : undefined
-                    }
+                    title={s.system ? 'System stages cannot be deleted' : s.lead_count ? 'Move leads out first' : undefined}
                     onClick={() => remove(s)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -185,9 +141,7 @@ export function LeadStageSettings() {
       {editing && (
         <LeadStageModal
           stage={editing === 'new' ? null : editing}
-          projectStages={(projectStages.data ?? []).filter(
-            (p) => p.category === 'inquiry' || p.category === 'in_progress',
-          )}
+          projectStages={(projectStages.data ?? []).filter((p) => p.category === 'inquiry' || p.category === 'in_progress')}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
@@ -214,9 +168,7 @@ function LeadStageModal({
   const [label, setLabel] = useState(stage?.label ?? '');
   const [color, setColor] = useState(stage?.color ?? '#9ca7cf');
   const [kind, setKind] = useState<'open' | 'won'>(stage?.kind ?? 'open');
-  const [projectStageId, setProjectStageId] = useState(
-    stage?.project_stage_id ?? projectStages[0]?.id ?? '',
-  );
+  const [projectStageId, setProjectStageId] = useState(stage?.project_stage_id ?? projectStages[0]?.id ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const kindLocked = !!stage && (stage.system || stage.lead_count > 0 || stage.used_by_nurture);
@@ -267,37 +219,19 @@ function LeadStageModal({
       <form id="lead-stage" onSubmit={submit} className="space-y-4">
         <div className="flex items-end gap-3">
           <Field label="Label" required error={errors.label} className="flex-1">
-            <input
-              className="input"
-              value={label}
-              maxLength={100}
-              onChange={(e) => setLabel(e.target.value)}
-            />
+            <input className="input" value={label} maxLength={100} onChange={(e) => setLabel(e.target.value)} />
           </Field>
           <ColorInput value={color} onChange={setColor} />
         </div>
-        <Field
-          label="Behaviour"
-          hint={kindLocked ? 'Only unused custom stages can change behaviour.' : undefined}
-          error={errors.kind}
-        >
-          <select
-            className="input"
-            value={kind}
-            disabled={kindLocked}
-            onChange={(e) => setKind(e.target.value as 'open' | 'won')}
-          >
+        <Field label="Behaviour" hint={kindLocked ? 'Only unused custom stages can change behaviour.' : undefined} error={errors.kind}>
+          <select className="input" value={kind} disabled={kindLocked} onChange={(e) => setKind(e.target.value as 'open' | 'won')}>
             <option value="open">Open: lead is still being worked</option>
             <option value="won">Won: moving here closes the deal</option>
           </select>
         </Field>
         {kind === 'won' && (
           <Field label="Create project in" required error={errors.projectStageId}>
-            <select
-              className="input"
-              value={projectStageId}
-              onChange={(e) => setProjectStageId(e.target.value)}
-            >
+            <select className="input" value={projectStageId} onChange={(e) => setProjectStageId(e.target.value)}>
               <option value="">Choose a project stage…</option>
               {projectStages.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -329,8 +263,7 @@ export function ProjectStageSettings() {
   const { move, busy } = useReorder<ProjectStage>('/project-stages/order', stages.setData);
 
   const remove = async (s: ProjectStage) => {
-    if (!(await confirm({ title: `Delete “${s.label}”?`, confirmLabel: 'Delete', danger: true })))
-      return;
+    if (!(await confirm({ title: `Delete “${s.label}”?`, confirmLabel: 'Delete', danger: true }))) return;
     try {
       await del(`/project-stages/${s.id}`);
       await stages.reload();
@@ -361,20 +294,11 @@ export function ProjectStageSettings() {
           <ul className="divide-y divide-line">
             {stages.data.map((s, i, list) => (
               <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5">
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ background: s.color }}
-                  aria-hidden
-                />
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: s.color }} aria-hidden />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">
                     {s.label}
-                    {s.system && (
-                      <Lock
-                        className="ml-1.5 inline h-3 w-3 text-faint"
-                        aria-label="System stage"
-                      />
-                    )}
+                    {s.system && <Lock className="ml-1.5 inline h-3 w-3 text-faint" aria-label="System stage" />}
                   </p>
                   <p className="text-xs text-mute">
                     {s.project_count} project{s.project_count === 1 ? '' : 's'}
@@ -382,13 +306,7 @@ export function ProjectStageSettings() {
                 </div>
                 <Badge tone="neutral">{titleCase(s.category)}</Badge>
                 <div className="flex">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label="Move up"
-                    disabled={i === 0 || busy}
-                    onClick={() => move(list, i, -1)}
-                  >
+                  <Button size="icon" variant="ghost" aria-label="Move up" disabled={i === 0 || busy} onClick={() => move(list, i, -1)}>
                     <ArrowUp className="h-4 w-4" />
                   </Button>
                   <Button
@@ -400,12 +318,7 @@ export function ProjectStageSettings() {
                   >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Edit ${s.label}`}
-                    onClick={() => setEditing(s)}
-                  >
+                  <Button size="icon" variant="ghost" aria-label={`Edit ${s.label}`} onClick={() => setEditing(s)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
@@ -437,21 +350,11 @@ export function ProjectStageSettings() {
   );
 }
 
-function ProjectStageModal({
-  stage,
-  onClose,
-  onSaved,
-}: {
-  stage: ProjectStage | null;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
+function ProjectStageModal({ stage, onClose, onSaved }: { stage: ProjectStage | null; onClose: () => void; onSaved: () => void }) {
   const toast = useToast();
   const [label, setLabel] = useState(stage?.label ?? '');
   const [color, setColor] = useState(stage?.color ?? '#7da397');
-  const [category, setCategory] = useState<ProjectStage['category']>(
-    stage?.category ?? 'in_progress',
-  );
+  const [category, setCategory] = useState<ProjectStage['category']>(stage?.category ?? 'in_progress');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const categoryLocked = !!stage && (stage.system || stage.project_count > 0);
@@ -493,22 +396,13 @@ function ProjectStageModal({
       <form id="project-stage" onSubmit={submit} className="space-y-4">
         <div className="flex items-end gap-3">
           <Field label="Label" required error={errors.label} className="flex-1">
-            <input
-              className="input"
-              value={label}
-              maxLength={100}
-              onChange={(e) => setLabel(e.target.value)}
-            />
+            <input className="input" value={label} maxLength={100} onChange={(e) => setLabel(e.target.value)} />
           </Field>
           <ColorInput value={color} onChange={setColor} />
         </div>
         <Field
           label="Category"
-          hint={
-            categoryLocked
-              ? 'Move projects out (or use a custom stage) to change the category.'
-              : undefined
-          }
+          hint={categoryLocked ? 'Move projects out (or use a custom stage) to change the category.' : undefined}
           error={errors.category}
         >
           <select

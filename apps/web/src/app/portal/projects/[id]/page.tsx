@@ -11,11 +11,29 @@ import { cn } from '@/lib/cn';
 import { Badge, Card, Empty, ErrorBox, PageHeader, Skeleton, Spinner, Tabs, useToast } from '@/components/ui';
 import { MessageThread } from '@/components/projects/MessageThread';
 import { StageDot } from '@/components/projects/StageDot';
-import type { Activity, DocumentRow, InvoiceView, MeetingRow, Message, Milestone, Note, ProjectFile, Task } from '@/components/projects/types';
+import type {
+  Activity,
+  DocumentRow,
+  InvoiceView,
+  MeetingRow,
+  Message,
+  Milestone,
+  Note,
+  ProjectFile,
+  Task,
+} from '@/components/projects/types';
 import { DOC_KIND_LABEL, INVOICE_TONE } from '@/components/projects/util';
 
 interface PortalDetail {
-  project: { id: string; name: string; stage_label: string; stage_color: string; stage_category: string; progress: number; due_date: string | null };
+  project: {
+    id: string;
+    name: string;
+    stage_label: string;
+    stage_color: string;
+    stage_category: string;
+    progress: number;
+    due_date: string | null;
+  };
   tasks: Task[];
   notes: Note[];
   files: ProjectFile[];
@@ -120,7 +138,13 @@ function Overview({ d, onTasks }: { d: PortalDetail; onTasks: (t: Task[]) => voi
             <ul className="space-y-2">
               {mine.map((t) => (
                 <li key={t.id} className="flex items-start gap-2">
-                  <input type="checkbox" className="mt-1" checked={t.completed} onChange={() => toggle(t)} aria-label={`Complete ${t.title}`} />
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={t.completed}
+                    onChange={() => toggle(t)}
+                    aria-label={`Complete ${t.title}`}
+                  />
                   <div>
                     <p className={cn('text-sm', t.completed && 'text-mute line-through')}>{t.title}</p>
                     {t.due_date && <p className="text-xs text-faint">Due {date(t.due_date)}</p>}
@@ -142,7 +166,12 @@ function Overview({ d, onTasks }: { d: PortalDetail; onTasks: (t: Task[]) => voi
                     {dateTime(m.start_at)} · {m.duration_minutes} min · {titleCase(m.kind)}
                   </p>
                   {m.meeting_url && new Date(m.start_at).getTime() >= now && (
-                    <a href={m.meeting_url} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 text-xs text-acc hover:underline">
+                    <a
+                      href={m.meeting_url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-1 inline-flex items-center gap-1 text-xs text-acc hover:underline"
+                    >
                       Join link <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
@@ -203,7 +232,11 @@ function PortalProject() {
       {tab === 'documents' && (
         <Card bodyClassName="p-0">
           {!d.documents.length ? (
-            <Empty icon={<FileText className="h-5 w-5" />} title="No documents" description="Proposals, contracts and questionnaires from the team appear here." />
+            <Empty
+              icon={<FileText className="h-5 w-5" />}
+              title="No documents"
+              description="Proposals, contracts and questionnaires from the team appear here."
+            />
           ) : (
             <ul className="divide-y divide-line">
               {d.documents.map((doc) => (
@@ -215,7 +248,9 @@ function PortalProject() {
                         {DOC_KIND_LABEL[doc.kind]} · shared {relative(doc.published_at)}
                       </p>
                     </div>
-                    <span className="text-xs text-acc">{doc.kind === 'contract' ? 'Review & sign' : doc.kind === 'questionnaire' ? 'Answer' : 'Review'}</span>
+                    <span className="text-xs text-acc">
+                      {doc.kind === 'contract' ? 'Review & sign' : doc.kind === 'questionnaire' ? 'Answer' : 'Review'}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -276,7 +311,10 @@ function PortalProject() {
                       {f.file_type_label ?? 'File'} · {bytes(Number(f.size))} · {relative(f.created_at)}
                     </p>
                   </div>
-                  <a href={`/api/files/${f.id}/download`} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-acc hover:bg-acc-soft">
+                  <a
+                    href={`/api/files/${f.id}/download`}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-acc hover:bg-acc-soft"
+                  >
                     <Download className="h-4 w-4" /> Download
                   </a>
                 </li>

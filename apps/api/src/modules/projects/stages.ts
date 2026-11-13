@@ -9,7 +9,10 @@ import { audit } from '../../lib/audit.js';
 import { currentUser, requireAdmin, requireStaff } from '../../middleware/auth.js';
 
 export const router = Router();
-const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour').transform((c) => c.toLowerCase());
+const color = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour')
+  .transform((c) => c.toLowerCase());
 
 const list = () =>
   many(
@@ -20,10 +23,7 @@ const list = () =>
 router.get('/project-stages', requireStaff, async (_req, res) => res.json(await list()));
 
 router.post('/project-stages', requireAdmin, async (req, res) => {
-  const data = parse(
-    z.object({ label: z.string().trim().min(1).max(100), color, category: z.enum(PROJECT_CATEGORIES) }),
-    req.body,
-  );
+  const data = parse(z.object({ label: z.string().trim().min(1).max(100), color, category: z.enum(PROJECT_CATEGORIES) }), req.body);
   const stage = await transaction(async () => {
     await query('LOCK TABLE project_stages IN EXCLUSIVE MODE');
     const n = await one<{ n: number }>('SELECT count(*)::int n FROM project_stages');

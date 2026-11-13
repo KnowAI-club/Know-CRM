@@ -59,7 +59,13 @@ export function Milestones({
     setBusy('save');
     try {
       const next = await put<Milestone[]>(`/projects/${projectId}/milestones`, {
-        milestones: editing.map((d) => ({ id: d.id, title: d.title, description: d.description, status: d.status, dueDate: d.dueDate || null })),
+        milestones: editing.map((d) => ({
+          id: d.id,
+          title: d.title,
+          description: d.description,
+          status: d.status,
+          dueDate: d.dueDate || null,
+        })),
       });
       onChange(next);
       setEditing(null);
@@ -125,22 +131,44 @@ export function Milestones({
                   />
                   {errors[`milestones.${i}.title`] && <p className="mt-1 text-xs text-danger">{errors[`milestones.${i}.title`]}</p>}
                 </div>
-                <select className="input w-auto" value={d.status} aria-label="Status" onChange={(e) => update(i, { status: e.target.value as MilestoneStatus })}>
+                <select
+                  className="input w-auto"
+                  value={d.status}
+                  aria-label="Status"
+                  onChange={(e) => update(i, { status: e.target.value as MilestoneStatus })}
+                >
                   {Object.entries(MILESTONE_LABEL).map(([v, l]) => (
                     <option key={v} value={v}>
                       {l}
                     </option>
                   ))}
                 </select>
-                <input className="input w-auto" type="date" aria-label="Due date" value={d.dueDate} onChange={(e) => update(i, { dueDate: e.target.value })} />
+                <input
+                  className="input w-auto"
+                  type="date"
+                  aria-label="Due date"
+                  value={d.dueDate}
+                  onChange={(e) => update(i, { dueDate: e.target.value })}
+                />
                 <div className="flex">
                   <Button size="icon" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => moveRow(i, -1)}>
                     <ArrowUp className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" aria-label="Move down" disabled={i === editing.length - 1} onClick={() => moveRow(i, 1)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Move down"
+                    disabled={i === editing.length - 1}
+                    onClick={() => moveRow(i, 1)}
+                  >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" aria-label="Remove stage" onClick={() => setEditing(editing.filter((_, j) => j !== i))}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Remove stage"
+                    onClick={() => setEditing(editing.filter((_, j) => j !== i))}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -160,7 +188,9 @@ export function Milestones({
             variant="secondary"
             size="sm"
             disabled={editing.length >= 30}
-            onClick={() => setEditing([...editing, { key: `new-${Date.now()}`, title: '', description: '', status: 'upcoming', dueDate: '' }])}
+            onClick={() =>
+              setEditing([...editing, { key: `new-${Date.now()}`, title: '', description: '', status: 'upcoming', dueDate: '' }])
+            }
           >
             <Plus className="h-3.5 w-3.5" /> Add stage
           </Button>
@@ -187,7 +217,11 @@ export function Milestones({
                   aria-label={m.status === 'done' ? `Reopen ${m.title}` : `Mark ${m.title} done`}
                   className={cn(
                     'mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border transition disabled:opacity-50',
-                    m.status === 'done' ? 'border-acc bg-acc text-acc-ink' : m.status === 'in_progress' ? 'border-info' : 'border-line hover:border-acc',
+                    m.status === 'done'
+                      ? 'border-acc bg-acc text-acc-ink'
+                      : m.status === 'in_progress'
+                        ? 'border-info'
+                        : 'border-line hover:border-acc',
                   )}
                 >
                   {m.status === 'done' && <Check className="h-3 w-3" />}

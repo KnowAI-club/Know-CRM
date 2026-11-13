@@ -9,7 +9,19 @@ import { useSession } from '@/lib/session';
 import { bytes, date, dateTime, relative, titleCase, today } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import {
-  Avatar, Badge, Button, Card, Empty, ErrorBox, Field, MentionText, MentionTextarea, Modal, Skeleton, useConfirm, useToast,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Empty,
+  ErrorBox,
+  Field,
+  MentionText,
+  MentionTextarea,
+  Modal,
+  Skeleton,
+  useConfirm,
+  useToast,
 } from '@/components/ui';
 import { OwnerSelect } from './OwnerSelect';
 import { fieldErrors, type Lead } from './types';
@@ -84,7 +96,11 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
         </div>
       )}
       {meetings.length === 0 ? (
-        <Empty title="No meetings yet" description="Discovery calls and follow-ups with this lead appear here." icon={<Video className="h-5 w-5" />} />
+        <Empty
+          title="No meetings yet"
+          description="Discovery calls and follow-ups with this lead appear here."
+          icon={<Video className="h-5 w-5" />}
+        />
       ) : (
         <ul className="divide-y divide-line rounded-xl border border-line">
           {meetings.map((m) => {
@@ -134,7 +150,12 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
             <input className="input" maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </Field>
           <Field label="Starts" required error={errors.startAt}>
-            <input className="input" type="datetime-local" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} />
+            <input
+              className="input"
+              type="datetime-local"
+              value={form.start}
+              onChange={(e) => setForm({ ...form, start: e.target.value })}
+            />
           </Field>
           <Field label="Duration (minutes)" error={errors.durationMinutes}>
             <input
@@ -156,7 +177,12 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
           </Field>
           {form.kind === 'in_person' ? (
             <Field label="Location" error={errors.location}>
-              <input className="input" maxLength={500} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+              <input
+                className="input"
+                maxLength={500}
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+              />
             </Field>
           ) : (
             <Field label="Meeting link" error={errors.meetingUrl}>
@@ -244,7 +270,10 @@ export function LeadTasks({ lead }: { lead: Lead }) {
   return (
     <div className="space-y-4">
       {!locked && (
-        <form onSubmit={add} className="grid gap-2 rounded-xl border border-line p-3 sm:grid-cols-[1fr_auto_auto_auto_auto] sm:items-center">
+        <form
+          onSubmit={add}
+          className="grid gap-2 rounded-xl border border-line p-3 sm:grid-cols-[1fr_auto_auto_auto_auto] sm:items-center"
+        >
           <input
             className="input"
             placeholder="Add a task…"
@@ -400,7 +429,11 @@ export function LeadFiles({ lead, attachments, onChanged }: { lead: Lead; attach
                   </p>
                 </div>
                 {a.file_type && <Badge>{a.file_type}</Badge>}
-                <a href={`/api/lead-attachments/${a.id}/download`} className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink" aria-label={`Download ${a.name}`}>
+                <a
+                  href={`/api/lead-attachments/${a.id}/download`}
+                  className="rounded-md p-1.5 text-mute hover:bg-subtle hover:text-ink"
+                  aria-label={`Download ${a.name}`}
+                >
                   <Download className="h-4 w-4" />
                 </a>
                 {!locked && (
@@ -462,7 +495,11 @@ export function LeadFiles({ lead, attachments, onChanged }: { lead: Lead; attach
               onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 10))}
             />
           </div>
-          {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
+              {error}
+            </p>
+          )}
         </form>
       </Modal>
     </div>
@@ -710,7 +747,12 @@ const days = (a: string, b: string) => Math.max(0, (new Date(b).getTime() - new 
 const fmtDays = (n: number) => (n < 1 ? '<1 day' : `${Math.round(n)} day${Math.round(n) === 1 ? '' : 's'}`);
 
 /** Time spent in each stage and in nurture across the lead's life. */
-export function LeadCycle({ leadId, version, stageLabel, stageColor }: {
+export function LeadCycle({
+  leadId,
+  version,
+  stageLabel,
+  stageColor,
+}: {
   leadId: string;
   version: number;
   stageLabel: (id: string) => string;

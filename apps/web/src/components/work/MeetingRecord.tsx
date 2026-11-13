@@ -176,13 +176,23 @@ export function MeetingRecord({
                       placeholder="Send revised estimate"
                       onChange={(e) => updateStep(s.key, 'text', e.target.value)}
                     />
-                    <Button variant="ghost" size="icon" aria-label="Remove step" onClick={() => setSteps((l) => l.filter((x) => x.key !== s.key))}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Remove step"
+                      onClick={() => setSteps((l) => l.filter((x) => x.key !== s.key))}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                   {errors[`step-${s.key}`] && <span className="mt-1 block text-xs text-danger">{errors[`step-${s.key}`]}</span>}
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <select className="input w-auto" aria-label="Owner" value={s.ownerId} onChange={(e) => updateStep(s.key, 'ownerId', e.target.value)}>
+                    <select
+                      className="input w-auto"
+                      aria-label="Owner"
+                      value={s.ownerId}
+                      onChange={(e) => updateStep(s.key, 'ownerId', e.target.value)}
+                    >
                       <option value="">No owner</option>
                       {team.map((u) => (
                         <option key={u.id} value={u.id}>
@@ -190,7 +200,13 @@ export function MeetingRecord({
                         </option>
                       ))}
                     </select>
-                    <input type="date" className="input w-auto" aria-label="Due date" value={s.dueDate} onChange={(e) => updateStep(s.key, 'dueDate', e.target.value)} />
+                    <input
+                      type="date"
+                      className="input w-auto"
+                      aria-label="Due date"
+                      value={s.dueDate}
+                      onChange={(e) => updateStep(s.key, 'dueDate', e.target.value)}
+                    />
                     {s.taskId && <Badge tone={s.done ? 'ok' : 'acc'}>{s.done ? 'Task done' : 'Task created'}</Badge>}
                   </div>
                 </div>

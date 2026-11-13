@@ -25,7 +25,12 @@ interface Conversation {
 
 function Thread({ projectId, onSent }: { projectId: string; onSent: (m: Message[]) => void }) {
   const { data, error, loading, reload, setData } = useLoad((s) => get<Message[]>(`/projects/${projectId}/messages`, s), [projectId]);
-  if (error) return <div className="p-4"><ErrorBox error={error} retry={reload} /></div>;
+  if (error)
+    return (
+      <div className="p-4">
+        <ErrorBox error={error} retry={reload} />
+      </div>
+    );
   if (loading && !data) return <Spinner />;
   return (
     <MessageThread
@@ -47,14 +52,18 @@ function Inbox() {
   const router = useRouter();
   const pathname = usePathname();
   const selected = params.get('project');
-  const { data, error, loading, reload, setData } = useLoad((s) => (isAdmin ? get<Conversation[]>('/messages', s) : Promise.resolve([])), [isAdmin]);
+  const { data, error, loading, reload, setData } = useLoad(
+    (s) => (isAdmin ? get<Conversation[]>('/messages', s) : Promise.resolve([])),
+    [isAdmin],
+  );
   const [scope, setScope] = useState<'active' | 'all'>('active');
   const [q, setQ] = useState('');
 
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (data ?? []).filter(
-      (c) => (scope === 'all' || c.message_count > 0) && (!term || [c.project_name, c.contact_name].some((s) => s.toLowerCase().includes(term))),
+      (c) =>
+        (scope === 'all' || c.message_count > 0) && (!term || [c.project_name, c.contact_name].some((s) => s.toLowerCase().includes(term))),
     );
   }, [data, scope, q]);
 
@@ -65,7 +74,11 @@ function Inbox() {
 
   return (
     <div>
-      <PageHeader eyebrow="Delivery" title="Client messages" description="Conversations with clients from their portal, one thread per project." />
+      <PageHeader
+        eyebrow="Delivery"
+        title="Client messages"
+        description="Conversations with clients from their portal, one thread per project."
+      />
       {error ? (
         <ErrorBox error={error} retry={reload} />
       ) : loading && !data ? (
@@ -76,7 +89,13 @@ function Inbox() {
             <div className="space-y-2 border-b border-line p-3">
               <div className="relative">
                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" />
-                <input className="input pl-9" placeholder="Search projects" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search conversations" />
+                <input
+                  className="input pl-9"
+                  placeholder="Search projects"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  aria-label="Search conversations"
+                />
               </div>
               <Segmented
                 value={scope}
@@ -95,7 +114,10 @@ function Inbox() {
                   <li key={c.project_id}>
                     <button
                       onClick={() => select(c.project_id)}
-                      className={cn('flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-subtle', c.project_id === selected && 'bg-acc-soft')}
+                      className={cn(
+                        'flex w-full items-start gap-3 px-3 py-3 text-left hover:bg-subtle',
+                        c.project_id === selected && 'bg-acc-soft',
+                      )}
                     >
                       <Avatar name={c.contact_name} size="sm" />
                       <div className="min-w-0 flex-1">
@@ -103,9 +125,7 @@ function Inbox() {
                           <p className="truncate text-sm font-medium">{c.project_name}</p>
                           {c.last_at && <span className="ml-auto shrink-0 text-[11px] text-faint">{relative(c.last_at)}</span>}
                         </div>
-                        <p className="truncate text-xs text-mute">
-                          {c.last_body ? `${c.last_author}: ${c.last_body}` : c.contact_name}
-                        </p>
+                        <p className="truncate text-xs text-mute">{c.last_body ? `${c.last_author}: ${c.last_body}` : c.contact_name}</p>
                       </div>
                     </button>
                   </li>

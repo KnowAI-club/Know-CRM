@@ -56,7 +56,12 @@ export function MessageThread({
             return (
               <div key={m.id} className={cn('flex items-end gap-2', mine && 'flex-row-reverse')}>
                 <Avatar name={m.author_name} size="sm" />
-                <div className={cn('max-w-[80%] rounded-2xl px-3.5 py-2 text-sm', mine ? 'rounded-br-md bg-acc text-acc-ink' : 'rounded-bl-md bg-subtle')}>
+                <div
+                  className={cn(
+                    'max-w-[80%] rounded-2xl px-3.5 py-2 text-sm',
+                    mine ? 'rounded-br-md bg-acc text-acc-ink' : 'rounded-bl-md bg-subtle',
+                  )}
+                >
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
                   <p className={cn('mt-1 text-[11px]', mine ? 'text-acc-ink/70' : 'text-faint')}>
                     {m.author_name} · {dateTime(m.created_at)}

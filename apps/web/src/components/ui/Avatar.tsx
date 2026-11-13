@@ -1,6 +1,12 @@
 import { cn } from '@/lib/cn';
 
-const palette = ['bg-acc-soft text-acc', 'bg-info-soft text-info', 'bg-warn-soft text-warn', 'bg-violet-soft text-violet', 'bg-ok-soft text-ok'];
+const palette = [
+  'bg-acc-soft text-acc',
+  'bg-info-soft text-info',
+  'bg-warn-soft text-warn',
+  'bg-violet-soft text-violet',
+  'bg-ok-soft text-ok',
+];
 
 export function initials(name?: string | null) {
   return (name || '?')
@@ -17,11 +23,7 @@ export function Avatar({ name, size = 'md' }: { name?: string | null; size?: 'sm
   return (
     <span
       title={name || undefined}
-      className={cn(
-        'inline-grid shrink-0 place-items-center rounded-full font-semibold',
-        dim,
-        palette[hash % palette.length],
-      )}
+      className={cn('inline-grid shrink-0 place-items-center rounded-full font-semibold', dim, palette[hash % palette.length])}
     >
       {initials(name)}
     </span>

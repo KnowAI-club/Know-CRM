@@ -19,7 +19,8 @@ export function OwnerSelect({
   extra?: { id: string; name: string } | null;
 }) {
   const team = useTeam();
-  const list = extra && extra.id && !team.some((u) => u.id === extra.id) ? [...team, { ...extra, email: '', role: 'sales' as const }] : team;
+  const list =
+    extra && extra.id && !team.some((u) => u.id === extra.id) ? [...team, { ...extra, email: '', role: 'sales' as const }] : team;
   return (
     <select id={id} className="input" value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)}>
       {emptyLabel !== null && <option value="">{emptyLabel}</option>}

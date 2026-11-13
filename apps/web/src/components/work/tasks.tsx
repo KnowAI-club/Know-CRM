@@ -61,7 +61,14 @@ export function TaskModal({
   const targets = useTargets();
   const toast = useToast();
   const editing = !!task;
-  const [form, setForm] = useState({ title: '', dueDate: '', assigneeId: '', urgent: false, visibility: 'internal' as 'internal' | 'client', target: '' as TargetValue });
+  const [form, setForm] = useState({
+    title: '',
+    dueDate: '',
+    assigneeId: '',
+    urgent: false,
+    visibility: 'internal' as 'internal' | 'client',
+    target: '' as TargetValue,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [general, setGeneral] = useState('');
   const [saving, setSaving] = useState(false);
@@ -143,9 +150,20 @@ export function TaskModal({
       <form id="task-form" onSubmit={submit} className="space-y-4" noValidate>
         {general && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{general}</p>}
         <Field label="Title" required error={errors.title}>
-          <input className="input" value={form.title} maxLength={500} onChange={(e) => set('title', e.target.value)} placeholder="What needs to happen?" />
+          <input
+            className="input"
+            value={form.title}
+            maxLength={500}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder="What needs to happen?"
+          />
         </Field>
-        <Field label="Linked to" required={!editing} error={errors.target} hint={editing ? 'A task stays with the lead or project it was created on.' : undefined}>
+        <Field
+          label="Linked to"
+          required={!editing}
+          error={errors.target}
+          hint={editing ? 'A task stays with the lead or project it was created on.' : undefined}
+        >
           <TargetSelect targets={targets} value={form.target} onChange={(v) => set('target', v)} disabled={editing} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -161,13 +179,20 @@ export function TaskModal({
                   {u.id === user?.id ? ' (you)' : ''}
                 </option>
               ))}
-              {task?.assignee_id && !team.some((u) => u.id === task.assignee_id) && <option value={task.assignee_id}>{task.assignee_name ?? 'Current assignee'}</option>}
+              {task?.assignee_id && !team.some((u) => u.id === task.assignee_id) && (
+                <option value={task.assignee_id}>{task.assignee_name ?? 'Current assignee'}</option>
+              )}
             </select>
           </Field>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.urgent} onChange={(e) => set('urgent', e.target.checked)} className="h-4 w-4 accent-[var(--acc)]" />
+            <input
+              type="checkbox"
+              checked={form.urgent}
+              onChange={(e) => set('urgent', e.target.checked)}
+              className="h-4 w-4 accent-[var(--acc)]"
+            />
             Urgent
           </label>
           {isProject && (
@@ -246,7 +271,9 @@ export function TaskRow({
       </button>
       <div className="min-w-0 flex-1">
         <p className={cn('text-sm', task.completed && 'text-mute line-through')}>
-          {task.urgent && !task.completed && <AlertTriangle className="mr-1 inline h-3.5 w-3.5 -translate-y-px text-danger" aria-label="Urgent" />}
+          {task.urgent && !task.completed && (
+            <AlertTriangle className="mr-1 inline h-3.5 w-3.5 -translate-y-px text-danger" aria-label="Urgent" />
+          )}
           {task.title}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-mute">

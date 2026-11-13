@@ -23,9 +23,7 @@ function NewInvoice() {
   const projects = useLoad((s) => get<ProjectOption[]>('/projects', s), []);
   const settings = useLoad((s) => get<WorkspaceSettings>('/settings', s), []);
   const project = projects.data?.find((p) => p.id === projectId);
-  const back = projectId
-    ? { href: `/projects/${projectId}`, label: 'Back to project' }
-    : { href: '/invoices', label: 'Invoices' };
+  const back = projectId ? { href: `/projects/${projectId}`, label: 'Back to project' } : { href: '/invoices', label: 'Invoices' };
 
   if (projects.error || settings.error)
     return (
@@ -57,11 +55,7 @@ function NewInvoice() {
           <select
             className="input max-w-md"
             value={projectId}
-            onChange={(e) =>
-              router.replace(
-                e.target.value ? `/invoices/new?projectId=${e.target.value}` : '/invoices/new',
-              )
-            }
+            onChange={(e) => router.replace(e.target.value ? `/invoices/new?projectId=${e.target.value}` : '/invoices/new')}
           >
             <option value="">Select a project…</option>
             {choices.map((p) => (
@@ -71,9 +65,7 @@ function NewInvoice() {
             ))}
           </select>
         </Field>
-        {projectId && !project && (
-          <p className="mt-2 text-sm text-danger">That project was not found or is archived.</p>
-        )}
+        {projectId && !project && <p className="mt-2 text-sm text-danger">That project was not found or is archived.</p>}
       </Card>
       {project && (
         <InvoiceEditor

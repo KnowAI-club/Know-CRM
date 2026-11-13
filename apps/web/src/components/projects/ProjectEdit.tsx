@@ -121,10 +121,24 @@ export function ProjectEditModal({
           </select>
         </Field>
         <Field label={`Progress · ${form.progress}%`} error={errors.progress} className="sm:col-span-2">
-          <input type="range" min={0} max={100} step={5} className="w-full accent-[var(--color-acc)]" value={form.progress} onChange={(e) => set('progress', Number(e.target.value))} />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            className="w-full accent-[var(--color-acc)]"
+            value={form.progress}
+            onChange={(e) => set('progress', Number(e.target.value))}
+          />
         </Field>
         <Field label="Project type" error={errors.projectType}>
-          <input className="input" value={form.projectType} maxLength={100} placeholder="e.g. Website, Retainer" onChange={(e) => set('projectType', e.target.value)} />
+          <input
+            className="input"
+            value={form.projectType}
+            maxLength={100}
+            placeholder="e.g. Website, Retainer"
+            onChange={(e) => set('projectType', e.target.value)}
+          />
         </Field>
         <Field label="Lead source" error={errors.leadSource}>
           <input className="input" value={form.leadSource} maxLength={100} onChange={(e) => set('leadSource', e.target.value)} />

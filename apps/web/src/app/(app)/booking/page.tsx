@@ -5,7 +5,20 @@ import { CalendarClock, Clock, ExternalLink, MoreHorizontal, Pencil, Plus, Power
 import { del, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
-import { Badge, Button, Empty, ErrorBox, Menu, PageHeader, Segmented, Skeleton, Spinner, Tabs, useConfirm, useToast } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Empty,
+  ErrorBox,
+  Menu,
+  PageHeader,
+  Segmented,
+  Skeleton,
+  Spinner,
+  Tabs,
+  useConfirm,
+  useToast,
+} from '@/components/ui';
 import { CopyLinkButton } from '@/components/growth/CopyButton';
 import { BookingTypeModal, type BookingType } from '@/components/growth/BookingTypeModal';
 import { minutesLabel, publicBookingPath, WEEKDAYS } from '@/components/growth/util';
@@ -70,7 +83,14 @@ function Pages() {
     }
   };
   const remove = async (t: BookingType) => {
-    if (!(await confirm({ title: `Delete ${t.title}?`, description: 'The link will stop working. Pages with bookings are kept — turn them off instead.', confirmLabel: 'Delete', danger: true })))
+    if (
+      !(await confirm({
+        title: `Delete ${t.title}?`,
+        description: 'The link will stop working. Pages with bookings are kept — turn them off instead.',
+        confirmLabel: 'Delete',
+        danger: true,
+      }))
+    )
       return;
     try {
       await del(`/booking/types/${t.id}`);
@@ -156,7 +176,12 @@ function Pages() {
                   <span className="flex-1" />
                   {t.active && (
                     <>
-                      <a href={publicBookingPath(t.token)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-mute hover:text-ink">
+                      <a
+                        href={publicBookingPath(t.token)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-mute hover:text-ink"
+                      >
                         <ExternalLink className="h-3.5 w-3.5" /> Open
                       </a>
                       <CopyLinkButton path={publicBookingPath(t.token)} />
@@ -194,12 +219,21 @@ function Reservations() {
   if (loading && !data) return <Spinner />;
   const list = (data ?? [])
     .filter((r) =>
-      view === 'cancelled' ? r.status === 'cancelled' : r.status !== 'cancelled' && (view === 'upcoming' ? new Date(r.end_at).getTime() >= now : new Date(r.end_at).getTime() < now),
+      view === 'cancelled'
+        ? r.status === 'cancelled'
+        : r.status !== 'cancelled' && (view === 'upcoming' ? new Date(r.end_at).getTime() >= now : new Date(r.end_at).getTime() < now),
     )
     .sort((a, b) => (view === 'upcoming' ? 1 : -1) * (new Date(a.start_at).getTime() - new Date(b.start_at).getTime()));
 
   const cancel = async (r: Reservation) => {
-    if (!(await confirm({ title: `Cancel ${r.name}'s booking?`, description: 'The guest is emailed and the meeting is cancelled.', confirmLabel: 'Cancel booking', danger: true })))
+    if (
+      !(await confirm({
+        title: `Cancel ${r.name}'s booking?`,
+        description: 'The guest is emailed and the meeting is cancelled.',
+        confirmLabel: 'Cancel booking',
+        danger: true,
+      }))
+    )
       return;
     setBusy(r.id);
     try {
@@ -247,7 +281,13 @@ function Reservations() {
                 <tr key={r.id}>
                   <td className="whitespace-nowrap">
                     <p className={r.status === 'cancelled' ? 'text-mute line-through' : 'font-medium'}>
-                      {new Date(r.start_at).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
+                      {new Date(r.start_at).toLocaleString('en-IN', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
                     </p>
                   </td>
                   <td>

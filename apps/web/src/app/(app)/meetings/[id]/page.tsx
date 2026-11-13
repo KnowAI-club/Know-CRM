@@ -82,7 +82,9 @@ export default function MeetingPage() {
   const cancel = async () => {
     const ok = await confirm({
       title: 'Cancel this meeting?',
-      description: m.booking_reservation_id ? 'The booking is cancelled too and its time slot is released.' : 'Participants keep it in their history as cancelled.',
+      description: m.booking_reservation_id
+        ? 'The booking is cancelled too and its time slot is released.'
+        : 'Participants keep it in their history as cancelled.',
       confirmLabel: 'Cancel meeting',
       danger: true,
     });
@@ -100,7 +102,14 @@ export default function MeetingPage() {
     }
   };
   const remove = async () => {
-    if (!(await confirm({ title: 'Delete this meeting?', description: 'Its notes, transcript and files are removed permanently.', confirmLabel: 'Delete', danger: true })))
+    if (
+      !(await confirm({
+        title: 'Delete this meeting?',
+        description: 'Its notes, transcript and files are removed permanently.',
+        confirmLabel: 'Delete',
+        danger: true,
+      }))
+    )
       return;
     try {
       await del(`/meetings/${m.id}`);
@@ -123,7 +132,9 @@ export default function MeetingPage() {
           },
         ]
       : []),
-    ...(!cancelled && !upload && future ? [{ label: 'Cancel meeting', icon: <XCircle className="h-4 w-4" />, danger: true, onSelect: cancel, disabled: busy }] : []),
+    ...(!cancelled && !upload && future
+      ? [{ label: 'Cancel meeting', icon: <XCircle className="h-4 w-4" />, danger: true, onSelect: cancel, disabled: busy }]
+      : []),
     ...(upload ? [{ label: 'Delete', icon: <Trash2 className="h-4 w-4" />, danger: true, onSelect: remove }] : []),
   ];
 
@@ -174,7 +185,9 @@ export default function MeetingPage() {
           {upload && m.transcript && (
             <Card title="Transcript">
               <details>
-                <summary className="cursor-pointer text-sm text-mute">Show transcript ({m.transcript.length.toLocaleString()} characters)</summary>
+                <summary className="cursor-pointer text-sm text-mute">
+                  Show transcript ({m.transcript.length.toLocaleString()} characters)
+                </summary>
                 <pre className="mt-3 max-h-[60vh] overflow-auto text-xs whitespace-pre-wrap">{m.transcript}</pre>
               </details>
             </Card>
@@ -257,7 +270,13 @@ export default function MeetingPage() {
                     <p className="truncate text-sm">{p.name}</p>
                     {p.name !== p.email && <p className="truncate text-xs text-mute">{p.email}</p>}
                   </div>
-                  {p.user_id === m.organizer_id ? <Badge tone="acc">Organizer</Badge> : !p.user_id ? <Badge>Guest</Badge> : p.role === 'client' ? <Badge tone="info">Client</Badge> : null}
+                  {p.user_id === m.organizer_id ? (
+                    <Badge tone="acc">Organizer</Badge>
+                  ) : !p.user_id ? (
+                    <Badge>Guest</Badge>
+                  ) : p.role === 'client' ? (
+                    <Badge tone="info">Client</Badge>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -311,7 +330,13 @@ export default function MeetingPage() {
         onSaved={upsertReminder}
         fixed={{ meetingId: m.id, label: `For “${m.title}”` }}
       />
-      <ReminderModal open={!!editReminder} reminder={editReminder} onClose={() => setEditReminder(null)} onSaved={upsertReminder} fixed={{ meetingId: m.id }} />
+      <ReminderModal
+        open={!!editReminder}
+        reminder={editReminder}
+        onClose={() => setEditReminder(null)}
+        onSaved={upsertReminder}
+        fixed={{ meetingId: m.id }}
+      />
     </>
   );
 }

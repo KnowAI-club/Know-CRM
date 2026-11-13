@@ -20,17 +20,23 @@ test('schedule: due times follow India time and the weekly cap', () => {
   const replied = plan({ started_at: start }, { weekly_cap: false, stop_on_reply: true }, emails, [
     { email_id: 'a', sent_at: start, replied_at: start },
   ]);
-  assert.deepEqual(replied.map((c) => c.status), ['replied', 'paused']);
+  assert.deepEqual(
+    replied.map((c) => c.status),
+    ['replied', 'paused'],
+  );
 });
 
 test('nurture import, sequence assignment, marking emails and discard', async () => {
   const admin = await adminAgent();
   const imported = await admin
     .post('/api/nurtures/leads')
-    .send({ source: 'imported', leads: [
-      { name: 'Kiran', company: 'K Co', email: 'kiran@k.co' },
-      { name: 'Kiran again', email: 'KIRAN@k.co' },
-    ] })
+    .send({
+      source: 'imported',
+      leads: [
+        { name: 'Kiran', company: 'K Co', email: 'kiran@k.co' },
+        { name: 'Kiran again', email: 'KIRAN@k.co' },
+      ],
+    })
     .expect(201);
   assert.equal(imported.body.added, 1);
   assert.equal(imported.body.skipped[0].reason, 'Listed twice');
@@ -40,14 +46,25 @@ test('nurture import, sequence assignment, marking emails and discard', async ()
   assert.ok(general.body.leads.some((l: any) => l.id === leadId));
   const seq = await admin
     .post('/api/nurtures/sequences')
-    .send({ name: 'Test seq', status: 'active', weeklyCap: false, emails: [
-      { day: 0, sendTime: '10:00', subject: 'Hi {{first_name}}', body: 'Hello' },
-      { day: 3, sendTime: '10:00', subject: 'Again', body: 'Hello again' },
-    ] })
+    .send({
+      name: 'Test seq',
+      status: 'active',
+      weeklyCap: false,
+      emails: [
+        { day: 0, sendTime: '10:00', subject: 'Hi {{first_name}}', body: 'Hello' },
+        { day: 3, sendTime: '10:00', subject: 'Again', body: 'Hello again' },
+      ],
+    })
     .expect(201);
   await admin
     .post('/api/nurtures/sequences')
-    .send({ name: 'Bad', emails: [{ day: 3, sendTime: '10:00', subject: 'x', body: 'y' }, { day: 1, sendTime: '10:00', subject: 'x', body: 'y' }] })
+    .send({
+      name: 'Bad',
+      emails: [
+        { day: 3, sendTime: '10:00', subject: 'x', body: 'y' },
+        { day: 1, sendTime: '10:00', subject: 'x', body: 'y' },
+      ],
+    })
     .expect(400);
 
   const assigned = await admin.post('/api/nurtures/assignments').send({ leadId, sequenceId: seq.body.id }).expect(201);

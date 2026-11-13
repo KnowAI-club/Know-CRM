@@ -19,11 +19,7 @@ let cache: Promise<Omit<Targets, 'loaded'>> | null = null;
 export function useTargets(): Targets {
   const [value, setValue] = useState<Targets>({ leads: [], projects: [], loaded: false });
   useEffect(() => {
-    cache ??= Promise.all([
-      get<any[]>('/leads?state=active'),
-      get<any[]>('/leads?state=nurture'),
-      get<any[]>('/projects'),
-    ])
+    cache ??= Promise.all([get<any[]>('/leads?state=active'), get<any[]>('/leads?state=nurture'), get<any[]>('/projects')])
       .then(([active, nurture, projects]) => ({
         leads: [...active, ...nurture]
           .map((l) => ({ id: l.id, name: l.name, sub: l.data?.company || l.email || '' }))

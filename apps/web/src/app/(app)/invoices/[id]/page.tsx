@@ -1,31 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  Ban,
-  CreditCard,
-  Eye,
-  MoreHorizontal,
-  Pencil,
-  Printer,
-  Repeat,
-  RotateCcw,
-  Trash2,
-} from 'lucide-react';
+import { Ban, CreditCard, Eye, MoreHorizontal, Pencil, Printer, Repeat, RotateCcw, Trash2 } from 'lucide-react';
 import { PAYMENT_METHOD_LABELS } from '@know-crm/shared';
-import {
-  Badge,
-  Button,
-  Card,
-  Empty,
-  ErrorBox,
-  Menu,
-  PageHeader,
-  Segmented,
-  Spinner,
-  useConfirm,
-  useToast,
-} from '@/components/ui';
+import { Badge, Button, Card, Empty, ErrorBox, Menu, PageHeader, Segmented, Spinner, useConfirm, useToast } from '@/components/ui';
 import { del, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { date, money } from '@/lib/format';
@@ -34,13 +12,7 @@ import { InvoiceDocument } from '@/components/money/InvoiceDocument';
 import { PaymentModal, ReasonModal, RecurringModal } from '@/components/money/InvoiceModals';
 import { ScheduleTable } from '@/components/money/ScheduleTable';
 import { InvoiceStatusBadge } from '@/components/money/StatusBadge';
-import {
-  INSTALLMENT_TONE,
-  type Invoice,
-  type Payment,
-  type RecurringSchedule,
-  type WorkspaceSettings,
-} from '@/components/money/types';
+import { INSTALLMENT_TONE, type Invoice, type Payment, type RecurringSchedule, type WorkspaceSettings } from '@/components/money/types';
 
 // Printing shows only the invoice document, whatever layout surrounds it.
 const PRINT_CSS = `@media print {
@@ -59,9 +31,7 @@ export default function InvoicePage() {
   const settings = useLoad((s) => get<WorkspaceSettings>('/settings', s), []);
   const schedules = useLoad((s) => get<RecurringSchedule[]>('/recurring-invoices', s), []);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
-  const [modal, setModal] = useState<
-    null | 'payment' | 'void' | 'recurring' | { reverse: Payment }
-  >(null);
+  const [modal, setModal] = useState<null | 'payment' | 'void' | 'recurring' | { reverse: Payment }>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   if (inv.error) return <ErrorBox error={inv.error} retry={inv.reload} />;
@@ -195,12 +165,7 @@ export default function InvoicePage() {
               {menu.length > 0 && (
                 <Menu
                   trigger={(open) => (
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      aria-label="More actions"
-                      onClick={open}
-                    >
+                    <Button variant="secondary" size="icon" aria-label="More actions" onClick={open}>
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   )}
@@ -237,9 +202,7 @@ export default function InvoicePage() {
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-mute">Received</dt>
-                    <dd className="tabular-nums text-ok">
-                      {money(invoice.paid, invoice.currency)}
-                    </dd>
+                    <dd className="tabular-nums text-ok">{money(invoice.paid, invoice.currency)}</dd>
                   </div>
                   <div className="flex justify-between font-semibold">
                     <dt>Outstanding</dt>
@@ -271,9 +234,7 @@ export default function InvoicePage() {
                       <p className="truncate font-medium">{i.label}</p>
                       <p className="text-xs text-mute">
                         Due {date(i.due_date)}
-                        {i.paid > 0 && i.balance > 0
-                          ? ` · ${money(i.paid, invoice.currency)} paid`
-                          : ''}
+                        {i.paid > 0 && i.balance > 0 ? ` · ${money(i.paid, invoice.currency)} paid` : ''}
                       </p>
                     </div>
                     <span className="tabular-nums">{money(i.amount, invoice.currency)}</span>
@@ -285,39 +246,24 @@ export default function InvoicePage() {
             {!isDraft && (
               <Card title="Payments" bodyClassName="p-0">
                 {invoice.payments.length === 0 ? (
-                  <Empty
-                    title="No payments yet"
-                    description="Record receipts as they arrive; part payments are fine."
-                  />
+                  <Empty title="No payments yet" description="Record receipts as they arrive; part payments are fine." />
                 ) : (
                   <ul className="divide-y divide-line">
                     {invoice.payments.map((p) => (
                       <li key={p.id} className="flex items-start gap-3 px-4 py-2.5 text-sm">
                         <div className="min-w-0 flex-1">
-                          <p
-                            className={
-                              p.reversed ? 'font-medium text-mute line-through' : 'font-medium'
-                            }
-                          >
+                          <p className={p.reversed ? 'font-medium text-mute line-through' : 'font-medium'}>
                             {money(p.amount, invoice.currency)}
                           </p>
                           <p className="text-xs text-mute">
                             {date(p.received_date)} · {PAYMENT_METHOD_LABELS[p.method] ?? p.method}
                             {p.reference ? ` · ${p.reference}` : ''}
                           </p>
-                          {p.reversed && (
-                            <p className="text-xs text-danger">Reversed: {p.reversal_reason}</p>
-                          )}
-                          {p.recorded_by_name && (
-                            <p className="text-xs text-faint">by {p.recorded_by_name}</p>
-                          )}
+                          {p.reversed && <p className="text-xs text-danger">Reversed: {p.reversal_reason}</p>}
+                          {p.recorded_by_name && <p className="text-xs text-faint">by {p.recorded_by_name}</p>}
                         </div>
                         {!p.reversed && invoice.status !== 'void' && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setModal({ reverse: p })}
-                          >
+                          <Button size="sm" variant="ghost" onClick={() => setModal({ reverse: p })}>
                             <RotateCcw className="h-3.5 w-3.5" /> Reverse
                           </Button>
                         )}

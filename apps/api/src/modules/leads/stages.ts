@@ -10,7 +10,10 @@ import { currentUser, requireAdmin, requireStaff } from '../../middleware/auth.j
 /** Lead pipeline stages and the shared source/industry option lists. */
 export const router = Router();
 
-const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour').transform((c) => c.toLowerCase());
+const color = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Use a hex colour')
+  .transform((c) => c.toLowerCase());
 const stageFields = z.object({
   label: z.string().trim().min(1, 'Required').max(100),
   kind: z.enum(['open', 'won']),
@@ -34,8 +37,7 @@ async function checkHandoff(kind: string, projectStageId: string | null) {
   }
   if (!projectStageId) throw badRequest('Choose the project stage won leads move into.');
   const ps = await one('SELECT category FROM project_stages WHERE id=$1', [projectStageId]);
-  if (!ps || ['completed', 'archived'].includes(ps.category))
-    throw badRequest('Choose an active project stage as the destination.');
+  if (!ps || ['completed', 'archived'].includes(ps.category)) throw badRequest('Choose an active project stage as the destination.');
 }
 
 router.get('/lead-stages', requireStaff, async (_req, res) => res.json(await stageCatalog()));
@@ -77,16 +79,20 @@ router.patch('/lead-stages/:id', requireAdmin, async (req, res) => {
     const current = (await stageCatalog()).find((s) => s.id === req.params.id);
     if (!current) throw notFound('Stage');
     const kind = data.kind ?? current.kind;
-    const projectStageId = data.projectStageId !== undefined ? data.projectStageId : kind === current.kind ? current.project_stage_id : null;
+    const projectStageId =
+      data.projectStageId !== undefined ? data.projectStageId : kind === current.kind ? current.project_stage_id : null;
     if (kind !== current.kind && (current.system || current.lead_count > 0 || current.used_by_nurture))
       throw conflict('Only unused custom stages can change behaviour.');
     await checkHandoff(kind, projectStageId);
     if (data.label && (await one('SELECT 1 FROM lead_stages WHERE lower(label)=lower($1) AND id<>$2', [data.label, current.id])))
       throw conflict('A stage with this label already exists.');
-    return one(
-      'UPDATE lead_stages SET label=$2, color=$3, kind=$4, project_stage_id=$5 WHERE id=$1 RETURNING *',
-      [current.id, data.label ?? current.label, data.color ?? current.color, kind, projectStageId],
-    );
+    return one('UPDATE lead_stages SET label=$2, color=$3, kind=$4, project_stage_id=$5 WHERE id=$1 RETURNING *', [
+      current.id,
+      data.label ?? current.label,
+      data.color ?? current.color,
+      kind,
+      projectStageId,
+    ]);
   });
   await audit(currentUser(req), 'lead_stage', null, 'updated', `Lead stage ${stage!.label} updated`);
   res.json(stage);

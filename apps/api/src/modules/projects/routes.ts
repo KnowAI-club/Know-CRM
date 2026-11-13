@@ -18,7 +18,10 @@ const idParam = z.object({ id: z.string().uuid() });
 const projectSchema = z.object({
   name: z.string().trim().min(1, 'Required').max(500),
   contactId: z.string().uuid('Choose a client'),
-  stage: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/).default('inquiry'),
+  stage: z
+    .string()
+    .regex(/^[a-z][a-z0-9_]{0,63}$/)
+    .default('inquiry'),
   value: z.coerce.number().int().min(0).max(1e11).default(0),
   description: z.string().max(20000).default(''),
   dueDate: zs.date,
@@ -65,8 +68,17 @@ router.post('/projects', requireStaff, async (req, res) => {
                             project_type, lead_source, archive_reason)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
       [
-        data.name, data.contactId, data.stage, data.value, await workspaceCurrency(), data.description,
-        data.dueDate || null, ownerId, data.progress, data.projectType, data.leadSource,
+        data.name,
+        data.contactId,
+        data.stage,
+        data.value,
+        await workspaceCurrency(),
+        data.description,
+        data.dueDate || null,
+        ownerId,
+        data.progress,
+        data.projectType,
+        data.leadSource,
         stage.category === 'archived' ? data.archiveReason : '',
       ],
     );
@@ -95,7 +107,9 @@ router.patch('/projects/:id', requireStaff, async (req, res) => {
   if (data.contactId && !(await one('SELECT 1 FROM contacts WHERE id=$1', [data.contactId])))
     throw badRequest('Choose an existing contact.');
   if (data.ownerId) await assertActiveStaff(data.ownerId, 'Owner must be a team member.', current.owner_id);
-  const stage = data.stage ? await stageOf(data.stage) : { id: current.stage, category: current.stage_category, label: current.stage_label };
+  const stage = data.stage
+    ? await stageOf(data.stage)
+    : { id: current.stage, category: current.stage_category, label: current.stage_label };
   const next = {
     name: data.name ?? current.name,
     contact_id: data.contactId ?? current.contact_id,
@@ -116,8 +130,21 @@ router.patch('/projects/:id', requireStaff, async (req, res) => {
          progress=$9, project_type=$10, lead_source=$11, archive_reason=$12, updated_at=now(),
          stage_changed_at = CASE WHEN $13 THEN now() ELSE stage_changed_at END
        WHERE id=$1`,
-      [id, next.name, next.contact_id, next.stage, next.value, next.description, next.due_date, next.owner_id,
-        next.progress, next.project_type, next.lead_source, next.archive_reason, stageChanged],
+      [
+        id,
+        next.name,
+        next.contact_id,
+        next.stage,
+        next.value,
+        next.description,
+        next.due_date,
+        next.owner_id,
+        next.progress,
+        next.project_type,
+        next.lead_source,
+        next.archive_reason,
+        stageChanged,
+      ],
     );
     const edits: string[] = [];
     if (next.contact_id !== current.contact_id) {
@@ -199,7 +226,9 @@ async function projectDetail(req: any, id: string, portal: boolean) {
   ]);
   const canSeeMessages = portal || me.role === 'admin';
   const messages = canSeeMessages
-    ? await many('SELECT id, body, author_name, author_role, author_id, created_at FROM messages WHERE project_id=$1 ORDER BY created_at', [id])
+    ? await many('SELECT id, body, author_name, author_role, author_id, created_at FROM messages WHERE project_id=$1 ORDER BY created_at', [
+        id,
+      ])
     : [];
   const invoices = await invoiceViewsForProject(id, portal);
   if (portal) {
@@ -211,10 +240,7 @@ async function projectDetail(req: any, id: string, portal: boolean) {
   }
   const [activity, participants, contact, lead] = await Promise.all([
     many('SELECT * FROM activities WHERE project_id=$1 ORDER BY created_at DESC LIMIT 300', [id]),
-    many(
-      `SELECT u.id, u.name, u.email FROM project_access a JOIN users u ON u.id=a.user_id WHERE a.project_id=$1 ORDER BY u.name`,
-      [id],
-    ),
+    many(`SELECT u.id, u.name, u.email FROM project_access a JOIN users u ON u.id=a.user_id WHERE a.project_id=$1 ORDER BY u.name`, [id]),
     one('SELECT c.* FROM contacts c JOIN projects p ON p.contact_id=c.id WHERE p.id=$1', [id]),
     one(
       `SELECT l.id, l.name, l.email, l.state, l.stage, l.data, l.created_at, w.won_at, s.label AS stage_label, u.name AS owner_name
@@ -225,7 +251,17 @@ async function projectDetail(req: any, id: string, portal: boolean) {
     ),
   ]);
   return {
-    project, tasks, notes, files, milestones, meetings, documents, messages, invoices, activity, participants,
+    project,
+    tasks,
+    notes,
+    files,
+    milestones,
+    meetings,
+    documents,
+    messages,
+    invoices,
+    activity,
+    participants,
     clientInfo: { contact, lead },
   };
 }
@@ -242,10 +278,11 @@ router.post('/projects/:id/client-access', requireAdmin, async (req, res) => {
   if (existing) throw conflict('This client account already exists. Link the existing client instead.');
   const contact = await one('SELECT name FROM contacts WHERE id=$1', [project.contact_id]);
   const user = await transaction(async () => {
-    const u = await one(
-      `INSERT INTO users(name,email,role,password_hash) VALUES($1,$2,'client',$3) RETURNING id, name, email, role`,
-      [data.name || contact?.name || data.email, data.email, await hashPassword(data.password)],
-    );
+    const u = await one(`INSERT INTO users(name,email,role,password_hash) VALUES($1,$2,'client',$3) RETURNING id, name, email, role`, [
+      data.name || contact?.name || data.email,
+      data.email,
+      await hashPassword(data.password),
+    ]);
     await query('INSERT INTO project_access(user_id, project_id) VALUES($1,$2)', [u!.id, id]);
     await projectActivity(me, id, 'Client portal access granted');
     return u;
@@ -271,12 +308,8 @@ router.delete('/projects/:id/client-links/:userId', requireAdmin, async (req, re
   await transaction(async () => {
     const r = await query('DELETE FROM project_access WHERE user_id=$1 AND project_id=$2', [userId, id]);
     if (!r.rowCount) throw notFound('Client access');
-    await query(
-      `UPDATE tasks SET assignee_id=NULL, visibility='internal' WHERE project_id=$1 AND assignee_id=$2`,
-      [id, userId],
-    );
+    await query(`UPDATE tasks SET assignee_id=NULL, visibility='internal' WHERE project_id=$1 AND assignee_id=$2`, [id, userId]);
     await projectActivity(me, id, 'Client portal access revoked');
   });
   res.json({ ok: true });
 });
-

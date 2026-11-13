@@ -72,16 +72,12 @@ export function InvoiceEditor({
   const [heading, setHeading] = useState(invoice?.heading ?? 'Tax Invoice');
   const [introduction, setIntroduction] = useState(invoice?.introduction ?? '');
   const [purchaseOrder, setPurchaseOrder] = useState(invoice?.purchase_order ?? '');
-  const [dueDate, setDueDate] = useState(
-    invoice?.due_date ?? addDays(new Date().toISOString().slice(0, 10), 15),
-  );
+  const [dueDate, setDueDate] = useState(invoice?.due_date ?? addDays(new Date().toISOString().slice(0, 10), 15));
   const [taxId, setTaxId] = useState(invoice?.tax_id || billing?.gstin || '');
   const [buyerTaxId, setBuyerTaxId] = useState(invoice?.buyer_tax_id ?? '');
   const [sellerDetails, setSellerDetails] = useState(invoice?.seller_details ?? '');
   const [taxLabel, setTaxLabel] = useState(invoice?.tax_label ?? 'Tax');
-  const [serviceChargeLabel, setServiceChargeLabel] = useState(
-    invoice?.service_charge_label ?? 'Service charge',
-  );
+  const [serviceChargeLabel, setServiceChargeLabel] = useState(invoice?.service_charge_label ?? 'Service charge');
 
   const [lines, setLines] = useState<LineDraft[]>(
     invoice?.lines.length
@@ -96,27 +92,19 @@ export function InvoiceEditor({
         }))
       : [blankLine()],
   );
-  const [discountType, setDiscountType] = useState<'none' | 'fixed' | 'percent'>(
-    invoice?.discount_type ?? 'none',
-  );
+  const [discountType, setDiscountType] = useState<'none' | 'fixed' | 'percent'>(invoice?.discount_type ?? 'none');
   const [discountFixed, setDiscountFixed] = useState<number | null>(
     invoice?.discount_type === 'fixed' ? Number(invoice.discount_value) : 0,
   );
   const [discountPercent, setDiscountPercent] = useState(
     invoice?.discount_type === 'percent' ? bpToPercent(Number(invoice.discount_value)) : '',
   );
-  const [serviceCharge, setServiceCharge] = useState(
-    invoice?.service_charge_rate ? bpToPercent(invoice.service_charge_rate) : '',
-  );
+  const [serviceCharge, setServiceCharge] = useState(invoice?.service_charge_rate ? bpToPercent(invoice.service_charge_rate) : '');
   const [taxes, setTaxes] = useState<TaxDraft[]>(() => {
     if (invoice) {
       const comps = invoice.tax_components ?? [];
-      if (comps.length)
-        return comps.map((c) => ({ key: uuid(), label: c.label, rate: bpToPercent(c.rate) }));
-      if (invoice.tax_rate)
-        return [
-          { key: uuid(), label: invoice.tax_label || 'Tax', rate: bpToPercent(invoice.tax_rate) },
-        ];
+      if (comps.length) return comps.map((c) => ({ key: uuid(), label: c.label, rate: bpToPercent(c.rate) }));
+      if (invoice.tax_rate) return [{ key: uuid(), label: invoice.tax_label || 'Tax', rate: bpToPercent(invoice.tax_rate) }];
       return [];
     }
     return [
@@ -142,11 +130,7 @@ export function InvoiceEditor({
 
   const parsedTaxes = taxes.map((t) => ({ label: t.label.trim(), rate: percentToBp(t.rate) }));
   const discountValue =
-    discountType === 'fixed'
-      ? (discountFixed ?? 0)
-      : discountType === 'percent'
-        ? (percentToBp(discountPercent) ?? 0)
-        : 0;
+    discountType === 'fixed' ? (discountFixed ?? 0) : discountType === 'percent' ? (percentToBp(discountPercent) ?? 0) : 0;
   const taxKey = JSON.stringify(parsedTaxes);
   const totals = useMemo(
     () =>
@@ -169,8 +153,7 @@ export function InvoiceEditor({
 
   const setLine = (key: string, patchLine: Partial<LineDraft>) =>
     setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patchLine } : l)));
-  const setPlanItem = (key: string, p: Partial<InstallmentDraft>) =>
-    setPlan((ps) => ps.map((x) => (x.key === key ? { ...x, ...p } : x)));
+  const setPlanItem = (key: string, p: Partial<InstallmentDraft>) => setPlan((ps) => ps.map((x) => (x.key === key ? { ...x, ...p } : x)));
 
   const addService = (s: Service) => {
     setLines((ls) => {
@@ -217,9 +200,7 @@ export function InvoiceEditor({
     setPlan((ps) => {
       if (!ps.length) return ps;
       const rest = ps.slice(0, -1).reduce((a, p) => a + (p.amount ?? 0), 0);
-      return ps.map((p, i) =>
-        i === ps.length - 1 ? { ...p, amount: Math.max(totals.total - rest, 0) } : p,
-      );
+      return ps.map((p, i) => (i === ps.length - 1 ? { ...p, amount: Math.max(totals.total - rest, 0) } : p));
     });
 
   const splitEvenly = () =>
@@ -238,28 +219,21 @@ export function InvoiceEditor({
     if (!heading.trim()) e.heading = 'Required';
     lines.forEach((l, i) => {
       if (!l.name.trim() && !l.description.trim()) e[`lines.${i}.name`] = 'Name the service.';
-      if (!validQuantity(l.quantity))
-        e[`lines.${i}.quantity`] = 'Quantity above 0, max 2 decimals.';
+      if (!validQuantity(l.quantity)) e[`lines.${i}.quantity`] = 'Quantity above 0, max 2 decimals.';
       if (l.unitPrice === null) e[`lines.${i}.unitPrice`] = 'Enter a valid price.';
       if (!l.unit.trim()) e[`lines.${i}.unit`] = 'Required';
     });
-    if (discountType === 'percent' && percentToBp(discountPercent) === null)
-      e.discountValue = 'Use a percentage from 0 to 100.';
-    if (discountType === 'fixed' && discountFixed === null)
-      e.discountValue = 'Enter a valid amount.';
-    if (discountType === 'fixed' && (discountFixed ?? 0) > totals.subtotal)
-      e.discountValue = 'A discount cannot exceed the subtotal.';
-    if (percentToBp(serviceCharge) === null)
-      e.serviceChargeRate = 'Use a percentage from 0 to 100.';
+    if (discountType === 'percent' && percentToBp(discountPercent) === null) e.discountValue = 'Use a percentage from 0 to 100.';
+    if (discountType === 'fixed' && discountFixed === null) e.discountValue = 'Enter a valid amount.';
+    if (discountType === 'fixed' && (discountFixed ?? 0) > totals.subtotal) e.discountValue = 'A discount cannot exceed the subtotal.';
+    if (percentToBp(serviceCharge) === null) e.serviceChargeRate = 'Use a percentage from 0 to 100.';
     parsedTaxes.forEach((t, i) => {
       if (!t.label) e[`taxComponents.${i}.label`] = 'Label required';
       if (t.rate === null) e[`taxComponents.${i}.rate`] = 'Invalid rate';
     });
     const labels = parsedTaxes.map((t) => t.label.toLowerCase());
-    if (new Set(labels).size !== labels.length)
-      e.taxComponents = 'Tax component labels must be unique.';
-    if (parsedTaxes.reduce((a, t) => a + (t.rate ?? 0), 0) > 10000)
-      e.taxComponents = 'Taxes cannot exceed 100%.';
+    if (new Set(labels).size !== labels.length) e.taxComponents = 'Tax component labels must be unique.';
+    if (parsedTaxes.reduce((a, t) => a + (t.rate ?? 0), 0) > 10000) e.taxComponents = 'Taxes cannot exceed 100%.';
     if (totals.total <= 0) e.total = 'The invoice total must be more than zero.';
     if (split) {
       plan.forEach((p, i) => {
@@ -317,19 +291,12 @@ export function InvoiceEditor({
     try {
       let saved: Invoice;
       if (invoice) {
-        saved = await patch<Invoice>(
-          `/invoices/${invoice.id}`,
-          publish ? { ...body, status: 'sent' } : body,
-        );
+        saved = await patch<Invoice>(`/invoices/${invoice.id}`, publish ? { ...body, status: 'sent' } : body);
       } else {
         saved = await post<Invoice>(`/projects/${projectId}/invoices`, { ...body, idempotencyKey });
         if (publish) saved = await patch<Invoice>(`/invoices/${saved.id}`, { status: 'sent' });
       }
-      toast.success(
-        publish
-          ? `Invoice ${saved.number} published to the client portal.`
-          : `Draft ${saved.number} saved.`,
-      );
+      toast.success(publish ? `Invoice ${saved.number} published to the client portal.` : `Draft ${saved.number} saved.`);
       onSaved(saved, publish);
     } catch (err) {
       if (err instanceof ApiError) setErrors(fieldErrors(err));
@@ -357,38 +324,15 @@ export function InvoiceEditor({
               />
             </Field>
             <Field label="Document heading" error={err('heading')}>
-              <input
-                className="input"
-                value={heading}
-                onChange={(e) => setHeading(e.target.value)}
-                maxLength={200}
-              />
+              <input className="input" value={heading} onChange={(e) => setHeading(e.target.value)} maxLength={200} />
             </Field>
             <Field label="Due date" error={err('dueDate')}>
-              <input
-                type="date"
-                className="input"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
+              <input type="date" className="input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </Field>
-            <Field
-              label="Purchase order"
-              hint="Optional client PO reference"
-              error={err('purchaseOrder')}
-            >
-              <input
-                className="input"
-                value={purchaseOrder}
-                onChange={(e) => setPurchaseOrder(e.target.value)}
-                maxLength={200}
-              />
+            <Field label="Purchase order" hint="Optional client PO reference" error={err('purchaseOrder')}>
+              <input className="input" value={purchaseOrder} onChange={(e) => setPurchaseOrder(e.target.value)} maxLength={200} />
             </Field>
-            <Field
-              label="Client GSTIN / tax ID"
-              hint="Defaults to the client record"
-              error={err('buyerTaxId')}
-            >
+            <Field label="Client GSTIN / tax ID" hint="Defaults to the client record" error={err('buyerTaxId')}>
               <input
                 className="input uppercase"
                 value={buyerTaxId}
@@ -397,18 +341,9 @@ export function InvoiceEditor({
               />
             </Field>
             <Field label="Your GSTIN / tax ID" error={err('taxId')}>
-              <input
-                className="input uppercase"
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value.toUpperCase())}
-                maxLength={100}
-              />
+              <input className="input uppercase" value={taxId} onChange={(e) => setTaxId(e.target.value.toUpperCase())} maxLength={100} />
             </Field>
-            <Field
-              label="Seller details"
-              hint="Leave empty to use the billing address from settings"
-              error={err('sellerDetails')}
-            >
+            <Field label="Seller details" hint="Leave empty to use the billing address from settings" error={err('sellerDetails')}>
               <textarea
                 className="input"
                 rows={2}
@@ -417,12 +352,7 @@ export function InvoiceEditor({
                 maxLength={5000}
               />
             </Field>
-            <Field
-              label="Introduction"
-              hint="Shown above the line items"
-              className="sm:col-span-2"
-              error={err('introduction')}
-            >
+            <Field label="Introduction" hint="Shown above the line items" className="sm:col-span-2" error={err('introduction')}>
               <textarea
                 className="input"
                 rows={2}
@@ -449,9 +379,7 @@ export function InvoiceEditor({
                     label: (
                       <span className="flex w-full justify-between gap-4">
                         <span className="truncate">{s.name}</span>
-                        <span className="text-mute tabular-nums">
-                          {money(s.unit_price, s.currency)}
-                        </span>
+                        <span className="text-mute tabular-nums">{money(s.unit_price, s.currency)}</span>
                       </span>
                     ),
                     onSelect: () => addService(s),
@@ -473,23 +401,10 @@ export function InvoiceEditor({
           <ul className="divide-y divide-line">
             {lines.map((l, i) => (
               <li key={l.key} className="grid gap-3 p-4 sm:grid-cols-12">
-                <Field
-                  label="Service"
-                  error={err(`lines.${i}.name`) ?? err(`lines.${i}`)}
-                  className="sm:col-span-7"
-                >
-                  <input
-                    className="input"
-                    value={l.name}
-                    onChange={(e) => setLine(l.key, { name: e.target.value })}
-                    maxLength={500}
-                  />
+                <Field label="Service" error={err(`lines.${i}.name`) ?? err(`lines.${i}`)} className="sm:col-span-7">
+                  <input className="input" value={l.name} onChange={(e) => setLine(l.key, { name: e.target.value })} maxLength={500} />
                 </Field>
-                <Field
-                  label="Quantity"
-                  error={err(`lines.${i}.quantity`)}
-                  className="sm:col-span-2"
-                >
+                <Field label="Quantity" error={err(`lines.${i}.quantity`)} className="sm:col-span-2">
                   <input
                     className="input text-right tabular-nums"
                     inputMode="decimal"
@@ -498,12 +413,7 @@ export function InvoiceEditor({
                   />
                 </Field>
                 <Field label="Unit" error={err(`lines.${i}.unit`)} className="sm:col-span-3">
-                  <input
-                    className="input"
-                    value={l.unit}
-                    onChange={(e) => setLine(l.key, { unit: e.target.value })}
-                    maxLength={100}
-                  />
+                  <input className="input" value={l.unit} onChange={(e) => setLine(l.key, { unit: e.target.value })} maxLength={100} />
                 </Field>
                 <Field label="Description" className="sm:col-span-7">
                   <textarea
@@ -514,25 +424,12 @@ export function InvoiceEditor({
                     maxLength={20000}
                   />
                 </Field>
-                <Field
-                  label="Unit price"
-                  error={err(`lines.${i}.unitPrice`)}
-                  className="sm:col-span-3"
-                >
-                  <MoneyInput
-                    value={l.unitPrice}
-                    currency={currency}
-                    onChange={(v) => setLine(l.key, { unitPrice: v })}
-                  />
+                <Field label="Unit price" error={err(`lines.${i}.unitPrice`)} className="sm:col-span-3">
+                  <MoneyInput value={l.unitPrice} currency={currency} onChange={(v) => setLine(l.key, { unitPrice: v })} />
                 </Field>
                 <div className="flex items-end justify-between gap-2 sm:col-span-2 sm:flex-col sm:items-end">
                   <label className="flex items-center gap-1.5 text-xs text-mute">
-                    <input
-                      type="checkbox"
-                      checked={l.taxable}
-                      onChange={(e) => setLine(l.key, { taxable: e.target.checked })}
-                    />{' '}
-                    Taxable
+                    <input type="checkbox" checked={l.taxable} onChange={(e) => setLine(l.key, { taxable: e.target.checked })} /> Taxable
                   </label>
                   <div className="flex items-center gap-1">
                     <span className="text-sm font-medium tabular-nums">
@@ -579,11 +476,7 @@ export function InvoiceEditor({
                 />
                 {discountType === 'fixed' && (
                   <div className="w-40">
-                    <MoneyInput
-                      value={discountFixed}
-                      currency={currency}
-                      onChange={setDiscountFixed}
-                    />
+                    <MoneyInput value={discountFixed} currency={currency} onChange={setDiscountFixed} />
                   </div>
                 )}
                 {discountType === 'percent' && (
@@ -597,9 +490,7 @@ export function InvoiceEditor({
                   />
                 )}
               </div>
-              {err('discountValue') && (
-                <p className="mt-1 text-xs text-danger">{err('discountValue')}</p>
-              )}
+              {err('discountValue') && <p className="mt-1 text-xs text-danger">{err('discountValue')}</p>}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Service charge %" error={err('serviceChargeRate')}>
@@ -665,17 +556,9 @@ export function InvoiceEditor({
                         value={t.label}
                         placeholder="CGST"
                         maxLength={60}
-                        onChange={(e) =>
-                          setTaxes((ts) =>
-                            ts.map((x) => (x.key === t.key ? { ...x, label: e.target.value } : x)),
-                          )
-                        }
+                        onChange={(e) => setTaxes((ts) => ts.map((x) => (x.key === t.key ? { ...x, label: e.target.value } : x)))}
                       />
-                      {err(`taxComponents.${i}.label`) && (
-                        <p className="mt-1 text-xs text-danger">
-                          {err(`taxComponents.${i}.label`)}
-                        </p>
-                      )}
+                      {err(`taxComponents.${i}.label`) && <p className="mt-1 text-xs text-danger">{err(`taxComponents.${i}.label`)}</p>}
                     </div>
                     <div className="w-28">
                       <div className="relative">
@@ -685,19 +568,11 @@ export function InvoiceEditor({
                           inputMode="decimal"
                           value={t.rate}
                           placeholder="9"
-                          onChange={(e) =>
-                            setTaxes((ts) =>
-                              ts.map((x) => (x.key === t.key ? { ...x, rate: e.target.value } : x)),
-                            )
-                          }
+                          onChange={(e) => setTaxes((ts) => ts.map((x) => (x.key === t.key ? { ...x, rate: e.target.value } : x)))}
                         />
-                        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-faint">
-                          %
-                        </span>
+                        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-faint">%</span>
                       </div>
-                      {err(`taxComponents.${i}.rate`) && (
-                        <p className="mt-1 text-xs text-danger">{err(`taxComponents.${i}.rate`)}</p>
-                      )}
+                      {err(`taxComponents.${i}.rate`) && <p className="mt-1 text-xs text-danger">{err(`taxComponents.${i}.rate`)}</p>}
                     </div>
                     <Button
                       size="icon"
@@ -710,18 +585,11 @@ export function InvoiceEditor({
                   </div>
                 ))}
                 <Field label="Tax heading on invoice" className="max-w-xs">
-                  <input
-                    className="input"
-                    value={taxLabel}
-                    onChange={(e) => setTaxLabel(e.target.value)}
-                    maxLength={100}
-                  />
+                  <input className="input" value={taxLabel} onChange={(e) => setTaxLabel(e.target.value)} maxLength={100} />
                 </Field>
               </div>
             )}
-            {err('taxComponents') && (
-              <p className="mt-1 text-xs text-danger">{err('taxComponents')}</p>
-            )}
+            {err('taxComponents') && <p className="mt-1 text-xs text-danger">{err('taxComponents')}</p>}
           </div>
         </Card>
 
@@ -730,9 +598,7 @@ export function InvoiceEditor({
           action={
             <Segmented
               value={split ? 'split' : 'single'}
-              onChange={(v) =>
-                v === 'split' ? (plan.length ? setSplit(true) : startSplit()) : setSplit(false)
-              }
+              onChange={(v) => (v === 'split' ? (plan.length ? setSplit(true) : startSplit()) : setSplit(false))}
               options={[
                 { value: 'single', label: 'Single payment' },
                 { value: 'split', label: 'Instalments' },
@@ -742,16 +608,12 @@ export function InvoiceEditor({
         >
           {!split ? (
             <p className="text-sm text-mute">
-              The full {money(totals.total, currency)} is due{' '}
-              {dueDate ? `on ${dueDate}` : 'on receipt'}.
+              The full {money(totals.total, currency)} is due {dueDate ? `on ${dueDate}` : 'on receipt'}.
             </p>
           ) : (
             <div className="space-y-3">
               {plan.map((p, i) => (
-                <div
-                  key={p.key}
-                  className="grid items-start gap-2 sm:grid-cols-[1fr_160px_150px_auto]"
-                >
+                <div key={p.key} className="grid items-start gap-2 sm:grid-cols-[1fr_160px_150px_auto]">
                   <Field label={i === 0 ? 'Label' : ''} error={err(`installments.${i}.label`)}>
                     <input
                       aria-label="Instalment label"
@@ -762,11 +624,7 @@ export function InvoiceEditor({
                     />
                   </Field>
                   <Field label={i === 0 ? 'Amount' : ''} error={err(`installments.${i}.amount`)}>
-                    <MoneyInput
-                      value={p.amount}
-                      currency={currency}
-                      onChange={(v) => setPlanItem(p.key, { amount: v })}
-                    />
+                    <MoneyInput value={p.amount} currency={currency} onChange={(v) => setPlanItem(p.key, { amount: v })} />
                   </Field>
                   <Field label={i === 0 ? 'Due' : ''}>
                     <input
@@ -794,12 +652,7 @@ export function InvoiceEditor({
                   size="sm"
                   variant="soft"
                   disabled={plan.length >= 24}
-                  onClick={() =>
-                    setPlan((ps) => [
-                      ...ps,
-                      { key: uuid(), label: `Instalment ${ps.length + 1}`, amount: 0, dueDate },
-                    ])
-                  }
+                  onClick={() => setPlan((ps) => [...ps, { key: uuid(), label: `Instalment ${ps.length + 1}`, amount: 0, dueDate }])}
                 >
                   <Plus className="h-3.5 w-3.5" /> Instalment
                 </Button>
@@ -809,12 +662,7 @@ export function InvoiceEditor({
                 <Button size="sm" variant="ghost" onClick={balanceLast}>
                   Put balance in last
                 </Button>
-                <span
-                  className={cn(
-                    'ml-auto text-xs tabular-nums',
-                    planSum === totals.total ? 'text-ok' : 'text-danger',
-                  )}
-                >
+                <span className={cn('ml-auto text-xs tabular-nums', planSum === totals.total ? 'text-ok' : 'text-danger')}>
                   {money(planSum, currency)} of {money(totals.total, currency)}
                 </span>
               </div>
@@ -828,9 +676,7 @@ export function InvoiceEditor({
         <Card title="Summary">
           <dl className="space-y-2 text-sm">
             <Row label="Subtotal" value={money(totals.subtotal, currency)} />
-            {totals.discountAmount > 0 && (
-              <Row label="Discount" value={`− ${money(totals.discountAmount, currency)}`} />
-            )}
+            {totals.discountAmount > 0 && <Row label="Discount" value={`− ${money(totals.discountAmount, currency)}`} />}
             {totals.serviceChargeAmount > 0 && (
               <Row
                 label={`${serviceChargeLabel || 'Service charge'} (${percentLabel(percentToBp(serviceCharge) ?? 0)})`}
@@ -838,41 +684,26 @@ export function InvoiceEditor({
               />
             )}
             {totals.taxComponents.map((c, i) => (
-              <Row
-                key={i}
-                label={`${c.label || 'Tax'} (${percentLabel(c.rate)})`}
-                value={money(c.amount, currency)}
-              />
+              <Row key={i} label={`${c.label || 'Tax'} (${percentLabel(c.rate)})`} value={money(c.amount, currency)} />
             ))}
             <div className="border-t border-line pt-2">
               <Row
                 label={<span className="font-semibold text-ink">Total</span>}
-                value={
-                  <span className="text-base font-semibold">{money(totals.total, currency)}</span>
-                }
+                value={<span className="text-base font-semibold">{money(totals.total, currency)}</span>}
               />
             </div>
           </dl>
-          {totals.total > 0 && (
-            <p className="mt-2 text-xs text-faint">{amountInWords(totals.total, currency)}</p>
-          )}
+          {totals.total > 0 && <p className="mt-2 text-xs text-faint">{amountInWords(totals.total, currency)}</p>}
           {err('total') && <p className="mt-2 text-xs text-danger">{err('total')}</p>}
           <div className="mt-4 grid gap-2">
             <Button onClick={() => save(true)} loading={saving === 'publish'} disabled={!!saving}>
               Save and publish
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => save(false)}
-              loading={saving === 'draft'}
-              disabled={!!saving}
-            >
+            <Button variant="secondary" onClick={() => save(false)} loading={saving === 'draft'} disabled={!!saving}>
               Save draft
             </Button>
           </div>
-          <p className="mt-3 text-xs text-faint">
-            Publishing shows the invoice in the client portal and locks it from further edits.
-          </p>
+          <p className="mt-3 text-xs text-faint">Publishing shows the invoice in the client portal and locks it from further edits.</p>
         </Card>
       </aside>
     </div>

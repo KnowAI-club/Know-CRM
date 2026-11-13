@@ -43,9 +43,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               i.kind === 'error' ? 'border-danger/30 bg-danger-soft text-danger' : 'border-line bg-card text-ink',
             )}
           >
-            {i.kind === 'error' ? <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> : <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-acc" />}
+            {i.kind === 'error' ? (
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            ) : (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-acc" />
+            )}
             <span className="flex-1">{i.text}</span>
-            <button onClick={() => setItems((l) => l.filter((x) => x.id !== i.id))} aria-label="Dismiss" className="text-mute hover:text-ink">
+            <button
+              onClick={() => setItems((l) => l.filter((x) => x.id !== i.id))}
+              aria-label="Dismiss"
+              className="text-mute hover:text-ink"
+            >
               <X className="h-3.5 w-3.5" />
             </button>
           </div>

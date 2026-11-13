@@ -60,7 +60,14 @@ export function OverviewTab({
         >
           {editing ? (
             <div>
-              <textarea className="input" rows={5} value={desc} maxLength={20000} onChange={(e) => setDesc(e.target.value)} aria-label="Description" />
+              <textarea
+                className="input"
+                rows={5}
+                value={desc}
+                maxLength={20000}
+                onChange={(e) => setDesc(e.target.value)}
+                aria-label="Description"
+              />
               <div className="mt-2 flex justify-end gap-2">
                 <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
                   Cancel

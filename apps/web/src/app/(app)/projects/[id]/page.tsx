@@ -29,7 +29,11 @@ function ProjectView() {
   const toast = useToast();
   const { isAdmin } = useSession();
   const { data, error, loading, reload, setData } = useLoad(
-    (s) => Promise.all([get<ProjectDetail>(`/projects/${id}`, s), get<ProjectStage[]>('/project-stages', s)]).then(([detail, stages]) => ({ detail, stages })),
+    (s) =>
+      Promise.all([get<ProjectDetail>(`/projects/${id}`, s), get<ProjectStage[]>('/project-stages', s)]).then(([detail, stages]) => ({
+        detail,
+        stages,
+      })),
     [id],
   );
   const [editing, setEditing] = useState(false);
@@ -48,7 +52,8 @@ function ProjectView() {
 
   const { detail, stages } = data;
   const { project } = detail;
-  const update = <K extends keyof ProjectDetail>(k: K, v: ProjectDetail[K]) => setData((d) => d && { ...d, detail: { ...d.detail, [k]: v } });
+  const update = <K extends keyof ProjectDetail>(k: K, v: ProjectDetail[K]) =>
+    setData((d) => d && { ...d, detail: { ...d.detail, [k]: v } });
   const setProject = (p: Project) => update('project', { ...detail.project, ...p });
 
   const moveStage = async (stageId: string) => {
@@ -62,7 +67,10 @@ function ProjectView() {
   };
 
   const overdue =
-    project.due_date && project.stage_category !== 'completed' && project.stage_category !== 'archived' && new Date(`${project.due_date}T23:59:59`) < new Date();
+    project.due_date &&
+    project.stage_category !== 'completed' &&
+    project.stage_category !== 'archived' &&
+    new Date(`${project.due_date}T23:59:59`) < new Date();
 
   const tabs: { value: Tab; label: string; count?: number }[] = [
     { value: 'overview', label: 'Overview' },
@@ -114,7 +122,9 @@ function ProjectView() {
               items={[
                 { label: 'New invoice', onSelect: () => router.push(`/invoices/new?projectId=${project.id}`) },
                 { label: 'New document', onSelect: () => setTab('documents') },
-                ...(project.source_lead_id ? [{ label: 'Open source lead', onSelect: () => router.push(`/leads/${project.source_lead_id}`) }] : []),
+                ...(project.source_lead_id
+                  ? [{ label: 'Open source lead', onSelect: () => router.push(`/leads/${project.source_lead_id}`) }]
+                  : []),
               ]}
             />
           </>
@@ -122,9 +132,17 @@ function ProjectView() {
       />
       <Tabs tabs={tabs} value={tab} onChange={setTab} className="mb-5" />
       {tab === 'overview' && (
-        <OverviewTab detail={detail} onProject={setProject} onMilestones={(m) => update('milestones', m)} isAdmin={isAdmin} openAccess={() => setTab('access')} />
+        <OverviewTab
+          detail={detail}
+          onProject={setProject}
+          onMilestones={(m) => update('milestones', m)}
+          isAdmin={isAdmin}
+          openAccess={() => setTab('access')}
+        />
       )}
-      {tab === 'tasks' && <TasksTab projectId={project.id} tasks={detail.tasks} participants={detail.participants} onChange={(t) => update('tasks', t)} />}
+      {tab === 'tasks' && (
+        <TasksTab projectId={project.id} tasks={detail.tasks} participants={detail.participants} onChange={(t) => update('tasks', t)} />
+      )}
       {tab === 'notes' && <NotesTab projectId={project.id} notes={detail.notes} onChange={(n) => update('notes', n)} />}
       {tab === 'files' && <FilesTab projectId={project.id} files={detail.files} onChange={(f) => update('files', f)} />}
       {tab === 'meetings' && <MeetingsTab projectId={project.id} meetings={detail.meetings} />}
@@ -137,14 +155,23 @@ function ProjectView() {
             messages={detail.messages}
             onChange={(m) => update('messages', m)}
             side="team"
-            emptyText={detail.participants.length ? 'Start the conversation with your client.' : 'Give the client portal access so they can reply here.'}
+            emptyText={
+              detail.participants.length
+                ? 'Start the conversation with your client.'
+                : 'Give the client portal access so they can reply here.'
+            }
           />
         </div>
       )}
       {tab === 'time' && <TimeTab projectId={project.id} />}
       {tab === 'activity' && <ActivityTab activity={detail.activity} />}
       {tab === 'access' && isAdmin && (
-        <AccessTab projectId={project.id} participants={detail.participants} contact={detail.clientInfo.contact} onChange={(p) => update('participants', p)} />
+        <AccessTab
+          projectId={project.id}
+          participants={detail.participants}
+          contact={detail.clientInfo.contact}
+          onChange={(p) => update('participants', p)}
+        />
       )}
       <ProjectEditModal open={editing} onClose={() => setEditing(false)} project={project} stages={stages} onSaved={setProject} />
     </div>

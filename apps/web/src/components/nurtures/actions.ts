@@ -4,7 +4,8 @@ import type { Tracked } from './types';
 export const markEmail = (assignmentId: string, emailId: string, body: { sent?: boolean; replied?: boolean }) =>
   post<Tracked>(`/nurtures/assignments/${assignmentId}/emails/${emailId}`, body);
 
-export const assignmentOp = (assignmentId: string, op: 'pause' | 'resume' | 'remove') => post(`/nurtures/assignments/${assignmentId}/${op}`);
+export const assignmentOp = (assignmentId: string, op: 'pause' | 'resume' | 'remove') =>
+  post(`/nurtures/assignments/${assignmentId}/${op}`);
 
 /** The most recent sent email that has no reply yet (where a reply would be recorded). */
 export function replyTarget(t: Tracked) {

@@ -70,9 +70,7 @@ router.post('/contacts/import', async (req, res) => {
   });
   if (errors.length) throw badRequest('Fix the highlighted rows and try again.', { rows: errors });
   const result = await transaction(async () => {
-    const existing = new Set(
-      (await many<{ e: string }>(`SELECT lower(email) e FROM contacts WHERE email<>''`)).map((r) => r.e),
-    );
+    const existing = new Set((await many<{ e: string }>(`SELECT lower(email) e FROM contacts WHERE email<>''`)).map((r) => r.e));
     let created = 0;
     let skipped = 0;
     for (const c of parsed) {
@@ -101,10 +99,8 @@ router.patch('/contacts/:id', async (req, res) => {
   const current = await one('SELECT * FROM contacts WHERE id=$1', [id]);
   if (!current) throw notFound('Contact');
   if (me.role !== 'admin') {
-    if (data.email !== undefined && data.email !== current.email)
-      throw forbidden("Only an admin can change a client's email or phone.");
-    if (data.phone !== undefined && data.phone !== current.phone)
-      throw forbidden("Only an admin can change a client's email or phone.");
+    if (data.email !== undefined && data.email !== current.email) throw forbidden("Only an admin can change a client's email or phone.");
+    if (data.phone !== undefined && data.phone !== current.phone) throw forbidden("Only an admin can change a client's email or phone.");
   }
   const merged = normalizeTax({ gstin: data.gstin ?? current.gstin, pan: data.pan ?? current.pan });
   if (data.gstin !== undefined || data.pan !== undefined) {
@@ -143,10 +139,9 @@ router.delete('/contacts/:id', async (req, res) => {
 router.get('/contacts/:id/comments', async (req, res) => {
   const { id } = parse(idParam, req.params);
   res.json(
-    await many(
-      'SELECT id, body, author_name, author_id, created_at FROM contact_comments WHERE contact_id=$1 ORDER BY created_at DESC',
-      [id],
-    ),
+    await many('SELECT id, body, author_name, author_id, created_at FROM contact_comments WHERE contact_id=$1 ORDER BY created_at DESC', [
+      id,
+    ]),
   );
 });
 
@@ -156,10 +151,12 @@ router.post('/contacts/:id/comments', async (req, res) => {
   const { body } = parse(z.object({ body: z.string().trim().min(1).max(5000) }), req.body);
   const contact = await one('SELECT name FROM contacts WHERE id=$1', [id]);
   if (!contact) throw notFound('Contact');
-  const comment = await one(
-    'INSERT INTO contact_comments(contact_id, body, author_id, author_name) VALUES($1,$2,$3,$4) RETURNING *',
-    [id, body, me.id, me.name],
-  );
+  const comment = await one('INSERT INTO contact_comments(contact_id, body, author_id, author_name) VALUES($1,$2,$3,$4) RETURNING *', [
+    id,
+    body,
+    me.id,
+    me.name,
+  ]);
   await notifyMentions({ author: me, after: body, where: `a comment on ${contact.name}`, link: `/clients/${id}` });
   res.status(201).json(comment);
 });

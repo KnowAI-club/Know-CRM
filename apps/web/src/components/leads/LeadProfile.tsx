@@ -126,7 +126,12 @@ export function LeadProfile({
           <input className="input" value={lead.email} disabled readOnly />
         </Field>
         {text('company', 'Company')}
-        {text('phone', 'Phone', { type: 'tel', max: 40, disabled: phoneLocked, hint: phoneLocked ? 'Only an admin can change the phone.' : undefined })}
+        {text('phone', 'Phone', {
+          type: 'tel',
+          max: 40,
+          disabled: phoneLocked,
+          hint: phoneLocked ? 'Only an admin can change the phone.' : undefined,
+        })}
         {text('website', 'Website', { type: 'url', max: 2000 })}
         {text('socials', 'Social profiles', { max: 10000 })}
       </Section>
@@ -142,16 +147,50 @@ export function LeadProfile({
           {lead.nurture && <span className="mt-1 block text-xs text-faint">Change the POC from Nurture management.</span>}
         </Field>
         <Field label="Source" error={errors.source}>
-          <OptionSelect kind="source" value={form.source} options={sources} onChange={(v) => set('source', v)} onAdded={onOptionsChanged} disabled={readOnly} />
+          <OptionSelect
+            kind="source"
+            value={form.source}
+            options={sources}
+            onChange={(v) => set('source', v)}
+            onAdded={onOptionsChanged}
+            disabled={readOnly}
+          />
         </Field>
         <Field label="Industry" error={errors.industry}>
-          <OptionSelect kind="industry" value={form.industry} options={industries} onChange={(v) => set('industry', v)} onAdded={onOptionsChanged} disabled={readOnly} />
+          <OptionSelect
+            kind="industry"
+            value={form.industry}
+            options={industries}
+            onChange={(v) => set('industry', v)}
+            onAdded={onOptionsChanged}
+            disabled={readOnly}
+          />
         </Field>
-        {choice('funnel', 'Funnel', [['inbound', 'Inbound'], ['outbound', 'Outbound']])}
-        {choice('temperature', 'Temperature', [['warm', 'Warm'], ['cold', 'Cold']])}
-        {choice('qualifiedFit', 'Qualified fit', [['unknown', 'Unknown'], ['yes', 'Yes'], ['no', 'No']])}
-        {choice('attendance', 'Attended discovery', [['unknown', 'Unknown'], ['yes', 'Yes'], ['no', 'No']])}
-        {choice('outcome', 'Call outcome', [['none', 'Not recorded'], ['ideal', 'Ideal'], ['no_show', 'No-show'], ['ghost', 'Ghosted'], ['refused', 'Refused']])}
+        {choice('funnel', 'Funnel', [
+          ['inbound', 'Inbound'],
+          ['outbound', 'Outbound'],
+        ])}
+        {choice('temperature', 'Temperature', [
+          ['warm', 'Warm'],
+          ['cold', 'Cold'],
+        ])}
+        {choice('qualifiedFit', 'Qualified fit', [
+          ['unknown', 'Unknown'],
+          ['yes', 'Yes'],
+          ['no', 'No'],
+        ])}
+        {choice('attendance', 'Attended discovery', [
+          ['unknown', 'Unknown'],
+          ['yes', 'Yes'],
+          ['no', 'No'],
+        ])}
+        {choice('outcome', 'Call outcome', [
+          ['none', 'Not recorded'],
+          ['ideal', 'Ideal'],
+          ['no_show', 'No-show'],
+          ['ghost', 'Ghosted'],
+          ['refused', 'Refused'],
+        ])}
         {text('budget', 'Budget')}
         {text('timeline', 'Timeline')}
       </Section>

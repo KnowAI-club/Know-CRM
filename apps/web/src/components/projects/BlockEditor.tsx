@@ -90,19 +90,39 @@ export function BlockEditor({
           </div>
           {b.type === 'heading' && (
             <div className="flex gap-2">
-              <select className="input w-24" value={b.level} aria-label="Heading level" onChange={(e) => set(i, { level: Number(e.target.value) as 1 | 2 | 3 })}>
+              <select
+                className="input w-24"
+                value={b.level}
+                aria-label="Heading level"
+                onChange={(e) => set(i, { level: Number(e.target.value) as 1 | 2 | 3 })}
+              >
                 <option value={1}>H1</option>
                 <option value={2}>H2</option>
                 <option value={3}>H3</option>
               </select>
               <div className="flex-1">
-                <input className="input font-semibold" placeholder="Heading" maxLength={200} value={b.text} onChange={(e) => set(i, { text: e.target.value })} aria-label="Heading text" />
+                <input
+                  className="input font-semibold"
+                  placeholder="Heading"
+                  maxLength={200}
+                  value={b.text}
+                  onChange={(e) => set(i, { text: e.target.value })}
+                  aria-label="Heading text"
+                />
                 {err(i, 'text') && <p className="mt-1 text-xs text-danger">{err(i, 'text')}</p>}
               </div>
             </div>
           )}
           {b.type === 'text' && (
-            <textarea className="input" rows={4} placeholder="Write a paragraph…" maxLength={20000} value={b.text} onChange={(e) => set(i, { text: e.target.value })} aria-label="Text" />
+            <textarea
+              className="input"
+              rows={4}
+              placeholder="Write a paragraph…"
+              maxLength={20000}
+              value={b.text}
+              onChange={(e) => set(i, { text: e.target.value })}
+              aria-label="Text"
+            />
           )}
           {b.type === 'service' && (
             <div className="grid gap-2 sm:grid-cols-[2fr_1fr_1fr_6rem]">
@@ -113,7 +133,14 @@ export function BlockEditor({
                 <MoneyInput value={b.unitPrice} currency={b.currency} onChange={(v) => set(i, { unitPrice: v ?? 0 })} />
               </Field>
               <Field label="Quantity" error={err(i, 'quantity')}>
-                <input className="input" type="number" min={0.01} step="any" value={b.quantity} onChange={(e) => set(i, { quantity: Number(e.target.value) })} />
+                <input
+                  className="input"
+                  type="number"
+                  min={0.01}
+                  step="any"
+                  value={b.quantity}
+                  onChange={(e) => set(i, { quantity: Number(e.target.value) })}
+                />
               </Field>
               <Field label="Currency">
                 <select className="input" value={b.currency} onChange={(e) => set(i, { currency: e.target.value })}>
@@ -123,7 +150,13 @@ export function BlockEditor({
                 </select>
               </Field>
               <Field label="Description" className="sm:col-span-4">
-                <textarea className="input" rows={2} maxLength={5000} value={b.description} onChange={(e) => set(i, { description: e.target.value })} />
+                <textarea
+                  className="input"
+                  rows={2}
+                  maxLength={5000}
+                  value={b.description}
+                  onChange={(e) => set(i, { description: e.target.value })}
+                />
               </Field>
             </div>
           )}
@@ -133,7 +166,11 @@ export function BlockEditor({
                 <input className="input" maxLength={200} value={b.label} onChange={(e) => set(i, { label: e.target.value })} />
               </Field>
               <Field label="Answer type">
-                <select className="input" value={b.questionType} onChange={(e) => set(i, { questionType: e.target.value as 'short' | 'long' | 'choice' })}>
+                <select
+                  className="input"
+                  value={b.questionType}
+                  onChange={(e) => set(i, { questionType: e.target.value as 'short' | 'long' | 'choice' })}
+                >
                   <option value="short">Short answer</option>
                   <option value="long">Long answer</option>
                   <option value="choice">Single choice</option>
@@ -148,7 +185,14 @@ export function BlockEditor({
                     className="input"
                     rows={3}
                     value={b.options.join('\n')}
-                    onChange={(e) => set(i, { options: e.target.value.split('\n').map((o) => o.trimStart()).slice(0, 50) })}
+                    onChange={(e) =>
+                      set(i, {
+                        options: e.target.value
+                          .split('\n')
+                          .map((o) => o.trimStart())
+                          .slice(0, 50),
+                      })
+                    }
                     onBlur={() => set(i, { options: b.options.map((o) => o.trim()).filter(Boolean) })}
                   />
                 </Field>

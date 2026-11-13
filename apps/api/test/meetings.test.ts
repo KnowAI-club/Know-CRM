@@ -63,7 +63,10 @@ test('reminders are delivered in-app and are idempotent per client id', async ()
   const body = { id, leadId: lead.id, recipientId: me.id, title: 'Call back', runAt: new Date(Date.now() + 1000).toISOString() };
   await admin.post('/api/reminders').send(body).expect(201);
   await admin.post('/api/reminders').send(body).expect(200);
-  await admin.post('/api/reminders').send({ ...body, title: 'Other' }).expect(409);
+  await admin
+    .post('/api/reminders')
+    .send({ ...body, title: 'Other' })
+    .expect(409);
   await query(`UPDATE reminders SET run_at = now() - interval '1 minute' WHERE id=$1`, [id]);
   await deliverReminders();
   const list = await admin.get(`/api/reminders?leadId=${lead.id}`).expect(200);
@@ -78,7 +81,11 @@ test('public booking reserves a slot, creates CRM records and can be cancelled',
     await admin
       .post('/api/booking/types')
       .send({
-        title: 'Intro call', timezone: 'UTC', duration: 30, minimumNotice: 0, horizon: 30,
+        title: 'Intro call',
+        timezone: 'UTC',
+        duration: 30,
+        minimumNotice: 0,
+        horizon: 30,
         availability: [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, start: '09:00', end: '12:00' })),
       })
       .expect(201)
@@ -89,7 +96,13 @@ test('public booking reserves a slot, creates CRM records and can be cancelled',
   assert.equal(slots.length, 11); // 09:00–11:30 every 15 minutes
   assert.equal(slots[0].startAt, `${tomorrow()}T09:00:00.000Z`);
   const secret = randomBytes(32).toString('hex');
-  const reserve = { requestId: randomUUID(), managementSecret: secret, name: 'Guest One', email: 'guest@one.in', startAt: slots[0].startAt };
+  const reserve = {
+    requestId: randomUUID(),
+    managementSecret: secret,
+    name: 'Guest One',
+    email: 'guest@one.in',
+    startAt: slots[0].startAt,
+  };
   const first = await pub.post(`/api/public/booking/${type.token}/reservations`).send(reserve).expect(201);
   assert.equal(first.body.managementPath, `/book/manage/${secret}`);
   await pub.post(`/api/public/booking/${type.token}/reservations`).send(reserve).expect(200);
@@ -97,7 +110,10 @@ test('public booking reserves a slot, creates CRM records and can be cancelled',
     .post(`/api/public/booking/${type.token}/reservations`)
     .send({ ...reserve, requestId: randomUUID(), managementSecret: randomBytes(32).toString('hex') })
     .expect(409);
-  await pub.post(`/api/public/booking/${type.token}/reservations`).send({ ...reserve, requestId: randomUUID(), website: 'spam' }).expect(400);
+  await pub
+    .post(`/api/public/booking/${type.token}/reservations`)
+    .send({ ...reserve, requestId: randomUUID(), website: 'spam' })
+    .expect(400);
   const after = (await pub.get(`/api/public/booking/${type.token}/slots?date=${tomorrow()}`).expect(200)).body;
   assert.equal(after.length, 9); // 09:00 and 09:15 now overlap the booking
 

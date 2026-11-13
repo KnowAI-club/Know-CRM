@@ -17,7 +17,15 @@ export function MentionText({ text, className }: { text: string; className?: str
   parts.push(text.slice(last));
   return (
     <span className={cn('whitespace-pre-wrap', className)}>
-      {parts.map((p, i) => (typeof p === 'string' ? <Fragment key={i}>{p}</Fragment> : <span key={i} className="mention">@{p.name}</span>))}
+      {parts.map((p, i) =>
+        typeof p === 'string' ? (
+          <Fragment key={i}>{p}</Fragment>
+        ) : (
+          <span key={i} className="mention">
+            @{p.name}
+          </span>
+        ),
+      )}
     </span>
   );
 }
@@ -116,7 +124,10 @@ export function MentionTextarea({
                 e.preventDefault();
                 insert(u.name, u.id);
               }}
-              className={cn('flex w-full flex-col rounded-lg px-2.5 py-1.5 text-left text-sm', i === active ? 'bg-acc-soft' : 'hover:bg-subtle')}
+              className={cn(
+                'flex w-full flex-col rounded-lg px-2.5 py-1.5 text-left text-sm',
+                i === active ? 'bg-acc-soft' : 'hover:bg-subtle',
+              )}
             >
               <span className="font-medium">{u.name}</span>
               <span className="text-xs text-mute">{u.email}</span>

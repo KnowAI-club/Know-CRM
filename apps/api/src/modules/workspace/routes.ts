@@ -24,11 +24,7 @@ router.get('/team', requireStaff, async (_req, res) => {
 });
 
 router.get('/clients', requireAdmin, async (_req, res) => {
-  res.json(
-    await many(
-      `SELECT id, name, email, disabled_at IS NULL AS active FROM users WHERE role='client' ORDER BY lower(name)`,
-    ),
-  );
+  res.json(await many(`SELECT id, name, email, disabled_at IS NULL AS active FROM users WHERE role='client' ORDER BY lower(name)`));
 });
 
 router.post('/team', requireAdmin, async (req, res) => {
@@ -42,8 +38,7 @@ router.post('/team', requireAdmin, async (req, res) => {
     }),
     req.body,
   );
-  if (await one('SELECT 1 FROM users WHERE lower(email)=$1', [data.email]))
-    throw conflict('An account with this email already exists.');
+  if (await one('SELECT 1 FROM users WHERE lower(email)=$1', [data.email])) throw conflict('An account with this email already exists.');
   const user = await one(
     `INSERT INTO users(name,email,role,password_hash,phone) VALUES($1,$2,$3,$4,$5)
      RETURNING id, name, email, role, phone, true AS active`,
@@ -68,15 +63,10 @@ router.patch('/team/:id', requireAdmin, async (req, res) => {
     await query('LOCK TABLE users IN SHARE ROW EXCLUSIVE MODE');
     const target = await one(`SELECT * FROM users WHERE id=$1 AND role <> 'client'`, [id]);
     if (!target) throw notFound('Team member');
-    const losingAdmin =
-      target.role === 'admin' &&
-      !target.disabled_at &&
-      (data.active === false || (data.role && data.role !== 'admin'));
+    const losingAdmin = target.role === 'admin' && !target.disabled_at && (data.active === false || (data.role && data.role !== 'admin'));
     if (losingAdmin) {
       if (id === me.id) throw conflict('You cannot remove your own administrator access.');
-      const admins = await one<{ n: number }>(
-        `SELECT count(*)::int n FROM users WHERE role='admin' AND disabled_at IS NULL`,
-      );
+      const admins = await one<{ n: number }>(`SELECT count(*)::int n FROM users WHERE role='admin' AND disabled_at IS NULL`);
       if ((admins?.n ?? 0) <= 1) throw conflict('Keep at least one active administrator.');
     }
     if (data.active === false && id === me.id) throw conflict('You cannot disable your own account.');
@@ -97,10 +87,7 @@ router.patch('/team/:id', requireAdmin, async (req, res) => {
         `team_access_${data.active ? 'enabled' : 'disabled'}:${id}`,
         req.ip,
       ]);
-    return one(
-      `SELECT id, name, email, role, phone, disabled_at IS NULL AS active FROM users WHERE id=$1`,
-      [id],
-    );
+    return one(`SELECT id, name, email, role, phone, disabled_at IS NULL AS active FROM users WHERE id=$1`, [id]);
   });
   await audit(me, 'user', id, 'updated', `Team member ${result!.name} updated`);
   res.json(result);
@@ -135,7 +122,14 @@ router.patch('/settings', requireAdmin, async (req, res) => {
       defaultLeadOwnerId: z.union([z.literal(''), z.string().uuid()]).optional(),
       nurture: z
         .object({
-          contactNumber: z.union([z.literal(''), z.string().trim().max(40).regex(/^[+\d][\d\s()-]*$/, 'Enter a valid phone number')]),
+          contactNumber: z.union([
+            z.literal(''),
+            z
+              .string()
+              .trim()
+              .max(40)
+              .regex(/^[+\d][\d\s()-]*$/, 'Enter a valid phone number'),
+          ]),
           bookingLink: z.union([z.literal(''), z.string().trim().url().max(300)]),
         })
         .partial()
@@ -157,19 +151,19 @@ router.patch('/settings', requireAdmin, async (req, res) => {
     if (used) throw conflict('Currency cannot change after projects exist.');
   }
   if (data.defaultLeadOwnerId) {
-    const ok = await one(`SELECT 1 FROM users WHERE id=$1 AND role<>'client' AND disabled_at IS NULL`, [
-      data.defaultLeadOwnerId,
-    ]);
+    const ok = await one(`SELECT 1 FROM users WHERE id=$1 AND role<>'client' AND disabled_at IS NULL`, [data.defaultLeadOwnerId]);
     if (!ok) throw badRequest('Select an active team member as the default lead owner.');
   }
   const nextData = { ...current.data };
   if (data.billing) nextData.billing = data.billing;
   if (data.nurture) nextData.nurture = { ...(current.data.nurture ?? {}), ...data.nurture };
   if (data.defaultLeadOwnerId !== undefined) nextData.defaultLeadOwnerId = data.defaultLeadOwnerId;
-  await query(
-    `UPDATE workspace_settings SET name=$1, currency=$2, timezone=$3, data=$4, updated_at=now() WHERE id=1`,
-    [data.name ?? current.name, data.currency ?? current.currency, data.timezone ?? current.timezone, nextData],
-  );
+  await query(`UPDATE workspace_settings SET name=$1, currency=$2, timezone=$3, data=$4, updated_at=now() WHERE id=1`, [
+    data.name ?? current.name,
+    data.currency ?? current.currency,
+    data.timezone ?? current.timezone,
+    nextData,
+  ]);
   await audit(currentUser(req), 'settings', null, 'updated', 'Workspace settings updated');
   res.json(await getSettings());
 });
@@ -192,11 +186,7 @@ router.get('/audit-log', requireAdmin, async (req, res) => {
 
 function labelledList(path: string, table: 'reminder_types' | 'file_types', usage: string, noun: string) {
   router.get(`/${path}`, requireStaff, async (_req, res) => {
-    res.json(
-      await many(
-        `SELECT t.*, (${usage})::int AS usage_count FROM ${table} t ORDER BY position, lower(label)`,
-      ),
-    );
+    res.json(await many(`SELECT t.*, (${usage})::int AS usage_count FROM ${table} t ORDER BY position, lower(label)`));
   });
   router.post(`/${path}`, requireAdmin, async (req, res) => {
     const { label } = parse(z.object({ label: zs.required(60) }), req.body);
@@ -223,8 +213,7 @@ function labelledList(path: string, table: 'reminder_types' | 'file_types', usag
       await query(`LOCK TABLE ${table} IN EXCLUSIVE MODE`);
       const row = await one(`SELECT t.label, (${usage})::int AS n FROM ${table} t WHERE id=$1`, [id]);
       if (!row) throw notFound(noun);
-      if (row.n > 0)
-        throw conflict(`“${row.label}” is used by ${row.n} record(s). Rename it instead, or delete it once nothing uses it.`);
+      if (row.n > 0) throw conflict(`“${row.label}” is used by ${row.n} record(s). Rename it instead, or delete it once nothing uses it.`);
       const count = await one<{ n: number }>(`SELECT count(*)::int n FROM ${table}`);
       if ((count?.n ?? 0) <= 1) throw conflict(`Keep at least one ${noun}.`);
       await query(`DELETE FROM ${table} WHERE id=$1`, [id]);
@@ -249,29 +238,24 @@ router.get('/notifications', async (req, res) => {
        FROM notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50`,
     [me.id],
   );
-  const unread = await one<{ n: number }>(
-    'SELECT count(*)::int n FROM notifications WHERE user_id=$1 AND read_at IS NULL',
-    [me.id],
-  );
+  const unread = await one<{ n: number }>('SELECT count(*)::int n FROM notifications WHERE user_id=$1 AND read_at IS NULL', [me.id]);
   res.json({ unread: unread?.n ?? 0, items });
 });
 
 router.post('/notifications/read', async (req, res) => {
   const me = currentUser(req);
   const { ids } = parse(z.object({ ids: z.array(z.string().uuid()).max(100).optional() }), req.body);
-  await query(
-    `UPDATE notifications SET read_at=now() WHERE user_id=$1 AND read_at IS NULL AND ($2::uuid[] IS NULL OR id = ANY($2))`,
-    [me.id, ids ?? null],
-  );
+  await query(`UPDATE notifications SET read_at=now() WHERE user_id=$1 AND read_at IS NULL AND ($2::uuid[] IS NULL OR id = ANY($2))`, [
+    me.id,
+    ids ?? null,
+  ]);
   res.json({ ok: true });
 });
 
 router.get('/notifications/preferences', async (req, res) => {
   const me = currentUser(req);
   const off = new Set(
-    (await many('SELECT kind FROM notification_preferences WHERE user_id=$1 AND in_app=false', [me.id])).map(
-      (r) => r.kind,
-    ),
+    (await many('SELECT kind FROM notification_preferences WHERE user_id=$1 AND in_app=false', [me.id])).map((r) => r.kind),
   );
   res.json(Object.entries(NOTIFICATION_KINDS).map(([kind, label]) => ({ kind, label, inApp: !off.has(kind) })));
 });
@@ -291,5 +275,3 @@ router.put('/notifications/preferences/:kind', async (req, res) => {
 router.get('/jobs/status', requireAdmin, async (_req, res) => {
   res.json(await many('SELECT * FROM worker_runs ORDER BY job'));
 });
-
-

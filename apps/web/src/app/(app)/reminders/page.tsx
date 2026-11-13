@@ -29,7 +29,8 @@ export default function RemindersPage() {
   const past = useMemo(() => scoped.filter((r) => r.status !== 'pending' && r.status !== 'failed'), [scoped]);
   const list = view === 'upcoming' ? upcoming : view === 'past' ? past : scoped;
 
-  const upsert = (r: Reminder) => setData((rows) => [r, ...(rows ?? []).filter((x) => x.id !== r.id)].sort((a, b) => b.run_at.localeCompare(a.run_at)));
+  const upsert = (r: Reminder) =>
+    setData((rows) => [r, ...(rows ?? []).filter((x) => x.id !== r.id)].sort((a, b) => b.run_at.localeCompare(a.run_at)));
 
   return (
     <>

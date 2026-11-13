@@ -31,7 +31,12 @@ export default function PublicLeadFormPage() {
   const [sent, setSent] = useState(false);
   const attempt = useRef<{ key: string; id: string } | null>(null);
 
-  if (loading && !data) return <PublicFrame><Spinner /></PublicFrame>;
+  if (loading && !data)
+    return (
+      <PublicFrame>
+        <Spinner />
+      </PublicFrame>
+    );
   if (error || !data)
     return (
       <PublicFrame>
@@ -115,7 +120,14 @@ export default function PublicLeadFormPage() {
             <input className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={200} />
           </Field>
           <Field label="Email" required error={errors.email}>
-            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" maxLength={254} />
+            <input
+              className="input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              maxLength={254}
+            />
           </Field>
           {data.fields.map((f) =>
             f.type === 'checkbox' ? (

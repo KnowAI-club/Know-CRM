@@ -160,7 +160,11 @@ export function InvoiceDocument({ invoice: i }: { invoice: InvoiceView }) {
                   <td className="text-right tabular-nums">{money(s.amount, c)}</td>
                   <td className="text-right tabular-nums">{money(s.balance, c)}</td>
                   <td>
-                    <Badge tone={s.status === 'paid' ? 'ok' : s.status === 'overdue' ? 'danger' : s.status === 'partial' ? 'warn' : 'neutral'}>{titleCase(s.status)}</Badge>
+                    <Badge
+                      tone={s.status === 'paid' ? 'ok' : s.status === 'overdue' ? 'danger' : s.status === 'partial' ? 'warn' : 'neutral'}
+                    >
+                      {titleCase(s.status)}
+                    </Badge>
                   </td>
                 </tr>
               ))}

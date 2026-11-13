@@ -41,9 +41,7 @@ router.get('/dashboard', async (req, res) => {
         WHERE p.phase <> 'intake' AND s.category NOT IN ('completed','archived')`,
       [admin, me.id, currency],
     ),
-    many(
-      `SELECT a.*, p.name AS project_name FROM activities a JOIN projects p ON p.id=a.project_id ORDER BY a.created_at DESC LIMIT 20`,
-    ),
+    many(`SELECT a.*, p.name AS project_name FROM activities a JOIN projects p ON p.id=a.project_id ORDER BY a.created_at DESC LIMIT 20`),
     many(
       `SELECT t.*, u.name AS assignee_name, l.name AS lead_name, p.name AS project_name FROM tasks t
          LEFT JOIN users u ON u.id=t.assignee_id LEFT JOIN leads l ON l.id=t.lead_id LEFT JOIN projects p ON p.id=t.project_id
@@ -108,7 +106,10 @@ async function calls(userId: string, mine: boolean, from: string, to: string) {
   // Team scope still binds $1 (typed) so every query keeps the same parameters.
   const scope = mine ? `AND ${MINE}` : 'AND $1::uuid IS NOT NULL';
   const [today, upcoming, outcomePending] = await Promise.all([
-    many(`${CALL_SELECT} WHERE m.status<>'cancelled' AND m.source<>'upload' AND m.start_at >= $2 AND m.start_at < $3 ${scope} ORDER BY m.start_at`, [userId, from, to]),
+    many(
+      `${CALL_SELECT} WHERE m.status<>'cancelled' AND m.source<>'upload' AND m.start_at >= $2 AND m.start_at < $3 ${scope} ORDER BY m.start_at`,
+      [userId, from, to],
+    ),
     many(
       `${CALL_SELECT} WHERE m.status<>'cancelled' AND m.source<>'upload' AND m.start_at >= $2 AND m.start_at < $2::timestamptz + interval '7 days' ${scope} ORDER BY m.start_at LIMIT 20`,
       [userId, to],

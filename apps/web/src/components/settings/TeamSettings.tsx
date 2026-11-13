@@ -2,19 +2,7 @@
 import { useState } from 'react';
 import { MoreHorizontal, Plus, UserCheck, UserX } from 'lucide-react';
 import { ROLE_LABELS, TEAM_ROLES } from '@know-crm/shared';
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  ErrorBox,
-  Field,
-  Menu,
-  Modal,
-  Spinner,
-  useConfirm,
-  useToast,
-} from '@/components/ui';
+import { Avatar, Badge, Button, Card, ErrorBox, Field, Menu, Modal, Spinner, useConfirm, useToast } from '@/components/ui';
 import { ApiError, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
@@ -46,8 +34,7 @@ export function TeamSettings() {
       body.active === false &&
       !(await confirm({
         title: `Disable ${m.name}?`,
-        description:
-          'They are signed out immediately and cannot sign in until re-enabled. Their records stay.',
+        description: 'They are signed out immediately and cannot sign in until re-enabled. Their records stay.',
         confirmLabel: 'Disable',
         danger: true,
       }))
@@ -107,11 +94,7 @@ export function TeamSettings() {
                     value={m.role}
                     disabled={busy === m.id}
                     onChange={(e) =>
-                      change(
-                        m,
-                        { role: e.target.value },
-                        `${m.name} is now ${ROLE_LABELS[e.target.value as Member['role']]}.`,
-                      )
+                      change(m, { role: e.target.value }, `${m.name} is now ${ROLE_LABELS[e.target.value as Member['role']]}.`)
                     }
                   >
                     {TEAM_ROLES.map((r) => (
@@ -126,12 +109,7 @@ export function TeamSettings() {
                 {isAdmin && m.id !== user?.id && (
                   <Menu
                     trigger={(open) => (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Actions for ${m.name}`}
-                        onClick={open}
-                      >
+                      <Button size="icon" variant="ghost" aria-label={`Actions for ${m.name}`} onClick={open}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     )}
@@ -156,9 +134,7 @@ export function TeamSettings() {
           </ul>
         )}
       </Card>
-      <p className="text-xs text-faint">
-        Changing a role or access signs that person out so the new permissions apply right away.
-      </p>
+      <p className="text-xs text-faint">Changing a role or access signs that person out so the new permissions apply right away.</p>
       {adding && (
         <AddMemberModal
           onClose={() => setAdding(false)}
@@ -173,20 +149,13 @@ export function TeamSettings() {
   );
 }
 
-function AddMemberModal({
-  onClose,
-  onSaved,
-}: {
-  onClose: () => void;
-  onSaved: (m: Member) => void;
-}) {
+function AddMemberModal({ onClose, onSaved }: { onClose: () => void; onSaved: (m: Member) => void }) {
   const toast = useToast();
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'sales', phone: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const set =
-    (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -234,13 +203,7 @@ function AddMemberModal({
           <input className="input" value={form.name} maxLength={120} onChange={set('name')} />
         </Field>
         <Field label="Email" required error={errors.email}>
-          <input
-            type="email"
-            className="input"
-            value={form.email}
-            autoComplete="off"
-            onChange={set('email')}
-          />
+          <input type="email" className="input" value={form.email} autoComplete="off" onChange={set('email')} />
         </Field>
         <Field label="Role" error={errors.role}>
           <select className="input" value={form.role} onChange={set('role')}>
@@ -254,20 +217,8 @@ function AddMemberModal({
         <Field label="Phone" hint="Optional" error={errors.phone}>
           <input className="input" value={form.phone} maxLength={40} onChange={set('phone')} />
         </Field>
-        <Field
-          label="Temporary password"
-          required
-          hint="At least 12 characters"
-          error={errors.password}
-          className="sm:col-span-2"
-        >
-          <input
-            type="password"
-            className="input"
-            value={form.password}
-            autoComplete="new-password"
-            onChange={set('password')}
-          />
+        <Field label="Temporary password" required hint="At least 12 characters" error={errors.password} className="sm:col-span-2">
+          <input type="password" className="input" value={form.password} autoComplete="new-password" onChange={set('password')} />
         </Field>
       </form>
     </Modal>

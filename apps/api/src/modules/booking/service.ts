@@ -26,7 +26,12 @@ export const bookingTypeSchema = z.object({
   title: z.string().trim().min(1, 'Add a title.').max(200),
   description: z.string().trim().max(5000).default(''),
   timezone: z.string().refine(isTimezone, 'Choose a valid time zone.').default('Asia/Kolkata'),
-  duration: z.coerce.number().int().min(15).max(480).refine((n) => n % 15 === 0, 'Use steps of 15 minutes.'),
+  duration: z.coerce
+    .number()
+    .int()
+    .min(15)
+    .max(480)
+    .refine((n) => n % 15 === 0, 'Use steps of 15 minutes.'),
   bufferBefore: z.coerce.number().int().min(0).max(240).default(0),
   bufferAfter: z.coerce.number().int().min(0).max(240).default(0),
   minimumNotice: z.coerce.number().int().min(0).max(43200).default(60),
@@ -66,7 +71,13 @@ export interface BookingType {
 function localParts(at: Date, tz: string) {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
     })
       .formatToParts(at)
       .map((p) => [p.type, p.value]),
@@ -154,10 +165,13 @@ export async function onReservationCreated(type: BookingType, r: { id: string; n
       const stage = await one(`SELECT id FROM lead_stages WHERE kind='open' ORDER BY position LIMIT 1`);
       const settings = await getSettings();
       const owner = settings?.data?.defaultLeadOwnerId || host.id;
-      const lead = await one(
-        `INSERT INTO leads(name, email, stage, data, contact_id) VALUES($1,lower($2),$3,$4,$5) RETURNING id`,
-        [r.name, r.email, stage!.id, JSON.stringify({ source: 'Booking', ownerId: owner, company: contact.company ?? '' }), contact.id],
-      );
+      const lead = await one(`INSERT INTO leads(name, email, stage, data, contact_id) VALUES($1,lower($2),$3,$4,$5) RETURNING id`, [
+        r.name,
+        r.email,
+        stage!.id,
+        JSON.stringify({ source: 'Booking', ownerId: owner, company: contact.company ?? '' }),
+        contact.id,
+      ]);
       leadId = lead!.id;
       await leadHistory(leadId!, null, 'Lead created', { reason: `Booked ${type.title}` });
     }
@@ -190,13 +204,26 @@ export async function bookingEvent(event: 'created' | 'rescheduled' | 'cancelled
   const when = fmt(new Date(r.start_at), r.timezone);
   const verb = { created: 'New booking', rescheduled: 'Booking rescheduled', cancelled: 'Booking cancelled' }[event];
   if (!actorIsHost)
-    await notify({ userId: r.host_id, kind: 'booking', title: `${verb}: ${r.name}`, body: `${r.title} · ${when}`, link: r.meeting_id ? `/meetings/${r.meeting_id}` : '/meetings' });
+    await notify({
+      userId: r.host_id,
+      kind: 'booking',
+      title: `${verb}: ${r.name}`,
+      body: `${r.title} · ${when}`,
+      link: r.meeting_id ? `/meetings/${r.meeting_id}` : '/meetings',
+    });
   const guestText = {
     created: `Hi ${r.name},\n\nYour ${r.title} is confirmed for ${when}.\n\nUse the private link you saved when booking to reschedule or cancel.`,
     rescheduled: `Hi ${r.name},\n\nYour ${r.title} has moved to ${when}.`,
     cancelled: `Hi ${r.name},\n\nYour ${r.title} on ${when} has been cancelled.`,
   }[event];
-  await queueMail({ to: r.email, subject: `${verb}: ${r.title}`, text: guestText, category: 'booking', relatedEntity: 'booking', relatedId: r.id });
+  await queueMail({
+    to: r.email,
+    subject: `${verb}: ${r.title}`,
+    text: guestText,
+    category: 'booking',
+    relatedEntity: 'booking',
+    relatedId: r.id,
+  });
 }
 
 /** Keeps the linked meeting in step with its reservation. */
@@ -206,15 +233,19 @@ export async function onBookingChanged(reservationId: string) {
   if (!r || !m) return;
   if (r.status === 'cancelled') await query(`UPDATE meetings SET status='cancelled', updated_at=now() WHERE id=$1`, [m.id]);
   else
-    await query(
-      `UPDATE meetings SET start_at=$2, duration_minutes=$3, updated_at=now() WHERE id=$1`,
-      [m.id, r.start_at, Math.round((new Date(r.end_at).getTime() - new Date(r.start_at).getTime()) / MIN)],
-    );
+    await query(`UPDATE meetings SET start_at=$2, duration_minutes=$3, updated_at=now() WHERE id=$1`, [
+      m.id,
+      r.start_at,
+      Math.round((new Date(r.end_at).getTime() - new Date(r.start_at).getTime()) / MIN),
+    ]);
   await syncNotices(m.id);
 }
 
 /** Cancelling a booked meeting from the CRM also frees the reservation. */
 export async function cancelReservationForMeeting(reservationId: string) {
-  const r = await one(`UPDATE booking_reservations SET status='cancelled', updated_at=now() WHERE id=$1 AND status='confirmed' RETURNING id`, [reservationId]);
+  const r = await one(
+    `UPDATE booking_reservations SET status='cancelled', updated_at=now() WHERE id=$1 AND status='confirmed' RETURNING id`,
+    [reservationId],
+  );
   if (r) await bookingEvent('cancelled', r.id, true);
 }

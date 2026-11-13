@@ -17,7 +17,9 @@ const visibility = z.enum(['internal', 'client']);
 /* ---------- Milestones (client-visible project stages) ---------- */
 
 const milestoneList = (projectId: string) =>
-  many('SELECT id, title, description, status, due_date, position FROM project_milestones WHERE project_id=$1 ORDER BY position', [projectId]);
+  many('SELECT id, title, description, status, due_date, position FROM project_milestones WHERE project_id=$1 ORDER BY position', [
+    projectId,
+  ]);
 
 router.patch('/projects/:id/milestones/:milestoneId', requireStaff, async (req, res) => {
   const me = currentUser(req);
@@ -39,9 +41,7 @@ router.patch('/projects/:id/milestones/:milestoneId', requireStaff, async (req, 
             `UPDATE project_milestones SET status='upcoming', updated_at=now() WHERE project_id=$1 AND position>$2 AND status='done' RETURNING title`,
             [id, m.position],
           );
-    const extra = cascade.length
-      ? ` (also ${status === 'done' ? 'done' : 'reopened'}: ${cascade.map((c) => c.title).join(', ')})`
-      : '';
+    const extra = cascade.length ? ` (also ${status === 'done' ? 'done' : 'reopened'}: ${cascade.map((c) => c.title).join(', ')})` : '';
     await projectActivity(me, id, `Stage ${m.title} marked ${status === 'done' ? 'done' : 'not done'}${extra}`, 'client');
   });
   res.json(await milestoneList(id));
@@ -84,10 +84,14 @@ router.put('/projects/:id/milestones', requireStaff, async (req, res) => {
           )
         : null;
       if (!updated?.rowCount)
-        await query(
-          `INSERT INTO project_milestones(project_id,title,description,status,due_date,position) VALUES($1,$2,$3,$4,$5,$6)`,
-          [id, m.title, m.description, m.status, m.dueDate || null, i],
-        );
+        await query(`INSERT INTO project_milestones(project_id,title,description,status,due_date,position) VALUES($1,$2,$3,$4,$5,$6)`, [
+          id,
+          m.title,
+          m.description,
+          m.status,
+          m.dueDate || null,
+          i,
+        ]);
     }
     const titles = milestones.map((m) => m.title);
     await projectActivity(
@@ -150,8 +154,7 @@ router.delete('/projects/:id/versions/:versionId', requireStaff, async (req, res
   const { id, versionId } = parse(z.object({ id: z.string().uuid(), versionId: z.string().uuid() }), req.params);
   const v = await one('SELECT * FROM project_versions WHERE id=$1 AND project_id=$2 AND removed_at IS NULL', [versionId, id]);
   if (!v) throw notFound('Version');
-  if (me.role !== 'admin' && v.created_by !== me.id)
-    throw forbidden('Only the person who added this version or an admin can remove it.');
+  if (me.role !== 'admin' && v.created_by !== me.id) throw forbidden('Only the person who added this version or an admin can remove it.');
   await query('UPDATE project_versions SET removed_at=now() WHERE id=$1', [versionId]);
   await projectActivity(me, id, `Version v${v.number} removed`);
   res.json({ ok: true });
@@ -160,8 +163,7 @@ router.delete('/projects/:id/versions/:versionId', requireStaff, async (req, res
 /* ---------- Notes ---------- */
 
 function assertShareable(body: string, vis: string) {
-  if (vis === 'client' && mentionIds(body).length)
-    throw badRequest('Remove @mentions before sharing this note with the client.');
+  if (vis === 'client' && mentionIds(body).length) throw badRequest('Remove @mentions before sharing this note with the client.');
 }
 
 router.post('/projects/:id/notes', requireStaff, async (req, res) => {
@@ -170,10 +172,13 @@ router.post('/projects/:id/notes', requireStaff, async (req, res) => {
   await projectFor(req, id, true);
   const data = parse(z.object({ body: z.string().trim().min(1).max(20000), visibility }), req.body);
   assertShareable(data.body, data.visibility);
-  const note = await one(
-    'INSERT INTO notes(project_id, body, visibility, author_id, author_name) VALUES($1,$2,$3,$4,$5) RETURNING *',
-    [id, data.body, data.visibility, me.id, me.name],
-  );
+  const note = await one('INSERT INTO notes(project_id, body, visibility, author_id, author_name) VALUES($1,$2,$3,$4,$5) RETURNING *', [
+    id,
+    data.body,
+    data.visibility,
+    me.id,
+    me.name,
+  ]);
   await projectActivity(me, id, `${data.visibility === 'client' ? 'Shared' : 'Internal'} note added: ${snippet(data.body)}`);
   await notifyMentions({ author: me, after: data.body, where: 'a project note', link: `/projects/${id}?tab=notes` });
   res.status(201).json(note);
@@ -191,7 +196,13 @@ router.patch('/notes/:id', requireStaff, async (req, res) => {
   const updated = await one('UPDATE notes SET body=$2, visibility=$3, updated_at=now() WHERE id=$1 RETURNING *', [id, body, vis]);
   const change = vis !== note.visibility ? (vis === 'client' ? ' (now shared with the client)' : ' (now internal)') : '';
   await projectActivity(me, note.project_id, `Note updated: ${snippet(body)}${change}`);
-  await notifyMentions({ author: me, before: note.body, after: body, where: 'a project note', link: `/projects/${note.project_id}?tab=notes` });
+  await notifyMentions({
+    author: me,
+    before: note.body,
+    after: body,
+    where: 'a project note',
+    link: `/projects/${note.project_id}?tab=notes`,
+  });
   res.json(updated);
 });
 
@@ -234,10 +245,13 @@ router.post('/projects/:id/messages', async (req, res) => {
   if (me.role !== 'admin' && me.role !== 'client') throw forbidden('Only workspace admins can message clients.');
   await projectFor(req, id);
   const { body } = parse(z.object({ body: z.string().trim().min(1).max(20000) }), req.body);
-  const msg = await one(
-    'INSERT INTO messages(project_id, body, author_id, author_name, author_role) VALUES($1,$2,$3,$4,$5) RETURNING *',
-    [id, body, me.id, me.name, me.role],
-  );
+  const msg = await one('INSERT INTO messages(project_id, body, author_id, author_name, author_role) VALUES($1,$2,$3,$4,$5) RETURNING *', [
+    id,
+    body,
+    me.id,
+    me.name,
+    me.role,
+  ]);
   await projectActivity(me, id, `Portal message posted: ${snippet(body)}`);
   res.status(201).json(msg);
 });

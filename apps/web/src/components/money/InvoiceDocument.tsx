@@ -28,10 +28,7 @@ export function InvoiceDocument({
   const hasBank = billing?.bankAccountNumber || billing?.bankName;
 
   return (
-    <article
-      id="invoice-print"
-      className="card mx-auto max-w-4xl p-6 sm:p-10 print:border-0 print:p-0"
-    >
+    <article id="invoice-print" className="card mx-auto max-w-4xl p-6 sm:p-10 print:border-0 print:p-0">
       <header className="flex flex-wrap items-start justify-between gap-6 border-b border-line pb-6">
         <div>
           <p className="text-lg font-semibold">{workspaceName}</p>
@@ -43,9 +40,7 @@ export function InvoiceDocument({
             </p>
           )}
           {(billing?.email || billing?.phone) && (
-            <p className="text-sm text-mute">
-              {[billing?.email, billing?.phone].filter(Boolean).join(' · ')}
-            </p>
+            <p className="text-sm text-mute">{[billing?.email, billing?.phone].filter(Boolean).join(' · ')}</p>
           )}
         </div>
         <div className="text-right">
@@ -60,20 +55,12 @@ export function InvoiceDocument({
       <section className="grid gap-6 border-b border-line py-6 sm:grid-cols-2">
         <div>
           <p className="eyebrow mb-1">Billed to</p>
-          <p className="font-medium">
-            {invoice.billed_to?.company || invoice.billed_to?.name || invoice.client_name}
-          </p>
-          {invoice.billed_to?.company &&
-            invoice.billed_to?.name &&
-            invoice.billed_to.name !== invoice.billed_to.company && (
-              <p className="text-sm text-mute">{invoice.billed_to.name}</p>
-            )}
-          {invoice.billed_to?.address && (
-            <p className="text-sm whitespace-pre-line text-mute">{invoice.billed_to.address}</p>
+          <p className="font-medium">{invoice.billed_to?.company || invoice.billed_to?.name || invoice.client_name}</p>
+          {invoice.billed_to?.company && invoice.billed_to?.name && invoice.billed_to.name !== invoice.billed_to.company && (
+            <p className="text-sm text-mute">{invoice.billed_to.name}</p>
           )}
-          {invoice.billed_to?.email && (
-            <p className="text-sm text-mute">{invoice.billed_to.email}</p>
-          )}
+          {invoice.billed_to?.address && <p className="text-sm whitespace-pre-line text-mute">{invoice.billed_to.address}</p>}
+          {invoice.billed_to?.email && <p className="text-sm text-mute">{invoice.billed_to.email}</p>}
           {invoice.buyer_tax_id && (
             <p className="text-sm text-mute">
               GSTIN {invoice.buyer_tax_id}
@@ -99,9 +86,7 @@ export function InvoiceDocument({
 
       <section className="py-6">
         <p className="mb-1 font-medium">{invoice.title}</p>
-        {invoice.introduction && (
-          <p className="mb-4 text-sm whitespace-pre-line text-mute">{invoice.introduction}</p>
-        )}
+        {invoice.introduction && <p className="mb-4 text-sm whitespace-pre-line text-mute">{invoice.introduction}</p>}
         <div className="overflow-x-auto">
           <table className="table">
             <thead>
@@ -119,22 +104,15 @@ export function InvoiceDocument({
                   <td className="text-mute">{i + 1}</td>
                   <td>
                     <p className="font-medium">{l.name}</p>
-                    {l.description && (
-                      <p className="text-xs whitespace-pre-line text-mute">{l.description}</p>
-                    )}
-                    {!l.taxable && taxes.length > 0 && (
-                      <p className="text-xs text-faint">Not taxable</p>
-                    )}
+                    {l.description && <p className="text-xs whitespace-pre-line text-mute">{l.description}</p>}
+                    {!l.taxable && taxes.length > 0 && <p className="text-xs text-faint">Not taxable</p>}
                   </td>
                   <td className="text-right tabular-nums">
                     {Number(l.quantity)} {l.unit !== 'unit' ? l.unit : ''}
                   </td>
                   <td className="text-right tabular-nums">{money(l.unit_price, c)}</td>
                   <td className="text-right tabular-nums">
-                    {money(
-                      lineAmount({ quantity: Number(l.quantity), unitPrice: l.unit_price }),
-                      c,
-                    )}
+                    {money(lineAmount({ quantity: Number(l.quantity), unitPrice: l.unit_price }), c)}
                   </td>
                 </tr>
               ))}
@@ -156,11 +134,7 @@ export function InvoiceDocument({
             />
           )}
           {taxes.map((t, i) => (
-            <Line
-              key={i}
-              label={`${t.label} (${percentLabel(t.rate)})`}
-              value={money(t.amount, c)}
-            />
+            <Line key={i} label={`${t.label} (${percentLabel(t.rate)})`} value={money(t.amount, c)} />
           ))}
           <div className="border-t border-line pt-1.5">
             <Line label={<b>Total</b>} value={<b>{money(invoice.total, c)}</b>} />

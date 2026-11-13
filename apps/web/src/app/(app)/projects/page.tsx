@@ -77,20 +77,30 @@ export default function ProjectsPage() {
     .filter((p) => p.stage_category === 'inquiry' || p.stage_category === 'in_progress')
     .reduce((a, p) => a + Number(p.value || 0), 0);
   const overdue = (data?.projects ?? []).filter(
-    (p) => p.due_date && p.stage_category !== 'completed' && p.stage_category !== 'archived' && new Date(`${p.due_date}T23:59:59`) < new Date(),
+    (p) =>
+      p.due_date && p.stage_category !== 'completed' && p.stage_category !== 'archived' && new Date(`${p.due_date}T23:59:59`) < new Date(),
   );
 
   const move = async (projectId: string, stageId: string) => {
     const project = data?.projects.find((p) => p.id === projectId);
     if (!project || project.stage === stageId) return;
     const stage = data?.stages.find((s) => s.id === stageId);
-    setData((d) =>
-      d && {
-        ...d,
-        projects: d.projects.map((p) =>
-          p.id === projectId ? { ...p, stage: stageId, stage_label: stage?.label ?? p.stage_label, stage_color: stage?.color ?? p.stage_color, stage_category: stage?.category ?? p.stage_category } : p,
-        ),
-      },
+    setData(
+      (d) =>
+        d && {
+          ...d,
+          projects: d.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  stage: stageId,
+                  stage_label: stage?.label ?? p.stage_label,
+                  stage_color: stage?.color ?? p.stage_color,
+                  stage_category: stage?.category ?? p.stage_category,
+                }
+              : p,
+          ),
+        },
     );
     try {
       const updated = await patch<Project>(`/projects/${projectId}`, { stage: stageId });
@@ -126,13 +136,22 @@ export default function ProjectsPage() {
         <Stat label="In progress" value={loading && !data ? '—' : active.length} />
         <Stat label="Open value" value={loading && !data ? '—' : money(openValue, currency)} />
         <Stat label="Overdue" value={loading && !data ? '—' : overdue.length} tone={overdue.length ? 'warn' : undefined} />
-        <Stat label="Completed" value={loading && !data ? '—' : (data?.projects ?? []).filter((p) => p.stage_category === 'completed').length} />
+        <Stat
+          label="Completed"
+          value={loading && !data ? '—' : (data?.projects ?? []).filter((p) => p.stage_category === 'completed').length}
+        />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative min-w-52 flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input className="input pl-9" placeholder="Search projects or clients" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search projects" />
+          <input
+            className="input pl-9"
+            placeholder="Search projects or clients"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Search projects"
+          />
         </div>
         <select className="input w-auto" value={owner} onChange={(e) => setOwner(e.target.value)} aria-label="Owner">
           <option value="">All owners</option>
@@ -260,7 +279,11 @@ export default function ProjectsPage() {
                     <Link href={`/projects/${p.id}`} className="font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
                       {p.name}
                     </Link>
-                    {p.unread && <Badge tone="acc" className="ml-2">New</Badge>}
+                    {p.unread && (
+                      <Badge tone="acc" className="ml-2">
+                        New
+                      </Badge>
+                    )}
                   </td>
                   <td className="text-mute">{p.company || p.contact_name}</td>
                   <td>

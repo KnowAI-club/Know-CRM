@@ -64,13 +64,16 @@ export function toForm(c?: Contact | null): ContactForm {
   return form;
 }
 
-const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
+const list = (s: string) =>
+  s
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 /** Request body; with `base`, only fields that changed are included. */
 export function toBody(form: ContactForm, base?: ContactForm) {
   const body: Record<string, unknown> = {};
-  for (const k of Object.keys(CONTACT_FIELDS) as ContactKey[])
-    if (!base || form[k] !== base[k]) body[k] = form[k].trim();
+  for (const k of Object.keys(CONTACT_FIELDS) as ContactKey[]) if (!base || form[k] !== base[k]) body[k] = form[k].trim();
   if (!base || form.tags !== base.tags) body.tags = list(form.tags);
   if (!base || form.alternatePhones !== base.alternatePhones) body.alternatePhones = list(form.alternatePhones);
   return body;
@@ -108,17 +111,34 @@ export function parseCsv(text: string): string[][] {
 }
 
 const HEADER_ALIASES: Record<string, ContactKey | 'tags'> = {
-  name: 'name', fullname: 'name', contact: 'name', contactname: 'name',
-  email: 'email', emailaddress: 'email',
-  company: 'company', organisation: 'company', organization: 'company',
-  phone: 'phone', mobile: 'phone', phonenumber: 'phone',
-  jobtitle: 'jobTitle', title: 'jobTitle', role: 'jobTitle',
-  website: 'website', url: 'website',
+  name: 'name',
+  fullname: 'name',
+  contact: 'name',
+  contactname: 'name',
+  email: 'email',
+  emailaddress: 'email',
+  company: 'company',
+  organisation: 'company',
+  organization: 'company',
+  phone: 'phone',
+  mobile: 'phone',
+  phonenumber: 'phone',
+  jobtitle: 'jobTitle',
+  title: 'jobTitle',
+  role: 'jobTitle',
+  website: 'website',
+  url: 'website',
   address: 'address',
   tags: 'tags',
-  gstin: 'gstin', gst: 'gstin', pan: 'pan',
-  billingname: 'billingName', billingemail: 'billingEmail', billingaddress: 'billingAddress',
-  businessname: 'businessName', businessemail: 'businessEmail', personalemail: 'personalEmail',
+  gstin: 'gstin',
+  gst: 'gstin',
+  pan: 'pan',
+  billingname: 'billingName',
+  billingemail: 'billingEmail',
+  billingaddress: 'billingAddress',
+  businessname: 'businessName',
+  businessemail: 'businessEmail',
+  personalemail: 'personalEmail',
 };
 
 /** Maps CSV rows (first row = headers) to import records; unknown columns are ignored. */
@@ -131,7 +151,13 @@ export function csvToContacts(rows: string[][]) {
     keys.forEach((k, i) => {
       if (!k) return;
       const v = (r[i] ?? '').trim();
-      rec[k] = k === 'tags' ? v.split(/[;,]/).map((t) => t.trim()).filter(Boolean) : v;
+      rec[k] =
+        k === 'tags'
+          ? v
+              .split(/[;,]/)
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : v;
     });
     return rec;
   });

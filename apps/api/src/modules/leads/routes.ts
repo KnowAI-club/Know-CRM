@@ -59,9 +59,7 @@ async function lockLead(id: string) {
 
 router.get('/leads', async (req, res) => {
   const state = typeof req.query.state === 'string' && (STATES as readonly string[]).includes(req.query.state) ? req.query.state : null;
-  res.json(
-    await many(`${LEAD_SELECT} WHERE ($1::text IS NULL OR l.state = $1) ORDER BY l.created_at DESC LIMIT 5000`, [state]),
-  );
+  res.json(await many(`${LEAD_SELECT} WHERE ($1::text IS NULL OR l.state = $1) ORDER BY l.created_at DESC LIMIT 5000`, [state]));
 });
 
 /** Projects in delivery shown in the Closed won lanes (from leads or created directly). */
@@ -95,18 +93,20 @@ router.post('/leads', async (req, res) => {
   if (!data.ownerId) data.ownerId = me.id;
   const lead = await transaction(async () => {
     await query('SELECT pg_advisory_xact_lock(hashtext($1))', [`lead:${body.email}`]);
-    if (await one('SELECT 1 FROM leads WHERE lower(email)=$1', [body.email]))
-      throw conflict('A lead with this email already exists.');
+    if (await one('SELECT 1 FROM leads WHERE lower(email)=$1', [body.email])) throw conflict('A lead with this email already exists.');
     await validateLeadData(data);
     const stage = await firstOpenStage();
     const contact = await ensureContact(
       { name: body.name, email: body.email, company: data.company, phone: data.phone, website: data.website },
       'Manual',
     );
-    const row = await one(
-      'INSERT INTO leads(name,email,stage,data,contact_id) VALUES($1,$2,$3,$4,$5) RETURNING id',
-      [body.name, body.email, stage.id, JSON.stringify(data), contact.id],
-    );
+    const row = await one('INSERT INTO leads(name,email,stage,data,contact_id) VALUES($1,$2,$3,$4,$5) RETURNING id', [
+      body.name,
+      body.email,
+      stage.id,
+      JSON.stringify(data),
+      contact.id,
+    ]);
     await leadHistory(row!.id, me.id, 'Lead created', { stage: stage.id });
     return getLead(row!.id);
   });
@@ -124,17 +124,51 @@ router.get('/leads/export.csv', async (req, res) => {
   sendCsv(
     res,
     `leads-${state}-${isoDay()}.csv`,
-    ['Name', 'Email', 'State', 'Stage', 'Entry stage', 'Reason', 'Exit status', 'Resume date', 'Nurture status',
-      'Nurture tags', 'Revisit date', 'Parked at', 'Confirmation due', 'Confirmed at', 'Archive reason', 'Company',
-      'Industry', 'Source', 'Problem', 'Owner', 'Created'],
+    [
+      'Name',
+      'Email',
+      'State',
+      'Stage',
+      'Entry stage',
+      'Reason',
+      'Exit status',
+      'Resume date',
+      'Nurture status',
+      'Nurture tags',
+      'Revisit date',
+      'Parked at',
+      'Confirmation due',
+      'Confirmed at',
+      'Archive reason',
+      'Company',
+      'Industry',
+      'Source',
+      'Problem',
+      'Owner',
+      'Created',
+    ],
     rows.map((l) => [
-      l.name, l.email, l.state, l.stage_label, l.entry_label ?? '', l.nurture?.reason ?? l.exit_reason,
-      EXIT_LABELS[l.exit_status as keyof typeof EXIT_LABELS] ?? '', day(l.resume_date),
+      l.name,
+      l.email,
+      l.state,
+      l.stage_label,
+      l.entry_label ?? '',
+      l.nurture?.reason ?? l.exit_reason,
+      EXIT_LABELS[l.exit_status as keyof typeof EXIT_LABELS] ?? '',
+      day(l.resume_date),
       l.nurture?.status ?? '',
       (l.nurture?.tags ?? []).map((t: string) => NURTURE_TAG_LABELS[t] ?? t).join('; '),
-      day(l.nurture?.revisit_date), day(l.nurture?.entered_at), day(l.nurture?.confirmation_due_at),
-      day(l.nurture?.confirmed_at), l.nurture?.archive_reason ?? '', l.data.company ?? '', l.data.industry ?? '',
-      l.data.source ?? '', l.data.problem ?? '', l.owner_name ?? '', day(l.created_at),
+      day(l.nurture?.revisit_date),
+      day(l.nurture?.entered_at),
+      day(l.nurture?.confirmation_due_at),
+      day(l.nurture?.confirmed_at),
+      l.nurture?.archive_reason ?? '',
+      l.data.company ?? '',
+      l.data.industry ?? '',
+      l.data.source ?? '',
+      l.data.problem ?? '',
+      l.owner_name ?? '',
+      day(l.created_at),
     ]),
   );
 });
@@ -189,8 +223,7 @@ router.patch('/leads/:id', async (req, res) => {
     const stage = await one('SELECT * FROM lead_stages WHERE id=$1', [stageId]);
     if (!stage) throw badRequest('Choose an existing stage.');
     const stageChanged = stageId !== lead.stage;
-    if (stageChanged && stage.kind === 'won')
-      throw conflict('Close this lead as won to create its project and enter onboarding.');
+    if (stageChanged && stage.kind === 'won') throw conflict('Close this lead as won to create its project and enter onboarding.');
     const hasNurture = await one('SELECT 1 FROM lead_nurture WHERE lead_id=$1', [id]);
     if (hasNurture && data.ownerId !== lead.data.ownerId)
       throw conflict('Change the POC in Nurture management so the new owner can confirm.');
@@ -268,14 +301,25 @@ router.post('/leads/:id/action', async (req, res) => {
         if (body.exitStatus === 'on_hold' && !body.resumeDate) throw badRequest('Add a resume date.');
         if (body.exitStatus !== 'on_hold' && body.resumeDate) throw badRequest('Only On hold takes a resume date.');
         const archived = body.exitStatus === 'disqualified';
-        const entry = await validateNurture(lead, { ...body, revisitDate: body.revisitDate ?? (archived ? null : body.resumeDate) }, archived);
+        const entry = await validateNurture(
+          lead,
+          { ...body, revisitDate: body.revisitDate ?? (archived ? null : body.resumeDate) },
+          archived,
+        );
         await enterNurture(lead, entry, archived);
         state = archived ? 'dropped' : 'nurture';
         exit.status = body.exitStatus;
         exit.reason = body.reason;
         exit.resume = body.resumeDate ?? null;
         exit.at = new Date();
-        Object.assign(detail, { tags: entry.tags, ownerId: entry.ownerId, revisitDate: entry.revisitDate, exitStatus: body.exitStatus, resumeDate: exit.resume, entryStage: lead.stage });
+        Object.assign(detail, {
+          tags: entry.tags,
+          ownerId: entry.ownerId,
+          revisitDate: entry.revisitDate,
+          exitStatus: body.exitStatus,
+          resumeDate: exit.resume,
+          entryStage: lead.stage,
+        });
         break;
       }
       case 'nurture': {
@@ -343,8 +387,7 @@ router.post('/leads/:id/action', async (req, res) => {
        WHERE id=$1`,
       [id, state, stage, JSON.stringify(lead.data), exit.status, exit.reason, exit.resume, exit.at, stageChanged],
     );
-    if (prev.state === 'nurture' && state !== 'nurture')
-      await endAssignment(id, body.action === 'restore' ? 'pipeline' : body.action);
+    if (prev.state === 'nurture' && state !== 'nurture') await endAssignment(id, body.action === 'restore' ? 'pipeline' : body.action);
     detail.to = state;
     if (stageChanged) Object.assign(detail, { previousStage: prev.stage, stage });
     await leadHistory(id, me.id, body.action, detail);
@@ -391,12 +434,17 @@ router.patch('/leads/:id/nurture', async (req, res) => {
       await endAssignment(id, 'archived');
       state = 'dropped';
     } else {
-      if ((body.operation === 'save') !== (n.status === 'parked'))
-        throw conflict('Use the action for this entry’s current status.');
+      if ((body.operation === 'save') !== (n.status === 'parked')) throw conflict('Use the action for this entry’s current status.');
       const exitStatusNow = lead.exit_status === 'disqualified' ? '' : lead.exit_status;
       const entry = await validateNurture(
         lead,
-        { reason: body.reason || n.reason, tags: body.tags ?? n.tags.filter((t: string) => t !== 'archived'), ownerId: body.ownerId || n.owner_id, revisitDate: body.revisitDate !== undefined ? body.revisitDate : n.revisit_date, exitStatus: exitStatusNow },
+        {
+          reason: body.reason || n.reason,
+          tags: body.tags ?? n.tags.filter((t: string) => t !== 'archived'),
+          ownerId: body.ownerId || n.owner_id,
+          revisitDate: body.revisitDate !== undefined ? body.revisitDate : n.revisit_date,
+          exitStatus: exitStatusNow,
+        },
         false,
       );
       await query(
@@ -407,13 +455,14 @@ router.patch('/leads/:id/nurture', async (req, res) => {
         [id, entry.tags, entry.ownerId, entry.reason, entry.revisitDate, confirmationDueAt(), body.operation === 'repark'],
       );
       lead.data.ownerId = entry.ownerId;
-      await query(
-        `UPDATE leads SET exit_reason=$2, resume_date=$3, exit_status=$4 WHERE id=$1`,
-        [id, entry.reason, exitStatusNow === 'on_hold' ? entry.revisitDate : null, exitStatusNow],
-      );
+      await query(`UPDATE leads SET exit_reason=$2, resume_date=$3, exit_status=$4 WHERE id=$1`, [
+        id,
+        entry.reason,
+        exitStatusNow === 'on_hold' ? entry.revisitDate : null,
+        exitStatusNow,
+      ]);
       state = 'nurture';
-      if (n.owner_id !== entry.ownerId || body.operation === 'repark')
-        await enterNotice(entry.ownerId, lead.name);
+      if (n.owner_id !== entry.ownerId || body.operation === 'repark') await enterNotice(entry.ownerId, lead.name);
       Object.assign(detail, { tags: entry.tags, ownerId: entry.ownerId, revisitDate: entry.revisitDate });
     }
     await query('UPDATE leads SET state=$2, data=$3, version=version+1, updated_at=now() WHERE id=$1', [
@@ -434,10 +483,9 @@ async function enterNotice(ownerId: string, name: string) {
 // ── Comments ─────────────────────────────────────────────────────────────────
 router.get('/leads/:id/comments', async (req, res) => {
   res.json(
-    await many(
-      'SELECT id, body, author_id, author_name, created_at FROM lead_comments WHERE lead_id=$1 ORDER BY created_at DESC',
-      [leadId(req)],
-    ),
+    await many('SELECT id, body, author_id, author_name, created_at FROM lead_comments WHERE lead_id=$1 ORDER BY created_at DESC', [
+      leadId(req),
+    ]),
   );
 });
 
@@ -483,10 +531,11 @@ router.post('/leads/:id/notes', async (req, res) => {
 router.patch('/lead-notes/:id', async (req, res) => {
   const me = currentUser(req);
   const data = parse(noteSchema, req.body);
-  const note = await one(
-    `UPDATE lead_notes SET title=$2, body=$3, updated_at=now() WHERE id=$1 RETURNING ${NOTE_COLUMNS}`,
-    [leadId(req), data.title, data.body],
-  );
+  const note = await one(`UPDATE lead_notes SET title=$2, body=$3, updated_at=now() WHERE id=$1 RETURNING ${NOTE_COLUMNS}`, [
+    leadId(req),
+    data.title,
+    data.body,
+  ]);
   if (!note) throw notFound('Note');
   await leadHistory(note.lead_id, me.id, 'Note updated', { reason: data.title });
   res.json(note);

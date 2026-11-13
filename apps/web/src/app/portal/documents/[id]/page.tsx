@@ -87,7 +87,14 @@ export default function PortalDocumentPage() {
     if (!consent) return setSignError('Confirm you agree to sign electronically.');
     setBusy('sign');
     try {
-      record(await post<DocAction>(`/documents/${doc.id}/sign`, { contentHash: doc.content_hash, blockId: signing.id, typedName: typedName.trim(), consent: true }));
+      record(
+        await post<DocAction>(`/documents/${doc.id}/sign`, {
+          contentHash: doc.content_hash,
+          blockId: signing.id,
+          typedName: typedName.trim(),
+          consent: true,
+        }),
+      );
       setSigning(null);
       toast.success('Signed');
     } catch (e) {
@@ -122,14 +129,28 @@ export default function PortalDocumentPage() {
               <div className="space-y-1.5" role="radiogroup" aria-label={q.label}>
                 {q.options.map((o) => (
                   <label key={o} className="flex items-center gap-2 text-sm">
-                    <input type="radio" name={q.id} checked={answers[q.id] === o} onChange={() => setAnswers({ ...answers, [q.id]: o })} /> {o}
+                    <input type="radio" name={q.id} checked={answers[q.id] === o} onChange={() => setAnswers({ ...answers, [q.id]: o })} />{' '}
+                    {o}
                   </label>
                 ))}
               </div>
             ) : q.questionType === 'long' ? (
-              <textarea className="input" rows={4} maxLength={20000} aria-label={q.label} value={answers[q.id] ?? ''} onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
+              <textarea
+                className="input"
+                rows={4}
+                maxLength={20000}
+                aria-label={q.label}
+                value={answers[q.id] ?? ''}
+                onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+              />
             ) : (
-              <input className="input" maxLength={500} aria-label={q.label} value={answers[q.id] ?? ''} onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
+              <input
+                className="input"
+                maxLength={500}
+                aria-label={q.label}
+                value={answers[q.id] ?? ''}
+                onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+              />
             )
           }
           renderSignature={(b) => {
@@ -162,7 +183,9 @@ export default function PortalDocumentPage() {
 
         {questions.length > 0 && (
           <div className="no-print mx-auto mt-6 flex max-w-3xl flex-wrap items-center gap-3 border-t border-line pt-6">
-            {lastAnswers && <span className="text-xs text-mute">Last sent {dateTime(lastAnswers.created_at)}. You can update your answers.</span>}
+            {lastAnswers && (
+              <span className="text-xs text-mute">Last sent {dateTime(lastAnswers.created_at)}. You can update your answers.</span>
+            )}
             <Button className="ml-auto" onClick={submitAnswers} loading={busy === 'answers'}>
               {lastAnswers ? 'Send updated answers' : 'Send answers'}
             </Button>
@@ -173,7 +196,11 @@ export default function PortalDocumentPage() {
           <div className="no-print mx-auto mt-6 max-w-3xl border-t border-line pt-6">
             {decision ? (
               <div className="flex items-center gap-2">
-                {decision.action === 'accepted' ? <CheckCircle2 className="h-5 w-5 text-ok" /> : <XCircle className="h-5 w-5 text-danger" />}
+                {decision.action === 'accepted' ? (
+                  <CheckCircle2 className="h-5 w-5 text-ok" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-danger" />
+                )}
                 <p className="text-sm">
                   You {decision.action} this proposal on {dateTime(decision.created_at)}.
                 </p>

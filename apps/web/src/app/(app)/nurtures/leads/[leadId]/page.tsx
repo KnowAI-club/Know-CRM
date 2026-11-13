@@ -131,7 +131,10 @@ export default function NurtureLeadPage() {
               </Button>
             )}
             {discarded && (
-              <Button loading={busy === 'restore'} onClick={() => run('restore', () => post(`/nurtures/leads/${l.id}/restore`), 'Restored to the General list.')}>
+              <Button
+                loading={busy === 'restore'}
+                onClick={() => run('restore', () => post(`/nurtures/leads/${l.id}/restore`), 'Restored to the General list.')}
+              >
                 <Undo2 className="h-4 w-4" /> Restore
               </Button>
             )}
@@ -155,11 +158,21 @@ export default function NurtureLeadPage() {
               action={
                 <div className="flex items-center gap-1">
                   {a.paused_at ? (
-                    <Button size="sm" variant="ghost" loading={busy === 'resume'} onClick={() => run('resume', () => assignmentOp(a.id, 'resume'), 'Sequence resumed.')}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      loading={busy === 'resume'}
+                      onClick={() => run('resume', () => assignmentOp(a.id, 'resume'), 'Sequence resumed.')}
+                    >
                       <Play className="h-3.5 w-3.5" /> Resume
                     </Button>
                   ) : (
-                    <Button size="sm" variant="ghost" loading={busy === 'pause'} onClick={() => run('pause', () => assignmentOp(a.id, 'pause'), 'Sequence paused.')}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      loading={busy === 'pause'}
+                      onClick={() => run('pause', () => assignmentOp(a.id, 'pause'), 'Sequence paused.')}
+                    >
                       <Pause className="h-3.5 w-3.5" /> Pause
                     </Button>
                   )}
@@ -168,7 +181,13 @@ export default function NurtureLeadPage() {
                     variant="ghost"
                     loading={busy === 'remove'}
                     onClick={async () => {
-                      if (await confirm({ title: 'Remove from this sequence?', description: 'The lead returns to the General list.', confirmLabel: 'Remove' }))
+                      if (
+                        await confirm({
+                          title: 'Remove from this sequence?',
+                          description: 'The lead returns to the General list.',
+                          confirmLabel: 'Remove',
+                        })
+                      )
                         await run('remove', () => assignmentOp(a.id, 'remove'), 'Removed from sequence.');
                     }}
                   >
@@ -190,7 +209,11 @@ export default function NurtureLeadPage() {
                   return (
                     <li key={c.email_id} className="px-4 py-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <button className="min-w-0 flex-1 text-left" onClick={() => setOpen(expanded ? null : c.email_id)} aria-expanded={expanded}>
+                        <button
+                          className="min-w-0 flex-1 text-left"
+                          onClick={() => setOpen(expanded ? null : c.email_id)}
+                          aria-expanded={expanded}
+                        >
                           <p className="truncate text-sm font-medium">
                             {c.position + 1}. {subject || '(no subject)'}
                           </p>
@@ -248,7 +271,9 @@ export default function NurtureLeadPage() {
                           <div className="mt-3 flex flex-wrap gap-1 border-t border-line pt-2">
                             <CopyText text={subject} label="Copy subject" />
                             <CopyText text={body} label="Copy body" />
-                            <a href={`mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}>
+                            <a
+                              href={`mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`}
+                            >
                               <Button variant="ghost" size="sm">
                                 <Mail className="h-3.5 w-3.5" /> Open in mail app
                               </Button>
@@ -265,7 +290,13 @@ export default function NurtureLeadPage() {
             <Card>
               <Empty
                 title={discarded ? 'In Discard' : 'Not in a sequence'}
-                description={discarded ? `Reason: ${n?.discard_reason || '—'}. Restore to add them to a sequence again.` : parked ? 'Start a sequence to plan follow-up emails.' : undefined}
+                description={
+                  discarded
+                    ? `Reason: ${n?.discard_reason || '—'}. Restore to add them to a sequence again.`
+                    : parked
+                      ? 'Start a sequence to plan follow-up emails.'
+                      : undefined
+                }
                 action={parked && !discarded ? <Button onClick={() => setAssigning(true)}>Start sequence</Button> : undefined}
               />
             </Card>

@@ -22,7 +22,13 @@ export interface MeetingLike {
 }
 
 export function KindIcon({ kind, className = 'h-4 w-4' }: { kind: string; className?: string }) {
-  return kind === 'phone' ? <Phone className={className} /> : kind === 'in_person' ? <MapPin className={className} /> : <Video className={className} />;
+  return kind === 'phone' ? (
+    <Phone className={className} />
+  ) : kind === 'in_person' ? (
+    <MapPin className={className} />
+  ) : (
+    <Video className={className} />
+  );
 }
 
 /** Compact meeting row: time block, title, who it's with and status. */
@@ -32,7 +38,11 @@ export function MeetingItem({ m, showDate = false, needsOutcome = false }: { m: 
   return (
     <Link href={`/meetings/${m.id}`} className="flex items-center gap-3 rounded-lg px-2 py-2.5 hover:bg-subtle">
       <div className="w-16 shrink-0 text-center">
-        {showDate && <p className="text-[11px] font-medium text-mute uppercase">{start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>}
+        {showDate && (
+          <p className="text-[11px] font-medium text-mute uppercase">
+            {start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+          </p>
+        )}
         <p className="text-sm font-semibold">{m.source === 'upload' ? '—' : time(m.start_at)}</p>
         {!showDate && <p className="text-[11px] text-faint">{m.duration_minutes} min</p>}
       </div>
@@ -40,7 +50,9 @@ export function MeetingItem({ m, showDate = false, needsOutcome = false }: { m: 
         <KindIcon kind={m.kind} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className={m.status === 'cancelled' ? 'truncate text-sm font-medium text-mute line-through' : 'truncate text-sm font-medium'}>{m.title}</p>
+        <p className={m.status === 'cancelled' ? 'truncate text-sm font-medium text-mute line-through' : 'truncate text-sm font-medium'}>
+          {m.title}
+        </p>
         <p className="truncate text-xs text-mute">
           {withName ? `${m.project_name ? 'Project' : m.lead_name ? 'Lead' : 'With'} · ${withName}` : 'No link'}
           {m.participant_count ? (

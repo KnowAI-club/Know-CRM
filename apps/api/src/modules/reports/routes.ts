@@ -146,10 +146,12 @@ export async function projectReport(from: string, to: string) {
     .filter(isActive)
     .map((p) => {
       const flags: { text: string; tone: 'red' | 'amber' }[] = [];
-      if (p.overdueMilestones) flags.push({ text: `${p.overdueMilestones} milestone${p.overdueMilestones === 1 ? '' : 's'} overdue`, tone: 'red' });
+      if (p.overdueMilestones)
+        flags.push({ text: `${p.overdueMilestones} milestone${p.overdueMilestones === 1 ? '' : 's'} overdue`, tone: 'red' });
       if (p.overdueTasks) flags.push({ text: `${p.overdueTasks} task${p.overdueTasks === 1 ? '' : 's'} overdue`, tone: 'red' });
       if (p.daysSinceMeeting === null && p.age >= 14) flags.push({ text: 'No meeting yet', tone: 'amber' });
-      if (p.daysSinceMeeting !== null && p.daysSinceMeeting >= 14) flags.push({ text: `No meeting ${p.daysSinceMeeting} days`, tone: 'amber' });
+      if (p.daysSinceMeeting !== null && p.daysSinceMeeting >= 14)
+        flags.push({ text: `No meeting ${p.daysSinceMeeting} days`, tone: 'amber' });
       return { ...p, flags };
     })
     .filter((p) => p.flags.length)
@@ -175,7 +177,13 @@ export async function projectReport(from: string, to: string) {
     .filter((m) => /support/i.test(m.title) && m.status === 'in_progress')
     .map((m) => {
       const p = projects.find((x) => x.id === m.project_id)!;
-      return { id: p.id, name: p.name, clientName: p.clientName, endsOn: m.due_date, daysLeft: m.due_date ? Math.ceil((Date.parse(m.due_date) - Date.parse(today)) / DAY) : null };
+      return {
+        id: p.id,
+        name: p.name,
+        clientName: p.clientName,
+        endsOn: m.due_date,
+        daysLeft: m.due_date ? Math.ceil((Date.parse(m.due_date) - Date.parse(today)) / DAY) : null,
+      };
     });
   const repeatClients = await many(
     `SELECT c.id, c.name, count(*)::int AS projects FROM projects p JOIN contacts c ON c.id=p.contact_id
@@ -220,12 +228,37 @@ router.get('/reports/projects.csv', async (req, res) => {
   sendCsv(
     res,
     `project-report-${isoDay()}.csv`,
-    ['Project', 'Client', 'Stage', 'Days in stage', 'Value', 'Invoiced', 'Collected', 'Outstanding', 'Currency',
-      'Milestones done', 'Milestones total', 'Overdue milestones', 'Overdue tasks', 'Created'],
+    [
+      'Project',
+      'Client',
+      'Stage',
+      'Days in stage',
+      'Value',
+      'Invoiced',
+      'Collected',
+      'Outstanding',
+      'Currency',
+      'Milestones done',
+      'Milestones total',
+      'Overdue milestones',
+      'Overdue tasks',
+      'Created',
+    ],
     report.projects.map((r) => [
-      r.name, r.clientName, r.stageLabel, r.daysInStage, minorToDecimal(r.value), minorToDecimal(r.invoiced),
-      minorToDecimal(r.collected), minorToDecimal(r.outstanding), r.currency, r.done, r.milestones, r.overdueMilestones,
-      r.overdueTasks, r.createdOn,
+      r.name,
+      r.clientName,
+      r.stageLabel,
+      r.daysInStage,
+      minorToDecimal(r.value),
+      minorToDecimal(r.invoiced),
+      minorToDecimal(r.collected),
+      minorToDecimal(r.outstanding),
+      r.currency,
+      r.done,
+      r.milestones,
+      r.overdueMilestones,
+      r.overdueTasks,
+      r.createdOn,
     ]),
   );
 });

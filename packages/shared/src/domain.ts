@@ -99,6 +99,16 @@ export function fillMerge(text: string, values: Record<string, string | undefine
 }
 
 export const MERGE_FIELDS = [
-  'first_name', 'company', 'industry', 'problem', 'owner_name', 'client_name', 'client_email',
-  'meeting_date', 'next_step', 'booking_link', 'revisit_month', 'project_name',
+  'first_name',
+  'company',
+  'industry',
+  'problem',
+  'owner_name',
+  'client_name',
+  'client_email',
+  'meeting_date',
+  'next_step',
+  'booking_link',
+  'revisit_month',
+  'project_name',
 ] as const;

@@ -9,8 +9,12 @@ export async function audit(
   action: string,
   summary: string,
 ) {
-  await query(
-    `INSERT INTO audit_log(actor_id, actor_name, entity, entity_id, action, summary) VALUES($1,$2,$3,$4,$5,$6)`,
-    [actor?.id ?? null, actor?.name ?? 'System', entity, entityId, action, summary.slice(0, 1000)],
-  );
+  await query(`INSERT INTO audit_log(actor_id, actor_name, entity, entity_id, action, summary) VALUES($1,$2,$3,$4,$5,$6)`, [
+    actor?.id ?? null,
+    actor?.name ?? 'System',
+    entity,
+    entityId,
+    action,
+    summary.slice(0, 1000),
+  ]);
 }

@@ -13,10 +13,7 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <div
-      className={cn('flex gap-1 overflow-x-auto border-b border-line', className)}
-      role="tablist"
-    >
+    <div className={cn('flex gap-1 overflow-x-auto border-b border-line', className)} role="tablist">
       {tabs.map((t) => (
         <button
           key={t.value}
@@ -25,17 +22,11 @@ export function Tabs<T extends string>({
           onClick={() => onChange(t.value)}
           className={cn(
             '-mb-px border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition',
-            value === t.value
-              ? 'border-acc text-ink'
-              : 'border-transparent text-mute hover:text-ink',
+            value === t.value ? 'border-acc text-ink' : 'border-transparent text-mute hover:text-ink',
           )}
         >
           {t.label}
-          {t.count !== undefined && (
-            <span className="ml-1.5 rounded-full bg-subtle px-1.5 text-xs text-mute">
-              {t.count}
-            </span>
-          )}
+          {t.count !== undefined && <span className="ml-1.5 rounded-full bg-subtle px-1.5 text-xs text-mute">{t.count}</span>}
         </button>
       ))}
     </div>

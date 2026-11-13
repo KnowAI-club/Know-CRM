@@ -18,15 +18,7 @@ interface Labelled {
   usage_count: number;
 }
 
-function AddRow({
-  placeholder,
-  onAdd,
-  disabled,
-}: {
-  placeholder: string;
-  onAdd: (label: string) => Promise<void>;
-  disabled?: boolean;
-}) {
+function AddRow({ placeholder, onAdd, disabled }: { placeholder: string; onAdd: (label: string) => Promise<void>; disabled?: boolean }) {
   const [value, setValue] = useState('');
   const [saving, setSaving] = useState(false);
   const submit = async (e: React.FormEvent) => {
@@ -82,10 +74,7 @@ export function LeadOptionSettings() {
   };
 
   return (
-    <Section
-      title="Lead sources and industries"
-      description="Choices offered on lead forms and filters. Options in use cannot be deleted."
-    >
+    <Section title="Lead sources and industries" description="Choices offered on lead forms and filters. Options in use cannot be deleted.">
       {options.error ? (
         <ErrorBox error={options.error} retry={options.reload} />
       ) : !options.data ? (
@@ -93,19 +82,12 @@ export function LeadOptionSettings() {
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
           {(['source', 'industry'] as const).map((kind) => (
-            <Card
-              key={kind}
-              title={kind === 'source' ? 'Sources' : 'Industries'}
-              bodyClassName="p-0"
-            >
+            <Card key={kind} title={kind === 'source' ? 'Sources' : 'Industries'} bodyClassName="p-0">
               <ul className="flex flex-wrap gap-2 p-4">
                 {options
                   .data!.filter((o) => o.kind === kind)
                   .map((o) => (
-                    <li
-                      key={o.label}
-                      className="inline-flex items-center gap-1 rounded-full border border-line py-0.5 pr-1 pl-3 text-sm"
-                    >
+                    <li key={o.label} className="inline-flex items-center gap-1 rounded-full border border-line py-0.5 pr-1 pl-3 text-sm">
                       {o.label}
                       <span className="text-xs text-faint">{o.lead_count}</span>
                       {isAdmin && (
@@ -169,8 +151,7 @@ export function LabelledListSettings({
     }
   };
   const remove = async (t: Labelled) => {
-    if (!(await confirm({ title: `Delete “${t.label}”?`, confirmLabel: 'Delete', danger: true })))
-      return;
+    if (!(await confirm({ title: `Delete “${t.label}”?`, confirmLabel: 'Delete', danger: true }))) return;
     try {
       await del(`${path}/${t.id}`);
       list.setData((l) => l?.filter((x) => x.id !== t.id));
@@ -211,12 +192,7 @@ export function LabelledListSettings({
                     <Button size="icon" type="submit" variant="soft" aria-label="Save">
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label="Cancel"
-                      onClick={() => setEditing(null)}
-                    >
+                    <Button size="icon" variant="ghost" aria-label="Cancel" onClick={() => setEditing(null)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </form>

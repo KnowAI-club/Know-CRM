@@ -36,15 +36,7 @@ export function ReadOnlyNote() {
   );
 }
 
-export function ColorInput({
-  value,
-  onChange,
-  label = 'Colour',
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  label?: string;
-}) {
+export function ColorInput({ value, onChange, label = 'Colour' }: { value: string; onChange: (v: string) => void; label?: string }) {
   return (
     <span className="inline-flex items-center gap-2">
       <input

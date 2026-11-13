@@ -11,7 +11,14 @@ import { useLeadMeta } from '@/components/leads/useLeadMeta';
 import { LeadProfile } from '@/components/leads/LeadProfile';
 import { LeadStatusCard, NurtureCard } from '@/components/leads/LeadStatus';
 import {
-  LeadCycle, LeadFiles, LeadHistory, LeadMeetings, LeadNotes, LeadTasks, type HistoryEntry, type LeadMeeting,
+  LeadCycle,
+  LeadFiles,
+  LeadHistory,
+  LeadMeetings,
+  LeadNotes,
+  LeadTasks,
+  type HistoryEntry,
+  type LeadMeeting,
 } from '@/components/leads/LeadWork';
 import { STATE_LABELS, STATE_TONES, withDefaults, type Lead } from '@/components/leads/types';
 

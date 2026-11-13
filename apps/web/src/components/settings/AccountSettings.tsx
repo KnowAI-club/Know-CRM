@@ -26,10 +26,7 @@ export function NotificationSettings() {
     }
   };
   return (
-    <Section
-      title="Notifications"
-      description="Choose which events show in your notification bell. These settings are personal."
-    >
+    <Section title="Notifications" description="Choose which events show in your notification bell. These settings are personal.">
       <Card bodyClassName="p-0">
         {prefs.error ? (
           <div className="p-4">
@@ -84,8 +81,7 @@ export function PasswordSettings() {
       toast.success('Password changed. Sign in again with your new password.');
       setTimeout(() => void logout(), 1200);
     } catch (err) {
-      if (err instanceof ApiError)
-        setErrors(err.status === 401 ? { currentPassword: err.message } : fieldErrors(err));
+      if (err instanceof ApiError) setErrors(err.status === 401 ? { currentPassword: err.message } : fieldErrors(err));
       toast.error(err);
       setSaving(false);
     }
@@ -104,22 +100,10 @@ export function PasswordSettings() {
             />
           </Field>
           <Field label="New password" hint="At least 12 characters" error={errors.newPassword}>
-            <input
-              type="password"
-              className="input"
-              autoComplete="new-password"
-              value={next}
-              onChange={(e) => setNext(e.target.value)}
-            />
+            <input type="password" className="input" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
           </Field>
           <Field label="Confirm new password" error={errors.again}>
-            <input
-              type="password"
-              className="input"
-              autoComplete="new-password"
-              value={again}
-              onChange={(e) => setAgain(e.target.value)}
-            />
+            <input type="password" className="input" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} />
           </Field>
           <div>
             <Button type="submit" loading={saving}>

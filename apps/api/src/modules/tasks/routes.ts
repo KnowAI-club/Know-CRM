@@ -14,7 +14,10 @@ const idParam = z.object({ id: z.string().uuid() });
 const taskFields = z.object({
   title: z.string().trim().min(1, 'Required').max(500),
   dueDate: zs.date,
-  assigneeId: z.union([z.literal(''), z.string().uuid()]).optional().default(''),
+  assigneeId: z
+    .union([z.literal(''), z.string().uuid()])
+    .optional()
+    .default(''),
   visibility: z.enum(['internal', 'client']).default('internal'),
   urgent: z.boolean().default(false),
 });
@@ -38,8 +41,7 @@ async function validateTask(
   if (user.role === 'client') {
     if (target.leadId) throw badRequest('Lead tasks cannot be assigned to clients.');
     const access = await one('SELECT 1 FROM project_access WHERE user_id=$1 AND project_id=$2', [user.id, target.projectId]);
-    if (data.visibility !== 'client' || !access)
-      throw badRequest('Client tasks must be shared with a client who has project access.');
+    if (data.visibility !== 'client' || !access) throw badRequest('Client tasks must be shared with a client who has project access.');
   }
 }
 
@@ -71,10 +73,10 @@ export async function assertLeadOpen(leadId: string) {
 router.get('/tasks', requireStaff, async (req, res) => {
   const me = currentUser(req);
   res.json(
-    await many(
-      `${TASK_SELECT} WHERE ($1 OR t.assignee_id=$2) ORDER BY t.completed, t.due_date NULLS LAST, t.created_at DESC LIMIT 2000`,
-      [me.role === 'admin', me.id],
-    ),
+    await many(`${TASK_SELECT} WHERE ($1 OR t.assignee_id=$2) ORDER BY t.completed, t.due_date NULLS LAST, t.created_at DESC LIMIT 2000`, [
+      me.role === 'admin',
+      me.id,
+    ]),
   );
 });
 
@@ -132,13 +134,9 @@ router.patch('/tasks/:id', async (req, res) => {
   const { id } = parse(idParam, req.params);
   const task = await findTask(req, id);
   if (me.role === 'client') {
-    if (task.visibility !== 'client' || task.assignee_id !== me.id)
-      throw forbidden('Only your assigned shared tasks can be updated.');
+    if (task.visibility !== 'client' || task.assignee_id !== me.id) throw forbidden('Only your assigned shared tasks can be updated.');
     const { completed } = parse(z.object({ completed: z.boolean() }).strict(), req.body);
-    await query(
-      `UPDATE tasks SET completed=$2, completed_at=CASE WHEN $2 THEN now() ELSE NULL END WHERE id=$1`,
-      [id, completed],
-    );
+    await query(`UPDATE tasks SET completed=$2, completed_at=CASE WHEN $2 THEN now() ELSE NULL END WHERE id=$1`, [id, completed]);
     await logTask(me, task, `Task ${completed ? 'completed' : 'reopened'}: ${task.title}`);
     return res.json(await one(`${TASK_SELECT} WHERE t.id=$1`, [id]));
   }
@@ -166,7 +164,8 @@ router.patch('/tasks/:id', async (req, res) => {
   );
   const changes: string[] = [];
   if (next.title !== task.title) changes.push(`Title “${task.title}” → “${next.title}”`);
-  if (String(next.due_date ?? '') !== String(task.due_date ?? '')) changes.push(`Due date ${task.due_date || 'none'} → ${next.due_date || 'none'}`);
+  if (String(next.due_date ?? '') !== String(task.due_date ?? ''))
+    changes.push(`Due date ${task.due_date || 'none'} → ${next.due_date || 'none'}`);
   if (next.assignee_id !== task.assignee_id) {
     const u = next.assignee_id ? await one('SELECT name FROM users WHERE id=$1', [next.assignee_id]) : null;
     changes.push(`Assignee → ${u?.name ?? 'nobody'}`);

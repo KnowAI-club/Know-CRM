@@ -24,7 +24,10 @@ export async function adminAgent() {
   const agent = request.agent(app);
   const status = await agent.get('/api/auth/status');
   if (status.body.needsSetup) {
-    await agent.post('/api/setup').send({ ...ADMIN, workspaceName: 'Test Workspace' }).expect(201);
+    await agent
+      .post('/api/setup')
+      .send({ ...ADMIN, workspaceName: 'Test Workspace' })
+      .expect(201);
   } else {
     await agent.post('/api/auth/login').send({ email: ADMIN.email, password: ADMIN.password }).expect(200);
   }

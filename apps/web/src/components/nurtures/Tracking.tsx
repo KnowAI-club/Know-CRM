@@ -23,7 +23,10 @@ const match = (t: Tracked, f: Filter) =>
 export function Tracking({ version, onChanged }: { version: number; onChanged: () => void }) {
   const toast = useToast();
   const confirm = useConfirm();
-  const { data, error, loading, reload } = useLoad((s) => get<{ rows: Tracked[]; sequences: SequenceSummary[] }>('/nurtures/tracking', s), [version]);
+  const { data, error, loading, reload } = useLoad(
+    (s) => get<{ rows: Tracked[]; sequences: SequenceSummary[] }>('/nurtures/tracking', s),
+    [version],
+  );
   const [filter, setFilter] = useState<Filter>('all');
   const [seq, setSeq] = useState('');
   const [q, setQ] = useState('');
@@ -33,7 +36,9 @@ export function Tracking({ version, onChanged }: { version: number; onChanged: (
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (data?.rows ?? [])
-      .filter((t) => (!seq || t.sequence_id === seq) && (!term || [t.name, t.email, t.company].some((v) => v?.toLowerCase().includes(term))))
+      .filter(
+        (t) => (!seq || t.sequence_id === seq) && (!term || [t.name, t.email, t.company].some((v) => v?.toLowerCase().includes(term))),
+      )
       .sort((a, b) => {
         const rank = (t: Tracked) => ({ send: 0, reply: 1, wait: 2, decide: 3, paused: 4 })[t.next.kind];
         return rank(a) - rank(b) || (('at' in a.next ? a.next.at : '') || '').localeCompare(('at' in b.next ? b.next.at : '') || '');
@@ -109,13 +114,16 @@ export function Tracking({ version, onChanged }: { version: number; onChanged: (
                   <Link href={`/nurtures/leads/${t.lead_id}`} className="font-medium hover:text-acc">
                     {t.name}
                   </Link>
-                  <p className="truncate text-xs text-mute">
-                    {[t.company, t.sequence_name].filter(Boolean).join(' · ')}
-                  </p>
+                  <p className="truncate text-xs text-mute">{[t.company, t.sequence_name].filter(Boolean).join(' · ')}</p>
                 </div>
                 <div className="basis-40">
                   <PlanStrip plan={t.plan} />
-                  <p className={cn('mt-1 text-xs', next.kind === 'send' ? 'font-medium text-warn' : next.kind === 'reply' ? 'font-medium text-ok' : 'text-mute')}>
+                  <p
+                    className={cn(
+                      'mt-1 text-xs',
+                      next.kind === 'send' ? 'font-medium text-warn' : next.kind === 'reply' ? 'font-medium text-ok' : 'text-mute',
+                    )}
+                  >
                     {nextLabel(t)}
                   </p>
                 </div>
@@ -147,17 +155,36 @@ export function Tracking({ version, onChanged }: { version: number; onChanged: (
                           ]
                         : []),
                       t.paused_at
-                        ? { label: 'Resume', icon: <Play className="h-4 w-4" />, onSelect: () => run(t, () => assignmentOp(t.id, 'resume'), 'Sequence resumed.') }
-                        : { label: 'Pause', icon: <Pause className="h-4 w-4" />, onSelect: () => run(t, () => assignmentOp(t.id, 'pause'), 'Sequence paused.') },
+                        ? {
+                            label: 'Resume',
+                            icon: <Play className="h-4 w-4" />,
+                            onSelect: () => run(t, () => assignmentOp(t.id, 'resume'), 'Sequence resumed.'),
+                          }
+                        : {
+                            label: 'Pause',
+                            icon: <Pause className="h-4 w-4" />,
+                            onSelect: () => run(t, () => assignmentOp(t.id, 'pause'), 'Sequence paused.'),
+                          },
                       {
                         label: 'Remove from sequence',
                         icon: <UserMinus className="h-4 w-4" />,
                         onSelect: async () => {
-                          if (await confirm({ title: `Remove ${t.name} from ${t.sequence_name}?`, description: 'They return to the General list.', confirmLabel: 'Remove' }))
+                          if (
+                            await confirm({
+                              title: `Remove ${t.name} from ${t.sequence_name}?`,
+                              description: 'They return to the General list.',
+                              confirmLabel: 'Remove',
+                            })
+                          )
                             await run(t, () => assignmentOp(t.id, 'remove'), 'Removed from sequence.');
                         },
                       },
-                      { label: 'Discard', icon: <Trash2 className="h-4 w-4" />, danger: true, onSelect: () => setDiscard([{ id: t.lead_id, name: t.name }]) },
+                      {
+                        label: 'Discard',
+                        icon: <Trash2 className="h-4 w-4" />,
+                        danger: true,
+                        onSelect: () => setDiscard([{ id: t.lead_id, name: t.name }]),
+                      },
                     ]}
                   />
                 </div>

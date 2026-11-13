@@ -20,11 +20,7 @@ export function Card({
     <section className={cn('card', className)}>
       {(title || action) && (
         <header className="flex items-center gap-2 border-b border-line px-4 py-3">
-          {icon && (
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-acc-soft text-acc">
-              {icon}
-            </span>
-          )}
+          {icon && <span className="grid h-7 w-7 place-items-center rounded-lg bg-acc-soft text-acc">{icon}</span>}
           <h3 className="flex-1 text-sm font-semibold">{title}</h3>
           {action}
         </header>

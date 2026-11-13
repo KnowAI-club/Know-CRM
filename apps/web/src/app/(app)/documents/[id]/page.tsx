@@ -16,7 +16,8 @@ const clean = (blocks: Block[]): Block[] =>
   blocks.map((b) => (b.type === 'question' ? { ...b, options: b.options.map((o) => o.trim()).filter(Boolean) } : b));
 
 function ActionRow({ a, blocks }: { a: DocAction; blocks: Block[] }) {
-  const label = (id: string) => blocks.find((b) => b.id === id && b.type === 'question') as Extract<Block, { type: 'question' }> | undefined;
+  const label = (id: string) =>
+    blocks.find((b) => b.id === id && b.type === 'question') as Extract<Block, { type: 'question' }> | undefined;
   return (
     <li className="py-3">
       <div className="flex items-center gap-2">
@@ -26,7 +27,11 @@ function ActionRow({ a, blocks }: { a: DocAction; blocks: Block[] }) {
         {a.action === 'answered' && <Send className="h-4 w-4 text-info" />}
         <p className="text-sm">
           <span className="font-medium">{a.actor_name}</span>{' '}
-          {a.action === 'answered' ? 'submitted answers' : a.action === 'signed' ? `signed as “${a.typed_name}”` : `${a.action} the proposal`}
+          {a.action === 'answered'
+            ? 'submitted answers'
+            : a.action === 'signed'
+              ? `signed as “${a.typed_name}”`
+              : `${a.action} the proposal`}
         </p>
         <span className="ml-auto text-xs text-faint">{dateTime(a.created_at)}</span>
       </div>
@@ -65,7 +70,10 @@ export default function DocumentPage() {
     saved.current = JSON.stringify({ t: doc.title, b: doc.blocks });
   }, [doc]);
 
-  const dirty = useMemo(() => !!doc && doc.status === 'draft' && JSON.stringify({ t: title, b: blocks }) !== saved.current, [doc, title, blocks]);
+  const dirty = useMemo(
+    () => !!doc && doc.status === 'draft' && JSON.stringify({ t: title, b: blocks }) !== saved.current,
+    [doc, title, blocks],
+  );
 
   useEffect(() => {
     if (!dirty) return;
@@ -128,7 +136,8 @@ export default function DocumentPage() {
   };
 
   const remove = async () => {
-    if (!(await confirm({ title: 'Delete this draft?', description: 'This cannot be undone.', confirmLabel: 'Delete', danger: true }))) return;
+    if (!(await confirm({ title: 'Delete this draft?', description: 'This cannot be undone.', confirmLabel: 'Delete', danger: true })))
+      return;
     setBusy('delete');
     try {
       await del(`/documents/${doc.id}`);
@@ -153,7 +162,11 @@ export default function DocumentPage() {
         description={
           <span className="flex flex-wrap items-center gap-2">
             {isDraft ? <Badge>Draft</Badge> : <Badge tone="ok">Published {dateTime(doc.published_at)}</Badge>}
-            {decision && <Badge tone={decision.action === 'accepted' ? 'ok' : 'danger'}>{decision.action === 'accepted' ? 'Accepted' : 'Declined'}</Badge>}
+            {decision && (
+              <Badge tone={decision.action === 'accepted' ? 'ok' : 'danger'}>
+                {decision.action === 'accepted' ? 'Accepted' : 'Declined'}
+              </Badge>
+            )}
             {dirty && <span className="text-xs text-warn">Unsaved changes</span>}
           </span>
         }
@@ -189,12 +202,20 @@ export default function DocumentPage() {
               <label className="label" htmlFor="doc-title">
                 Title
               </label>
-              <input id="doc-title" className="input text-base font-medium" value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
+              <input
+                id="doc-title"
+                className="input text-base font-medium"
+                value={title}
+                maxLength={200}
+                onChange={(e) => setTitle(e.target.value)}
+              />
               {errors.title && <p className="mt-1 text-xs text-danger">{errors.title}</p>}
             </div>
             {errors.blocks && <ErrorBox error={errors.blocks} />}
             {doc.kind === 'contract' && !signatures.length && (
-              <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn">Contracts need at least one signature block before publishing.</p>
+              <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn">
+                Contracts need at least one signature block before publishing.
+              </p>
             )}
             <BlockEditor blocks={blocks} onChange={setBlocks} currency={currency} errors={errors} />
           </div>
@@ -214,7 +235,9 @@ export default function DocumentPage() {
                 return s ? (
                   <div>
                     <p className="font-serif text-2xl italic">{s.typed_name}</p>
-                    <p className="mt-1 text-xs text-mute">Signed electronically by {s.actor_name} · {dateTime(s.created_at)}</p>
+                    <p className="mt-1 text-xs text-mute">
+                      Signed electronically by {s.actor_name} · {dateTime(s.created_at)}
+                    </p>
                   </div>
                 ) : (
                   <p className="text-sm text-mute">Awaiting signature</p>

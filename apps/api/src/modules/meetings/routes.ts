@@ -45,7 +45,10 @@ router.get('/meetings', async (req, res) => {
 });
 
 router.get('/meetings/guest-suggestions', requireStaff, async (req, res) => {
-  const q = `%${String(req.query.q ?? '').trim().toLowerCase().replace(/[%_\\]/g, '')}%`;
+  const q = `%${String(req.query.q ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[%_\\]/g, '')}%`;
   res.json(
     await many(
       `SELECT email, max(name) AS name FROM (
@@ -74,10 +77,7 @@ const meetingFields = {
 
 router.post('/meetings', requireStaff, async (req, res) => {
   const me = currentUser(req);
-  const body = parse(
-    z.object({ ...meetingFields, projectId: uuid.nullish(), leadId: uuid.nullish() }),
-    req.body,
-  );
+  const body = parse(z.object({ ...meetingFields, projectId: uuid.nullish(), leadId: uuid.nullish() }), req.body);
   const meeting = await transaction(async () => {
     await assertTarget(body);
     return createMeeting(me, body);
@@ -131,8 +131,14 @@ router.patch('/meetings/:id', requireStaff, async (req, res) => {
       `UPDATE meetings SET title=$2, kind=$3, start_at=$4, duration_minutes=$5, location=$6, meeting_url=$7, notifications=$8, updated_at=now()
        WHERE id=$1 RETURNING *`,
       [
-        m.id, body.title ?? m.title, body.kind ?? m.kind, body.startAt ?? m.start_at, body.durationMinutes ?? m.duration_minutes,
-        body.location ?? m.location, body.meetingUrl ?? m.meeting_url, JSON.stringify(body.notifications ?? m.notifications),
+        m.id,
+        body.title ?? m.title,
+        body.kind ?? m.kind,
+        body.startAt ?? m.start_at,
+        body.durationMinutes ?? m.duration_minutes,
+        body.location ?? m.location,
+        body.meetingUrl ?? m.meeting_url,
+        JSON.stringify(body.notifications ?? m.notifications),
       ],
     );
     if (body.participantIds || body.externalEmails) {
@@ -151,7 +157,8 @@ router.patch('/meetings/:id', requireStaff, async (req, res) => {
       if (body.title && body.title !== m.title) changes.push(`title “${m.title}” → “${body.title}”`);
       if (body.startAt && new Date(body.startAt).getTime() !== new Date(m.start_at).getTime())
         changes.push(`moved to [[at:${new Date(body.startAt).toISOString()}]]`);
-      if (body.durationMinutes && body.durationMinutes !== m.duration_minutes) changes.push(`length ${m.duration_minutes} → ${body.durationMinutes} min`);
+      if (body.durationMinutes && body.durationMinutes !== m.duration_minutes)
+        changes.push(`length ${m.duration_minutes} → ${body.durationMinutes} min`);
       if (body.location !== undefined && body.location !== m.location) changes.push(`location ${body.location || 'cleared'}`);
       if (changes.length) await projectActivity(me, m.project_id, `Meeting updated: ${next!.title} (${changes.join('; ')})`);
     }
@@ -195,7 +202,11 @@ router.patch('/meetings/:id/record', requireStaff, async (req, res) => {
       if (s.ownerId && !(await one(`SELECT 1 FROM users WHERE id=$1 AND role<>'client' AND disabled_at IS NULL`, [s.ownerId])))
         throw badRequest('Next-step owners must be active team members.');
 
-    const before = [m.summary, m.decisions, ...(await many('SELECT text FROM meeting_next_steps WHERE meeting_id=$1', [id])).map((s) => s.text)].join('\n');
+    const before = [
+      m.summary,
+      m.decisions,
+      ...(await many('SELECT text FROM meeting_next_steps WHERE meeting_id=$1', [id])).map((s) => s.text),
+    ].join('\n');
     const outcomeChanged = outcome !== m.outcome;
     await query(
       `UPDATE meetings SET outcome=$2, outcome_reason=$3, summary=$4, decisions=$5,
@@ -212,10 +223,13 @@ router.patch('/meetings/:id/record', requireStaff, async (req, res) => {
         Object.assign(data, outcome === 'attended' ? { attendance: 'yes', outcome: 'ideal' } : { attendance: 'no', outcome: 'no_show' });
         await query('UPDATE leads SET data=$2, version=version+1, updated_at=now() WHERE id=$1', [lead.id, JSON.stringify(data)]);
       }
-      if (lead) await leadHistory(m.lead_id, me.id, `Call outcome: ${MEETING_OUTCOME_LABELS[outcome] ?? outcome}`, { meetingId: id, reason });
+      if (lead)
+        await leadHistory(m.lead_id, me.id, `Call outcome: ${MEETING_OUTCOME_LABELS[outcome] ?? outcome}`, { meetingId: id, reason });
     }
     if (outcome)
-      await query(`UPDATE tasks SET completed=true, completed_at=now() WHERE kind='record_outcome' AND source_id=$1 AND NOT completed`, [id]);
+      await query(`UPDATE tasks SET completed=true, completed_at=now() WHERE kind='record_outcome' AND source_id=$1 AND NOT completed`, [
+        id,
+      ]);
 
     if (steps) {
       const existing = await many('SELECT * FROM meeting_next_steps WHERE meeting_id=$1', [id]);
@@ -246,13 +260,22 @@ router.patch('/meetings/:id/record', requireStaff, async (req, res) => {
         }
         if (old)
           await query('UPDATE meeting_next_steps SET text=$2, owner_id=$3, due_date=$4, task_id=$5, position=$6 WHERE id=$1', [
-            old.id, s.text, s.ownerId || null, s.dueDate || null, taskId, position,
+            old.id,
+            s.text,
+            s.ownerId || null,
+            s.dueDate || null,
+            taskId,
+            position,
           ]);
         else
-          await query(
-            'INSERT INTO meeting_next_steps(meeting_id, text, owner_id, due_date, task_id, position) VALUES($1,$2,$3,$4,$5,$6)',
-            [id, s.text, s.ownerId || null, s.dueDate || null, taskId, position],
-          );
+          await query('INSERT INTO meeting_next_steps(meeting_id, text, owner_id, due_date, task_id, position) VALUES($1,$2,$3,$4,$5,$6)', [
+            id,
+            s.text,
+            s.ownerId || null,
+            s.dueDate || null,
+            taskId,
+            position,
+          ]);
       }
     }
     const after = [body.summary ?? m.summary, body.decisions ?? m.decisions, ...(steps ?? []).map((s) => s.text)].join('\n');
@@ -321,7 +344,10 @@ router.get('/meetings/:id/files/:fileId/download', requireStaff, async (req, res
 });
 
 router.delete('/meetings/:id/files/:fileId', requireStaff, async (req, res) => {
-  const f = await one('DELETE FROM meeting_files WHERE id=$1 AND meeting_id=$2 RETURNING storage_key', [idOf(req.params.fileId), idOf(req.params.id)]);
+  const f = await one('DELETE FROM meeting_files WHERE id=$1 AND meeting_id=$2 RETURNING storage_key', [
+    idOf(req.params.fileId),
+    idOf(req.params.id),
+  ]);
   if (!f) throw notFound('File');
   await deleteObject(f.storage_key);
   res.status(204).end();
@@ -340,14 +366,19 @@ const uploadSchema = z
     recordingUrl: z.union([z.literal(''), z.string().trim().url().max(1000)]).default(''),
   })
   .refine((b) => new Date(`${b.date}T12:00:00Z`).getTime() <= Date.now() + 86_400_000, { message: 'Choose a past date.', path: ['date'] })
-  .refine((b) => b.summary.trim() || b.transcript.trim() || b.recordingUrl, { message: 'Add a summary, transcript or recording link.', path: ['summary'] });
+  .refine((b) => b.summary.trim() || b.transcript.trim() || b.recordingUrl, {
+    message: 'Add a summary, transcript or recording link.',
+    path: ['summary'],
+  });
 
 router.post('/meetings/upload', requireStaff, async (req, res) => {
   const me = currentUser(req);
   const body = parse(uploadSchema, req.body);
   const meeting = await transaction(async () => {
     await assertTarget(body);
-    const users = await many(`SELECT id, email, role FROM users WHERE lower(email) = ANY($1::text[]) AND disabled_at IS NULL`, [body.participants]);
+    const users = await many(`SELECT id, email, role FROM users WHERE lower(email) = ANY($1::text[]) AND disabled_at IS NULL`, [
+      body.participants,
+    ]);
     const m = await createMeeting(me, {
       title: body.title,
       projectId: body.projectId,

@@ -179,7 +179,17 @@ export function MeetingModal({
       onSaved(saved);
       onClose();
     } catch (err) {
-      const f = formErrors(err, ['title', 'kind', 'startAt', 'durationMinutes', 'location', 'meetingUrl', 'participantIds', 'externalEmails', 'notifications']);
+      const f = formErrors(err, [
+        'title',
+        'kind',
+        'startAt',
+        'durationMinutes',
+        'location',
+        'meetingUrl',
+        'participantIds',
+        'externalEmails',
+        'notifications',
+      ]);
       setErrors(f.fields);
       setGeneral(f.general);
     } finally {
@@ -210,9 +220,20 @@ export function MeetingModal({
       <form id="meeting-form" onSubmit={submit} className="space-y-4" noValidate>
         {general && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{general}</p>}
         <Field label="Title" required error={errors.title}>
-          <input className="input" value={form.title} maxLength={200} onChange={(e) => set('title', e.target.value)} placeholder="Discovery call" />
+          <input
+            className="input"
+            value={form.title}
+            maxLength={200}
+            onChange={(e) => set('title', e.target.value)}
+            placeholder="Discovery call"
+          />
         </Field>
-        <Field label="With" required={!editing} error={errors.target} hint={editing ? 'A meeting stays with the lead or project it was scheduled for.' : undefined}>
+        <Field
+          label="With"
+          required={!editing}
+          error={errors.target}
+          hint={editing ? 'A meeting stays with the lead or project it was scheduled for.' : undefined}
+        >
           <TargetSelect targets={targets} value={form.target} onChange={(v) => set('target', v)} disabled={editing} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -226,7 +247,13 @@ export function MeetingModal({
             </select>
           </Field>
           <Field label="Starts" required error={errors.startAt} hint={booked ? 'Reschedule bookings from the booking link.' : undefined}>
-            <input type="datetime-local" className="input" value={form.startAt} disabled={booked || uploaded} onChange={(e) => set('startAt', e.target.value)} />
+            <input
+              type="datetime-local"
+              className="input"
+              value={form.startAt}
+              disabled={booked || uploaded}
+              onChange={(e) => set('startAt', e.target.value)}
+            />
           </Field>
           <Field label="Length (minutes)" required error={errors.durationMinutes}>
             <input
@@ -243,7 +270,13 @@ export function MeetingModal({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Meeting link" error={errors.meetingUrl}>
-            <input className="input" type="url" value={form.meetingUrl} onChange={(e) => set('meetingUrl', e.target.value)} placeholder="https://" />
+            <input
+              className="input"
+              type="url"
+              value={form.meetingUrl}
+              onChange={(e) => set('meetingUrl', e.target.value)}
+              placeholder="https://"
+            />
           </Field>
           <Field label={form.kind === 'phone' ? 'Phone number or notes' : 'Location'} error={errors.location}>
             <input className="input" value={form.location} maxLength={500} onChange={(e) => set('location', e.target.value)} />
@@ -277,7 +310,11 @@ export function MeetingModal({
           </div>
           <p className="mt-1 text-xs text-faint">The organizer is always included.</p>
         </div>
-        <Field label="External guests" error={errors.externalEmails} hint={booked ? 'Guests of a booking are managed by the booking.' : 'Press Enter after each email.'}>
+        <Field
+          label="External guests"
+          error={errors.externalEmails}
+          hint={booked ? 'Guests of a booking are managed by the booking.' : 'Press Enter after each email.'}
+        >
           <GuestEmails value={form.externalEmails} onChange={(v) => set('externalEmails', v)} disabled={booked} />
         </Field>
         <div>
@@ -323,14 +360,23 @@ export function MeetingModal({
                   variant="ghost"
                   size="icon"
                   aria-label="Remove notification"
-                  onClick={() => set('notifications', form.notifications.filter((_, j) => j !== i))}
+                  onClick={() =>
+                    set(
+                      'notifications',
+                      form.notifications.filter((_, j) => j !== i),
+                    )
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}
             {form.notifications.length < 5 && (
-              <Button variant="ghost" size="sm" onClick={() => set('notifications', [...form.notifications, { channel: 'in_app', minutes: 60 }])}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => set('notifications', [...form.notifications, { channel: 'in_app', minutes: 60 }])}
+              >
                 <Plus className="h-3.5 w-3.5" /> Add notification
               </Button>
             )}
@@ -345,7 +391,15 @@ export function MeetingModal({
 export function UploadMeetingModal({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: (m: Meeting) => void }) {
   const toast = useToast();
   const targets = useTargets();
-  const [form, setForm] = useState({ title: '', target: '' as TargetValue, date: '', participants: [] as string[], summary: '', transcript: '', recordingUrl: '' });
+  const [form, setForm] = useState({
+    title: '',
+    target: '' as TargetValue,
+    date: '',
+    participants: [] as string[],
+    summary: '',
+    transcript: '',
+    recordingUrl: '',
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [general, setGeneral] = useState('');
   const [saving, setSaving] = useState(false);
@@ -375,7 +429,8 @@ export function UploadMeetingModal({ open, onClose, onSaved }: { open: boolean; 
     if (!form.target) local.target = 'Link the meeting to a lead or project.';
     if (!form.date) local.date = 'Choose the meeting date.';
     else if (form.date > today()) local.date = 'Choose a past date.';
-    if (!form.summary.trim() && !form.transcript.trim() && !form.recordingUrl.trim()) local.summary = 'Add a summary, transcript or recording link.';
+    if (!form.summary.trim() && !form.transcript.trim() && !form.recordingUrl.trim())
+      local.summary = 'Add a summary, transcript or recording link.';
     if (form.recordingUrl && !/^https?:\/\/\S+$/i.test(form.recordingUrl.trim())) local.recordingUrl = 'Enter a full link.';
     if (Object.keys(local).length) return setErrors(local);
     setSaving(true);
@@ -440,7 +495,12 @@ export function UploadMeetingModal({ open, onClose, onSaved }: { open: boolean; 
           <textarea className="input min-h-28" value={form.summary} maxLength={20000} onChange={(e) => set('summary', e.target.value)} />
         </Field>
         <Field label="Transcript" error={errors.transcript} hint="Paste text or load a .txt / .vtt / .srt file.">
-          <textarea className="input min-h-28 font-mono text-xs" value={form.transcript} maxLength={500000} onChange={(e) => set('transcript', e.target.value)} />
+          <textarea
+            className="input min-h-28 font-mono text-xs"
+            value={form.transcript}
+            maxLength={500000}
+            onChange={(e) => set('transcript', e.target.value)}
+          />
         </Field>
         <input
           type="file"
@@ -450,7 +510,13 @@ export function UploadMeetingModal({ open, onClose, onSaved }: { open: boolean; 
           aria-label="Load transcript file"
         />
         <Field label="Recording link" error={errors.recordingUrl}>
-          <input className="input" type="url" value={form.recordingUrl} onChange={(e) => set('recordingUrl', e.target.value)} placeholder="https://" />
+          <input
+            className="input"
+            type="url"
+            value={form.recordingUrl}
+            onChange={(e) => set('recordingUrl', e.target.value)}
+            placeholder="https://"
+          />
         </Field>
       </form>
     </Modal>

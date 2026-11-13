@@ -8,9 +8,7 @@ export interface WorkspaceSettings {
 }
 
 export async function getSettings(): Promise<WorkspaceSettings | null> {
-  return (await one<WorkspaceSettings>(
-    'SELECT name, currency, timezone, data FROM workspace_settings WHERE id=1',
-  )) ?? null;
+  return (await one<WorkspaceSettings>('SELECT name, currency, timezone, data FROM workspace_settings WHERE id=1')) ?? null;
 }
 
 export async function workspaceCurrency() {

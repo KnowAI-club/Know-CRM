@@ -53,7 +53,14 @@ export default function TodayPage() {
   const updateTask = (t: Task) => setData((x) => (x ? { ...x, tasks: x.tasks.map((o) => (o.id === t.id ? { ...o, ...t } : o)) } : x));
   const removeTask = (id: string) => setData((x) => (x ? { ...x, tasks: x.tasks.filter((o) => o.id !== id) } : x));
   const updateReminder = (r: Reminder) =>
-    setData((x) => (x ? { ...x, reminders: x.reminders.map((o) => (o.id === r.id ? r : o)).filter((o) => o.status === 'pending' || o.status === 'failed') } : x));
+    setData((x) =>
+      x
+        ? {
+            ...x,
+            reminders: x.reminders.map((o) => (o.id === r.id ? r : o)).filter((o) => o.status === 'pending' || o.status === 'failed'),
+          }
+        : x,
+    );
 
   const dateLabel = new Date(period.from).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -85,7 +92,12 @@ export default function TodayPage() {
       ) : data ? (
         <>
           <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat label="Tasks due" value={data.tasks.filter((t) => !t.completed).length} hint={overdue.length ? `${overdue.length} overdue` : 'None overdue'} tone={overdue.length ? 'danger' : undefined} />
+            <Stat
+              label="Tasks due"
+              value={data.tasks.filter((t) => !t.completed).length}
+              hint={overdue.length ? `${overdue.length} overdue` : 'None overdue'}
+              tone={overdue.length ? 'danger' : undefined}
+            />
             <Stat label="Calls" value={data.calls.length} hint={which === 'today' ? 'Scheduled today' : 'Scheduled tomorrow'} />
             <Stat label="Outcomes to record" value={data.outcomePending.length} tone={data.outcomePending.length ? 'warn' : undefined} />
             <Stat label="Reminders" value={data.reminders.length} hint="Due by end of day" />
@@ -152,7 +164,9 @@ export default function TodayPage() {
               </Card>
               {data.outcomePending.length > 0 && (
                 <Card title="Record outcomes" icon={<ClipboardCheck className="h-4 w-4" />} bodyClassName="p-1.5">
-                  <p className="px-2.5 pt-1 pb-2 text-xs text-mute">Past calls without an outcome. Recording it updates the lead and closes the follow-up task.</p>
+                  <p className="px-2.5 pt-1 pb-2 text-xs text-mute">
+                    Past calls without an outcome. Recording it updates the lead and closes the follow-up task.
+                  </p>
                   <div className="divide-y divide-line">
                     {data.outcomePending.map((m) => (
                       <MeetingItem key={m.id} m={m} showDate needsOutcome />
@@ -190,12 +204,7 @@ export default function TodayPage() {
           </div>
         </>
       ) : null}
-      <TaskModal
-        open={taskFor !== null}
-        defaultTarget={taskFor ?? ''}
-        onClose={() => setTaskFor(null)}
-        onSaved={() => void reload()}
-      />
+      <TaskModal open={taskFor !== null} defaultTarget={taskFor ?? ''} onClose={() => setTaskFor(null)} onSaved={() => void reload()} />
       <TaskModal open={!!editing} task={editing} onClose={() => setEditing(null)} onSaved={() => void reload()} />
       <ReminderModal open={!!editReminder} reminder={editReminder} onClose={() => setEditReminder(null)} onSaved={() => void reload()} />
     </>

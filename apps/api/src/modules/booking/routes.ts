@@ -21,9 +21,17 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 const dateQuery = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
 
 const COLUMNS: Record<string, string> = {
-  title: 'title', description: 'description', timezone: 'timezone', duration: 'duration', bufferBefore: 'buffer_before',
-  bufferAfter: 'buffer_after', minimumNotice: 'minimum_notice', horizon: 'horizon', availability: 'availability',
-  location: 'location', active: 'active',
+  title: 'title',
+  description: 'description',
+  timezone: 'timezone',
+  duration: 'duration',
+  bufferBefore: 'buffer_before',
+  bufferAfter: 'buffer_after',
+  minimumNotice: 'minimum_notice',
+  horizon: 'horizon',
+  availability: 'availability',
+  location: 'location',
+  active: 'active',
 };
 const dbValue = (k: string, v: unknown) => (k === 'availability' ? JSON.stringify(v) : v);
 
@@ -175,9 +183,17 @@ publicRouter.post('/public/booking/:token/reservations', reserveLimit, async (re
          management_hash, request_id, request_hash)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
       [
-        t.id, t.host_id, body.name, body.email, start, end,
-        new Date(start.getTime() - t.buffer_before * 60_000), new Date(end.getTime() + t.buffer_after * 60_000),
-        sha(body.managementSecret), body.requestId, hash,
+        t.id,
+        t.host_id,
+        body.name,
+        body.email,
+        start,
+        end,
+        new Date(start.getTime() - t.buffer_before * 60_000),
+        new Date(end.getTime() + t.buffer_after * 60_000),
+        sha(body.managementSecret),
+        body.requestId,
+        hash,
       ],
     );
     await onReservationCreated(t, r as { id: string; name: string; email: string; start_at: Date });
@@ -191,7 +207,12 @@ publicRouter.post('/public/booking/:token/reservations', reserveLimit, async (re
 });
 
 const publicReservation = (r: Record<string, any>) => ({
-  id: r.id, name: r.name, email: r.email, start_at: r.start_at, end_at: r.end_at, status: r.status,
+  id: r.id,
+  name: r.name,
+  email: r.email,
+  start_at: r.start_at,
+  end_at: r.end_at,
+  status: r.status,
 });
 
 async function bySecret(secret: string) {
@@ -217,8 +238,7 @@ publicRouter.post('/public/booking/manage/:secret/cancel', reserveLimit, async (
     const { r } = await bySecret(secret);
     await query('SELECT id FROM booking_reservations WHERE id=$1 FOR UPDATE', [r.id]);
     if (r.status === 'cancelled') return null;
-    if (new Date(r.start_at).getTime() <= Date.now())
-      throw conflict('This meeting has already started. Contact your host for changes.');
+    if (new Date(r.start_at).getTime() <= Date.now()) throw conflict('This meeting has already started. Contact your host for changes.');
     await query(`UPDATE booking_reservations SET status='cancelled', updated_at=now() WHERE id=$1`, [r.id]);
     await onBookingChanged(r.id);
     return r.id as string;
@@ -234,8 +254,7 @@ publicRouter.post('/public/booking/manage/:secret/reschedule', reserveLimit, asy
     const { r, t } = await bySecret(secret);
     await query('SELECT pg_advisory_xact_lock(hashtext($1))', [`booking-host:${r.host_id}`]);
     if (r.status !== 'confirmed') throw conflict('This booking is cancelled.');
-    if (new Date(r.start_at).getTime() <= Date.now())
-      throw conflict('This meeting has already started. Contact your host for changes.');
+    if (new Date(r.start_at).getTime() <= Date.now()) throw conflict('This meeting has already started. Contact your host for changes.');
     const start = new Date(startAt);
     if (start.getTime() === new Date(r.start_at).getTime()) return { r, changed: false };
     await assertSlot(t, start, r.id);
@@ -250,4 +269,3 @@ publicRouter.post('/public/booking/manage/:secret/reschedule', reserveLimit, asy
   if (result.changed) await bookingEvent('rescheduled', result.r.id);
   res.json({ reservation: publicReservation(result.r) });
 });
-

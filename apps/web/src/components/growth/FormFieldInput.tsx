@@ -33,7 +33,17 @@ export function FormFieldInput({
     );
   const text = typeof value === 'string' ? value : '';
   if (field.type === 'textarea')
-    return <textarea id={id} className="input" rows={4} value={text} onChange={(e) => onChange(e.target.value)} disabled={disabled} maxLength={20000} />;
+    return (
+      <textarea
+        id={id}
+        className="input"
+        rows={4}
+        value={text}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        maxLength={20000}
+      />
+    );
   if (field.type === 'select')
     return (
       <select id={id} className="input" value={text} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
@@ -46,5 +56,15 @@ export function FormFieldInput({
       </select>
     );
   const type = field.type === 'phone' ? 'tel' : field.type === 'text' ? 'text' : field.type;
-  return <input id={id} className="input" type={type} value={text} onChange={(e) => onChange(e.target.value)} disabled={disabled} maxLength={2000} />;
+  return (
+    <input
+      id={id}
+      className="input"
+      type={type}
+      value={text}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      maxLength={2000}
+    />
+  );
 }

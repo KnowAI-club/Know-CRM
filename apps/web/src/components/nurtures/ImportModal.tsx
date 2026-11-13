@@ -56,7 +56,11 @@ function toRows(cells: string[][]) {
   const hasHeader = head.some((h) => h.includes('email'));
   const col = (keys: string[]) => head.findIndex((h) => keys.some((k) => h.includes(k)));
   const idx = hasHeader
-    ? { name: col(['name', 'full name', 'contact']), company: col(['company', 'organisation', 'organization', 'business']), email: col(['email']) }
+    ? {
+        name: col(['name', 'full name', 'contact']),
+        company: col(['company', 'organisation', 'organization', 'business']),
+        email: col(['email']),
+      }
     : null;
   const rows: Row[] = [];
   const invalid: string[] = [];
@@ -195,10 +199,21 @@ export function ImportModal({ open, onClose, onDone }: { open: boolean; onClose:
                 <input className="input" value={one.name} onChange={(e) => setOne({ ...one, name: e.target.value })} maxLength={200} />
               </Field>
               <Field label="Email" required error={errors.email}>
-                <input className="input" type="email" value={one.email} onChange={(e) => setOne({ ...one, email: e.target.value })} maxLength={254} />
+                <input
+                  className="input"
+                  type="email"
+                  value={one.email}
+                  onChange={(e) => setOne({ ...one, email: e.target.value })}
+                  maxLength={254}
+                />
               </Field>
               <Field label="Company" className="sm:col-span-2">
-                <input className="input" value={one.company} onChange={(e) => setOne({ ...one, company: e.target.value })} maxLength={200} />
+                <input
+                  className="input"
+                  value={one.company}
+                  onChange={(e) => setOne({ ...one, company: e.target.value })}
+                  maxLength={200}
+                />
               </Field>
             </div>
           ) : (
@@ -219,7 +234,8 @@ export function ImportModal({ open, onClose, onDone }: { open: boolean; onClose:
               {text.trim() && (
                 <div className="rounded-xl border border-line text-sm">
                   <p className="border-b border-line px-3 py-2 text-xs text-mute">
-                    {parsed.rows.length} ready{parsed.invalid.length > 0 && ` · ${parsed.invalid.length} rows without a valid name and email will be ignored`}
+                    {parsed.rows.length} ready
+                    {parsed.invalid.length > 0 && ` · ${parsed.invalid.length} rows without a valid name and email will be ignored`}
                   </p>
                   <ul className="max-h-48 divide-y divide-line overflow-y-auto">
                     {parsed.rows.slice(0, 50).map((r, i) => (

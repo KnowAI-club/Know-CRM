@@ -20,9 +20,12 @@ const expenseSchema = z.object({
   spentOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD'),
   vendor: z.string().trim().min(1, 'Add the vendor.').max(200),
   description: z.string().trim().max(2000).default(''),
-  category: z.enum(Object.keys(EXPENSE_CATEGORIES) as [string, ...string[]], "Choose a category."),
+  category: z.enum(Object.keys(EXPENSE_CATEGORIES) as [string, ...string[]], 'Choose a category.'),
   amount: z.coerce.number().int().min(1, 'Enter an amount.').max(1e11),
-  projectId: z.union([uuid, z.literal(''), z.null()]).default(null).transform((v) => v || null),
+  projectId: z
+    .union([uuid, z.literal(''), z.null()])
+    .default(null)
+    .transform((v) => v || null),
 });
 
 async function checkProject(id: string | null) {
@@ -60,8 +63,13 @@ router.patch('/expenses/:id', async (req, res) => {
   const current = await one('SELECT * FROM expenses WHERE id=$1', [id]);
   if (!current) throw notFound('Expense');
   const d = parse(expenseSchema, {
-    spentOn: current.spent_on, vendor: current.vendor, description: current.description, category: current.category,
-    amount: current.amount, projectId: current.project_id, ...req.body,
+    spentOn: current.spent_on,
+    vendor: current.vendor,
+    description: current.description,
+    category: current.category,
+    amount: current.amount,
+    projectId: current.project_id,
+    ...req.body,
   });
   await checkProject(d.projectId);
   await query(
@@ -91,11 +99,17 @@ router.get('/services', async (_req, res) => {
 
 router.post('/services', async (req, res) => {
   const d = parse(serviceSchema, req.body);
-  res.status(201).json(
-    await one('INSERT INTO services(name, description, unit_price, unit, currency) VALUES($1,$2,$3,$4,$5) RETURNING *', [
-      d.name, d.description, d.unitPrice, d.unit, await workspaceCurrency(),
-    ]),
-  );
+  res
+    .status(201)
+    .json(
+      await one('INSERT INTO services(name, description, unit_price, unit, currency) VALUES($1,$2,$3,$4,$5) RETURNING *', [
+        d.name,
+        d.description,
+        d.unitPrice,
+        d.unit,
+        await workspaceCurrency(),
+      ]),
+    );
 });
 
 router.patch('/services/:id', async (req, res) => {
@@ -103,12 +117,16 @@ router.patch('/services/:id', async (req, res) => {
   const current = await one('SELECT * FROM services WHERE id=$1', [id]);
   if (!current) throw notFound('Service');
   const d = parse(serviceSchema.extend({ archived: z.boolean().default(current.archived) }), {
-    name: current.name, description: current.description, unitPrice: current.unit_price, unit: current.unit, ...req.body,
+    name: current.name,
+    description: current.description,
+    unitPrice: current.unit_price,
+    unit: current.unit,
+    ...req.body,
   });
   res.json(
-    await one('UPDATE services SET name=$2, description=$3, unit_price=$4, unit=$5, archived=$6, updated_at=now() WHERE id=$1 RETURNING *', [
-      id, d.name, d.description, d.unitPrice, d.unit, d.archived,
-    ]),
+    await one(
+      'UPDATE services SET name=$2, description=$3, unit_price=$4, unit=$5, archived=$6, updated_at=now() WHERE id=$1 RETURNING *',
+      [id, d.name, d.description, d.unitPrice, d.unit, d.archived],
+    ),
   );
 });
-

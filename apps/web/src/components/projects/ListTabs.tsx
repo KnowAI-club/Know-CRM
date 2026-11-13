@@ -27,7 +27,11 @@ export function MeetingsTab({ projectId, meetings }: { projectId: string; meetin
           </p>
         </div>
         {m.sharing === 'client' && <Badge tone="info">Client</Badge>}
-        {m.status === 'cancelled' ? <Badge tone="danger">Cancelled</Badge> : m.outcome ? <Badge tone="ok">{titleCase(m.outcome)}</Badge> : null}
+        {m.status === 'cancelled' ? (
+          <Badge tone="danger">Cancelled</Badge>
+        ) : m.outcome ? (
+          <Badge tone="ok">{titleCase(m.outcome)}</Badge>
+        ) : null}
       </Link>
     </li>
   );
@@ -77,7 +81,11 @@ export function DocumentsTab({ projectId, documents }: { projectId: string; docu
     try {
       const body = form.templateId
         ? { templateId: form.templateId, title: form.title || undefined }
-        : { title: form.title, kind: form.kind, blocks: [{ id: `b_${Date.now().toString(36)}`, type: 'heading', text: form.title, level: 1 }] };
+        : {
+            title: form.title,
+            kind: form.kind,
+            blocks: [{ id: `b_${Date.now().toString(36)}`, type: 'heading', text: form.title, level: 1 }],
+          };
       const doc = await post<DocumentRow>(`/projects/${projectId}/documents`, body);
       router.push(`/documents/${doc.id}`);
     } catch (e) {
@@ -96,7 +104,11 @@ export function DocumentsTab({ projectId, documents }: { projectId: string; docu
       </div>
       <Card title={`Documents (${documents.length})`} bodyClassName="p-0">
         {!documents.length ? (
-          <Empty icon={<FileText className="h-5 w-5" />} title="No documents" description="Send proposals, contracts and questionnaires through the client portal." />
+          <Empty
+            icon={<FileText className="h-5 w-5" />}
+            title="No documents"
+            description="Send proposals, contracts and questionnaires through the client portal."
+          />
         ) : (
           <ul className="divide-y divide-line">
             {documents.map((d) => (
@@ -180,7 +192,11 @@ export function InvoicesTab({ projectId, invoices, currency }: { projectId: stri
       </div>
       <Card bodyClassName="p-0">
         {!invoices.length ? (
-          <Empty icon={<Receipt className="h-5 w-5" />} title="No invoices" description="Raise GST invoices with part payments and instalments." />
+          <Empty
+            icon={<Receipt className="h-5 w-5" />}
+            title="No invoices"
+            description="Raise GST invoices with part payments and instalments."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="table">
@@ -226,7 +242,12 @@ export function ActivityTab({ activity }: { activity: Activity[] }) {
     <Card
       title="Activity"
       action={
-        <select className="input h-8 w-auto py-0 text-xs" value={scope} onChange={(e) => setScope(e.target.value as 'all' | 'client')} aria-label="Activity scope">
+        <select
+          className="input h-8 w-auto py-0 text-xs"
+          value={scope}
+          onChange={(e) => setScope(e.target.value as 'all' | 'client')}
+          aria-label="Activity scope"
+        >
           <option value="all">Everything</option>
           <option value="client">Client-visible only</option>
         </select>
@@ -238,7 +259,10 @@ export function ActivityTab({ activity }: { activity: Activity[] }) {
         <ol className="relative space-y-4 border-l border-line pl-5">
           {shown.map((a) => (
             <li key={a.id} className="relative">
-              <span className={`absolute top-1.5 -left-[23.5px] h-2 w-2 rounded-full ${a.visibility === 'client' ? 'bg-info' : 'bg-faint'}`} aria-hidden />
+              <span
+                className={`absolute top-1.5 -left-[23.5px] h-2 w-2 rounded-full ${a.visibility === 'client' ? 'bg-info' : 'bg-faint'}`}
+                aria-hidden
+              />
               <p className="text-sm">{a.description}</p>
               <p className="text-xs text-faint">
                 {a.actor_name} · <span title={new Date(a.created_at).toLocaleString()}>{relative(a.created_at)}</span>

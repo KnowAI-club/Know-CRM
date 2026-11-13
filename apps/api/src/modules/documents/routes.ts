@@ -17,25 +17,34 @@ export const CONSENT_TEXT = 'I have reviewed this document and agree to sign it 
 // ── Blocks ───────────────────────────────────────────────────────────────────
 const blockId = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
 const block = z.discriminatedUnion('type', [
-  z.object({ id: blockId, type: z.literal('heading'), text: z.string().trim().min(1, 'Headings need text.').max(200), level: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(2) }),
+  z.object({
+    id: blockId,
+    type: z.literal('heading'),
+    text: z.string().trim().min(1, 'Headings need text.').max(200),
+    level: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(2),
+  }),
   z.object({ id: blockId, type: z.literal('text'), text: z.string().max(20000).default('') }),
-  z.object({
-    id: blockId,
-    type: z.literal('service'),
-    name: z.string().trim().min(1, 'Name the service.').max(200),
-    description: z.string().max(5000).default(''),
-    quantity: z.coerce.number().positive().max(100000),
-    unitPrice: z.coerce.number().int().min(0).max(1e11),
-    currency: z.enum(CURRENCIES),
-  }).refine((b) => Math.round(b.quantity * b.unitPrice) <= 1e11, 'Service total is too large.'),
-  z.object({
-    id: blockId,
-    type: z.literal('question'),
-    label: z.string().trim().min(1, 'Questions need a label.').max(200),
-    questionType: z.enum(['short', 'long', 'choice']).default('short'),
-    required: z.boolean().default(false),
-    options: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
-  }).refine((b) => b.questionType !== 'choice' || new Set(b.options).size >= 2, 'A choice question needs at least two different options.'),
+  z
+    .object({
+      id: blockId,
+      type: z.literal('service'),
+      name: z.string().trim().min(1, 'Name the service.').max(200),
+      description: z.string().max(5000).default(''),
+      quantity: z.coerce.number().positive().max(100000),
+      unitPrice: z.coerce.number().int().min(0).max(1e11),
+      currency: z.enum(CURRENCIES),
+    })
+    .refine((b) => Math.round(b.quantity * b.unitPrice) <= 1e11, 'Service total is too large.'),
+  z
+    .object({
+      id: blockId,
+      type: z.literal('question'),
+      label: z.string().trim().min(1, 'Questions need a label.').max(200),
+      questionType: z.enum(['short', 'long', 'choice']).default('short'),
+      required: z.boolean().default(false),
+      options: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
+    })
+    .refine((b) => b.questionType !== 'choice' || new Set(b.options).size >= 2, 'A choice question needs at least two different options.'),
   z.object({ id: blockId, type: z.literal('signature'), label: z.string().trim().min(1).max(200) }),
 ]);
 const blocks = z
@@ -48,11 +57,17 @@ type Block = z.infer<typeof block>;
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object')
-    return Object.fromEntries(Object.keys(value).sort().map((k) => [k, canonical((value as Record<string, unknown>)[k])]));
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((k) => [k, canonical((value as Record<string, unknown>)[k])]),
+    );
   return value;
 }
 const contentHash = (d: { title: string; kind: string; blocks: unknown }) =>
-  createHash('sha256').update(JSON.stringify(canonical({ title: d.title, kind: d.kind, blocks: d.blocks, version: 1 }))).digest('hex');
+  createHash('sha256')
+    .update(JSON.stringify(canonical({ title: d.title, kind: d.kind, blocks: d.blocks, version: 1 })))
+    .digest('hex');
 
 // ── Templates ────────────────────────────────────────────────────────────────
 const templateSchema = z.object({ name: z.string().trim().min(1, 'Name the template.').max(200), kind: z.enum(KINDS), blocks });
@@ -63,9 +78,15 @@ router.get('/document-templates', requireStaff, async (_req, res) => {
 
 router.post('/document-templates', requireStaff, async (req, res) => {
   const d = parse(templateSchema, req.body);
-  res.status(201).json(
-    await one('INSERT INTO document_templates(name, kind, blocks) VALUES($1,$2,$3) RETURNING *', [d.name, d.kind, JSON.stringify(d.blocks)]),
-  );
+  res
+    .status(201)
+    .json(
+      await one('INSERT INTO document_templates(name, kind, blocks) VALUES($1,$2,$3) RETURNING *', [
+        d.name,
+        d.kind,
+        JSON.stringify(d.blocks),
+      ]),
+    );
 });
 
 router.patch('/document-templates/:id', requireStaff, async (req, res) => {
@@ -74,10 +95,12 @@ router.patch('/document-templates/:id', requireStaff, async (req, res) => {
   if (!current) throw notFound('Template');
   const d = parse(templateSchema, { name: current.name, kind: current.kind, blocks: current.blocks, ...req.body });
   res.json(
-    await one(
-      'UPDATE document_templates SET name=$2, kind=$3, blocks=$4, version=version+1, updated_at=now() WHERE id=$1 RETURNING *',
-      [id, d.name, d.kind, JSON.stringify(d.blocks)],
-    ),
+    await one('UPDATE document_templates SET name=$2, kind=$3, blocks=$4, version=version+1, updated_at=now() WHERE id=$1 RETURNING *', [
+      id,
+      d.name,
+      d.kind,
+      JSON.stringify(d.blocks),
+    ]),
   );
 });
 
@@ -99,7 +122,9 @@ const LIST_COLUMNS = 'id, project_id, template_id, title, kind, status, content_
 router.get('/documents', requireStaff, async (_req, res) => {
   res.json(
     await many(
-      `SELECT ${LIST_COLUMNS.split(', ').map((c) => `d.${c}`).join(', ')}, p.name AS project_name, c.name AS contact_name,
+      `SELECT ${LIST_COLUMNS.split(', ')
+        .map((c) => `d.${c}`)
+        .join(', ')}, p.name AS project_name, c.name AS contact_name,
               (SELECT count(*)::int FROM document_actions a WHERE a.document_id=d.id) AS action_count,
               (SELECT a.action FROM document_actions a WHERE a.document_id=d.id ORDER BY a.created_at DESC LIMIT 1) AS last_action
          FROM documents d JOIN projects p ON p.id=d.project_id JOIN contacts c ON c.id=p.contact_id
@@ -125,7 +150,12 @@ router.post('/projects/:id/documents', requireStaff, async (req, res) => {
   const projectId = parse(uuid, req.params.id);
   await projectFor(req, projectId, true);
   const body = parse(
-    z.object({ templateId: uuid.nullish(), title: z.string().trim().max(200).optional(), kind: z.enum(KINDS).optional(), blocks: z.unknown().optional() }),
+    z.object({
+      templateId: uuid.nullish(),
+      title: z.string().trim().max(200).optional(),
+      kind: z.enum(KINDS).optional(),
+      blocks: z.unknown().optional(),
+    }),
     req.body,
   );
   const template = body.templateId ? await one('SELECT * FROM document_templates WHERE id=$1', [body.templateId]) : null;
@@ -242,7 +272,10 @@ router.post('/documents/:id/decision', requireRole('client'), async (req, res) =
   const body = parse(z.object({ ...evidence, decision: z.enum(['accepted', 'declined']) }), req.body);
   assertHash(doc, body.contentHash);
   if (doc.kind !== 'proposal') throw badRequest('Only proposals can be accepted or declined.');
-  const existing = await one(`SELECT * FROM document_actions WHERE document_id=$1 AND user_id=$2 AND action IN ('accepted','declined')`, [doc.id, me.id]);
+  const existing = await one(`SELECT * FROM document_actions WHERE document_id=$1 AND user_id=$2 AND action IN ('accepted','declined')`, [
+    doc.id,
+    me.id,
+  ]);
   if (existing) {
     if (existing.action !== body.decision) throw conflict('Your recorded decision is immutable. Ask the team for a revised proposal.');
     return void res.status(200).json(existing);
@@ -259,13 +292,22 @@ router.post('/documents/:id/sign', requireRole('client'), async (req, res) => {
   const me = currentUser(req);
   const doc = await clientDoc(req);
   const body = parse(
-    z.object({ ...evidence, blockId, typedName: z.string().trim().min(2, 'Type your full name.').max(200), consent: z.literal(true, 'Confirm you agree to sign electronically.') }),
+    z.object({
+      ...evidence,
+      blockId,
+      typedName: z.string().trim().min(2, 'Type your full name.').max(200),
+      consent: z.literal(true, 'Confirm you agree to sign electronically.'),
+    }),
     req.body,
   );
   assertHash(doc, body.contentHash);
   if (doc.kind !== 'contract' || !(doc.blocks as Block[]).some((b) => b.type === 'signature' && b.id === body.blockId))
     throw badRequest('Choose a signature block on this contract.');
-  const existing = await one(`SELECT * FROM document_actions WHERE document_id=$1 AND user_id=$2 AND block_id=$3 AND action='signed'`, [doc.id, me.id, body.blockId]);
+  const existing = await one(`SELECT * FROM document_actions WHERE document_id=$1 AND user_id=$2 AND block_id=$3 AND action='signed'`, [
+    doc.id,
+    me.id,
+    body.blockId,
+  ]);
   if (existing) {
     if (existing.typed_name !== body.typedName) throw conflict('This signature is immutable. Ask the team for a revised contract.');
     return void res.status(200).json(existing);
@@ -277,4 +319,3 @@ router.post('/documents/:id/sign', requireRole('client'), async (req, res) => {
   await projectActivity(me, doc.project_id, `Client signed contract: ${doc.title}`, 'client');
   res.status(201).json(row);
 });
-

@@ -24,7 +24,11 @@ export default function PortalHome() {
   const { data, error, loading, reload } = useLoad((s) => get<PortalProject[]>('/portal/projects', s), []);
   return (
     <div>
-      <PageHeader eyebrow="Welcome" title={`Hello, ${user?.name.split(' ')[0] ?? ''}`} description="Follow progress, review documents, see invoices and message the team." />
+      <PageHeader
+        eyebrow="Welcome"
+        title={`Hello, ${user?.name.split(' ')[0] ?? ''}`}
+        description="Follow progress, review documents, see invoices and message the team."
+      />
       {error ? (
         <ErrorBox error={error} retry={reload} />
       ) : loading && !data ? (
@@ -34,7 +38,11 @@ export default function PortalHome() {
         </div>
       ) : !data?.length ? (
         <div className="card">
-          <Empty icon={<Briefcase className="h-5 w-5" />} title="No projects yet" description="When the team shares a project with you, it appears here." />
+          <Empty
+            icon={<Briefcase className="h-5 w-5" />}
+            title="No projects yet"
+            description="When the team shares a project with you, it appears here."
+          />
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

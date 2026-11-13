@@ -8,10 +8,7 @@ import { getSettings } from '../../lib/settings.js';
 import { currentUser, endSession, requireAuth, startSession } from '../../middleware/auth.js';
 import { rateLimit } from '../../middleware/security.js';
 
-export const passwordSchema = z
-  .string()
-  .min(12, 'Use at least 12 characters')
-  .max(256, 'Use 256 characters or fewer');
+export const passwordSchema = z.string().min(12, 'Use at least 12 characters').max(256, 'Use 256 characters or fewer');
 
 const limiter = rateLimit('auth', 30, 15 * 60_000);
 export const router = Router();
@@ -42,10 +39,11 @@ router.post('/setup', limiter, async (req, res) => {
     await query('LOCK TABLE users IN EXCLUSIVE MODE');
     const existing = await one('SELECT 1 FROM users LIMIT 1');
     if (existing) throw conflict('The workspace has already been set up.');
-    const u = await one<{ id: string }>(
-      `INSERT INTO users(name,email,role,password_hash) VALUES($1,$2,'admin',$3) RETURNING id`,
-      [data.name, data.email, hash],
-    );
+    const u = await one<{ id: string }>(`INSERT INTO users(name,email,role,password_hash) VALUES($1,$2,'admin',$3) RETURNING id`, [
+      data.name,
+      data.email,
+      hash,
+    ]);
     await query(
       `INSERT INTO workspace_settings(id,name,currency) VALUES(1,$1,$2)
        ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, currency=EXCLUDED.currency`,
@@ -65,10 +63,7 @@ router.post('/auth/login', limiter, async (req, res) => {
   );
   const ok = await verifyPassword(data.password, user?.password_hash ?? dummyHash);
   if (!user || !ok || user.disabled_at) {
-    await query(`INSERT INTO security_events(user_id,event,ip) VALUES($1,'login_failed',$2)`, [
-      user?.id ?? null,
-      req.ip,
-    ]);
+    await query(`INSERT INTO security_events(user_id,event,ip) VALUES($1,'login_failed',$2)`, [user?.id ?? null, req.ip]);
     throw unauthorized('Incorrect email or password.');
   }
   await startSession(res, user.id);
@@ -83,13 +78,9 @@ router.post('/auth/logout', async (req, res) => {
 
 router.post('/auth/password', requireAuth, limiter, async (req, res) => {
   const me = currentUser(req);
-  const data = parse(
-    z.object({ currentPassword: z.string().max(256), newPassword: passwordSchema }),
-    req.body,
-  );
+  const data = parse(z.object({ currentPassword: z.string().max(256), newPassword: passwordSchema }), req.body);
   const stored = await one<{ password_hash: string }>('SELECT password_hash FROM users WHERE id=$1', [me.id]);
-  if (!stored || !(await verifyPassword(data.currentPassword, stored.password_hash)))
-    throw unauthorized('Current password is incorrect.');
+  if (!stored || !(await verifyPassword(data.currentPassword, stored.password_hash))) throw unauthorized('Current password is incorrect.');
   if (data.currentPassword === data.newPassword) throw badRequest('Choose a different new password.');
   const hash = await hashPassword(data.newPassword);
   await transaction(async () => {

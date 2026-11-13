@@ -163,10 +163,18 @@ export function LeadActionModal({
 
   if (wonProject)
     return (
-      <Modal open onClose={onClose} title="Closed won 🎉" size="sm" footer={<Button variant="secondary" onClick={onClose}>Stay here</Button>}>
-        <p className="text-sm text-mute">
-          {lead.name} is now a client. Open lead tasks and meetings moved to the delivery project.
-        </p>
+      <Modal
+        open
+        onClose={onClose}
+        title="Closed won 🎉"
+        size="sm"
+        footer={
+          <Button variant="secondary" onClick={onClose}>
+            Stay here
+          </Button>
+        }
+      >
+        <p className="text-sm text-mute">{lead.name} is now a client. Open lead tasks and meetings moved to the delivery project.</p>
         {wonProject.project_id && (
           <Link href={`/projects/${wonProject.project_id}`} className="mt-4 inline-flex">
             <Button>Open project</Button>
@@ -272,7 +280,11 @@ export function LeadActionModal({
           </>
         )}
 
-        {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+        {error && (
+          <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </Modal>
   );

@@ -32,7 +32,11 @@ let keySeq = 0;
 const toDraft = (f: FormField): Draft => ({ ...f, key: `k${++keySeq}`, optionsText: (f.options ?? []).join('\n') });
 
 function slug(label: string) {
-  const s = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+  const s = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 40);
   return /^[a-z]/.test(s) ? s : `q_${s || 'question'}`;
 }
 
@@ -47,7 +51,10 @@ function toFields(drafts: Draft[]): FormField[] {
       for (let n = 2; used.has(id) || RESERVED.has(id); n++) id = `${base}_${n}`;
       used.add(id);
     }
-    const options = d.optionsText.split('\n').map((o) => o.trim()).filter(Boolean);
+    const options = d.optionsText
+      .split('\n')
+      .map((o) => o.trim())
+      .filter(Boolean);
     return { id, label: d.label.trim(), type: d.type, required: d.required, ...(d.type === 'select' ? { options } : {}) };
   });
 }
@@ -86,7 +93,8 @@ function Builder() {
     setDrafts(fn);
     setDirty(true);
   };
-  const update = (key: string, patchValue: Partial<Draft>) => change((list) => list.map((d) => (d.key === key ? { ...d, ...patchValue } : d)));
+  const update = (key: string, patchValue: Partial<Draft>) =>
+    change((list) => list.map((d) => (d.key === key ? { ...d, ...patchValue } : d)));
   const move = (i: number, dir: -1 | 1) =>
     change((list) => {
       const next = [...list];
@@ -101,8 +109,12 @@ function Builder() {
     drafts.forEach((d, i) => {
       if (!d.label.trim()) errs[`fields.${i}.label`] = 'Every question needs a label.';
       if (d.type === 'select') {
-        const opts = d.optionsText.split('\n').map((o) => o.trim()).filter(Boolean);
-        if (opts.length < 2 || new Set(opts).size !== opts.length) errs[`fields.${i}.options`] = 'Add 2–30 different options, one per line.';
+        const opts = d.optionsText
+          .split('\n')
+          .map((o) => o.trim())
+          .filter(Boolean);
+        if (opts.length < 2 || new Set(opts).size !== opts.length)
+          errs[`fields.${i}.options`] = 'Add 2–30 different options, one per line.';
       }
     });
     return errs;
@@ -160,7 +172,11 @@ function Builder() {
                 <Button variant="secondary" onClick={() => save(false)} loading={saving === 'save'} disabled={!!saving || !dirty}>
                   Save draft
                 </Button>
-                <Button onClick={() => save(true)} loading={saving === 'publish'} disabled={!!saving || (!dirty && !f.has_unpublished_changes && !!f.published_version)}>
+                <Button
+                  onClick={() => save(true)}
+                  loading={saving === 'publish'}
+                  disabled={!!saving || (!dirty && !f.has_unpublished_changes && !!f.published_version)}
+                >
                   Publish
                 </Button>
               </>
@@ -196,7 +212,13 @@ function Builder() {
                   <input className="input" value={title} onChange={(e) => (setTitle(e.target.value), setDirty(true))} maxLength={200} />
                 </Field>
                 <Field label="Introduction" hint="Shown above the questions.">
-                  <textarea className="input" rows={3} value={description} onChange={(e) => (setDescription(e.target.value), setDirty(true))} maxLength={5000} />
+                  <textarea
+                    className="input"
+                    rows={3}
+                    value={description}
+                    onChange={(e) => (setDescription(e.target.value), setDirty(true))}
+                    maxLength={5000}
+                  />
                 </Field>
                 <p className="text-xs text-faint">Name and email are always asked first and are not listed below.</p>
               </div>
@@ -219,12 +241,22 @@ function Builder() {
                 </div>
                 {d.type === 'select' && (
                   <Field className="mt-3" label="Options" hint="One per line." error={errors[`fields.${i}.options`]}>
-                    <textarea className="input" rows={4} value={d.optionsText} onChange={(e) => update(d.key, { optionsText: e.target.value })} />
+                    <textarea
+                      className="input"
+                      rows={4}
+                      value={d.optionsText}
+                      onChange={(e) => update(d.key, { optionsText: e.target.value })}
+                    />
                   </Field>
                 )}
                 <div className="mt-3 flex items-center gap-1">
                   <label className="flex flex-1 items-center gap-2 text-sm">
-                    <input type="checkbox" checked={d.required} onChange={(e) => update(d.key, { required: e.target.checked })} className="h-4 w-4 accent-[var(--acc)]" />
+                    <input
+                      type="checkbox"
+                      checked={d.required}
+                      onChange={(e) => update(d.key, { required: e.target.checked })}
+                      className="h-4 w-4 accent-[var(--acc)]"
+                    />
                     Required
                   </label>
                   <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move up">
@@ -233,7 +265,12 @@ function Builder() {
                   <Button variant="ghost" size="icon" disabled={i === drafts.length - 1} onClick={() => move(i, 1)} aria-label="Move down">
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => change((l) => l.filter((x) => x.key !== d.key))} aria-label="Remove question">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => change((l) => l.filter((x) => x.key !== d.key))}
+                    aria-label="Remove question"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -243,7 +280,9 @@ function Builder() {
             <Button
               variant="secondary"
               disabled={drafts.length >= 40}
-              onClick={() => change((l) => [...l, { key: `k${++keySeq}`, id: '', label: '', type: 'text', required: false, optionsText: '' }])}
+              onClick={() =>
+                change((l) => [...l, { key: `k${++keySeq}`, id: '', label: '', type: 'text', required: false, optionsText: '' }])
+              }
             >
               <Plus className="h-4 w-4" /> Add question
             </Button>
@@ -302,7 +341,11 @@ function Submissions({ formId, current }: { formId: string; current: FormField[]
         const expanded = open === s.id;
         return (
           <div key={s.id}>
-            <button className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-subtle" onClick={() => setOpen(expanded ? null : s.id)} aria-expanded={expanded}>
+            <button
+              className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-subtle"
+              onClick={() => setOpen(expanded ? null : s.id)}
+              aria-expanded={expanded}
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{s.name}</p>
                 <p className="truncate text-xs text-mute">{s.email}</p>

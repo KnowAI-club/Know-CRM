@@ -37,10 +37,7 @@ export function ScheduleTable({
           {schedules.map((s) => (
             <tr key={s.id}>
               <td>
-                <Link
-                  href={`/invoices/${s.source_invoice_id}`}
-                  className="font-medium hover:underline"
-                >
+                <Link href={`/invoices/${s.source_invoice_id}`} className="font-medium hover:underline">
                   {s.source_number}
                 </Link>
                 <p className="text-xs text-mute">{s.project_name}</p>
@@ -58,22 +55,12 @@ export function ScheduleTable({
               </td>
               <td className="text-right whitespace-nowrap">
                 {s.state === 'active' && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    loading={busy === s.id}
-                    onClick={() => onChange(s, 'paused')}
-                  >
+                  <Button size="sm" variant="ghost" loading={busy === s.id} onClick={() => onChange(s, 'paused')}>
                     Pause
                   </Button>
                 )}
                 {s.state === 'paused' && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    loading={busy === s.id}
-                    onClick={() => onChange(s, 'active')}
-                  >
+                  <Button size="sm" variant="ghost" loading={busy === s.id} onClick={() => onChange(s, 'active')}>
                     Resume
                   </Button>
                 )}

@@ -52,20 +52,12 @@ export function Modal({
             <h2 className="text-base font-semibold">{title}</h2>
             {description && <p className="mt-0.5 text-sm text-mute">{description}</p>}
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 text-mute hover:bg-subtle hover:text-ink"
-            aria-label="Close"
-          >
+          <button onClick={onClose} className="rounded-md p-1 text-mute hover:bg-subtle hover:text-ink" aria-label="Close">
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4">{children}</div>
-        {footer && (
-          <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
       </div>
     </div>
   );

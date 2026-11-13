@@ -19,7 +19,10 @@ test('lead creation enforces unique email and starts in the first open stage', a
   assert.equal(lead.state, 'active');
   assert.ok(lead.data.ownerId, 'owner defaults to the creator');
   await admin.post('/api/leads').send({ name: 'Dup', email: 'PRIYA@shah.in' }).expect(409);
-  await admin.post('/api/leads').send({ name: 'Bad', email: 'bad@x.in', data: { source: 'Nowhere' } }).expect(400);
+  await admin
+    .post('/api/leads')
+    .send({ name: 'Bad', email: 'bad@x.in', data: { source: 'Nowhere' } })
+    .expect(400);
   const contacts = await admin.get('/api/contacts').expect(200);
   assert.ok(contacts.body.some((c: any) => c.email === 'priya@shah.in'));
 });
@@ -47,18 +50,19 @@ test('exit parks a lead in nurtures and restore returns it to its entry stage', 
   const parked = await admin
     .post(`/api/leads/${lead.id}/action`)
     .send({
-      action: 'exit', version: moved.body.version, exitStatus: 'on_hold', reason: 'Budget next quarter',
-      tags: ['not_ready'], resumeDate: '2030-01-15',
+      action: 'exit',
+      version: moved.body.version,
+      exitStatus: 'on_hold',
+      reason: 'Budget next quarter',
+      tags: ['not_ready'],
+      resumeDate: '2030-01-15',
     })
     .expect(200);
   assert.equal(parked.body.state, 'nurture');
   assert.equal(parked.body.nurture.status, 'parked');
   assert.equal(parked.body.nurture.entry_stage, 'discovery');
   assert.ok(parked.body.nurture.confirmation_due_at);
-  const restored = await admin
-    .post(`/api/leads/${lead.id}/action`)
-    .send({ action: 'restore', version: parked.body.version })
-    .expect(200);
+  const restored = await admin.post(`/api/leads/${lead.id}/action`).send({ action: 'restore', version: parked.body.version }).expect(200);
   assert.equal(restored.body.state, 'active');
   assert.equal(restored.body.stage, 'discovery');
   assert.equal(restored.body.exit_status, '');
@@ -69,10 +73,7 @@ test('close won creates a project, moves open tasks and freezes the lead', async
   const admin = await adminAgent();
   const lead = await newLead(admin, 'won@lead.in');
   await admin.post(`/api/leads/${lead.id}/tasks`).send({ title: 'Send proposal' }).expect(201);
-  await admin
-    .post(`/api/leads/${lead.id}/action`)
-    .send({ action: 'won', version: lead.version })
-    .expect(400); // due date required
+  await admin.post(`/api/leads/${lead.id}/action`).send({ action: 'won', version: lead.version }).expect(400); // due date required
   const won = await admin
     .post(`/api/leads/${lead.id}/action`)
     .send({ action: 'won', version: lead.version, dueDate: '2030-06-30', value: 2500000 })
@@ -86,7 +87,10 @@ test('close won creates a project, moves open tasks and freezes the lead', async
   assert.ok(project.body.tasks.some((t: any) => t.title === 'Send proposal'));
   // Retrying is harmless; further edits are blocked.
   await admin.post(`/api/leads/${lead.id}/action`).send({ action: 'won', version: lead.version, dueDate: '2030-06-30' }).expect(200);
-  await admin.patch(`/api/leads/${lead.id}`).send({ version: won.body.version, data: { budget: 'x' } }).expect(409);
+  await admin
+    .patch(`/api/leads/${lead.id}`)
+    .send({ version: won.body.version, data: { budget: 'x' } })
+    .expect(409);
   await admin.post(`/api/leads/${lead.id}/notes`).send({ title: 'Handoff note' }).expect(201);
   const cycle = await admin.get(`/api/leads/${lead.id}/cycle`).expect(200);
   assert.ok(cycle.body.segments.length >= 1);

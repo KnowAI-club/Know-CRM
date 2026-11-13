@@ -49,7 +49,9 @@ export default function SequencePage() {
               const st = s.stats.perEmail[e.id] ?? { sent: 0, replied: 0, due: 0 };
               return (
                 <li key={e.id} className="flex gap-3 px-4 py-3">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-acc-soft text-xs font-semibold text-acc">{i + 1}</span>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-acc-soft text-xs font-semibold text-acc">
+                    {i + 1}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{e.subject || '(no subject)'}</p>
                     <p className="text-xs text-mute">
@@ -67,7 +69,8 @@ export default function SequencePage() {
             })}
           </ol>
           <p className="border-t border-line px-4 py-2.5 text-xs text-faint">
-            {s.stop_on_reply ? 'Stops when a lead replies.' : 'Keeps going after a reply.'} {s.weekly_cap ? 'At most one email a week.' : ''}
+            {s.stop_on_reply ? 'Stops when a lead replies.' : 'Keeps going after a reply.'}{' '}
+            {s.weekly_cap ? 'At most one email a week.' : ''}
           </p>
         </Card>
         <Card title="Leads" bodyClassName="p-0">

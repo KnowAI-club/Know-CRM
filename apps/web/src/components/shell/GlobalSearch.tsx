@@ -22,14 +22,31 @@ interface Group {
 }
 
 const LABELS: Record<string, string> = {
-  go: 'Go to', leads: 'Leads', projects: 'Projects', contacts: 'Clients', files: 'Files', tasks: 'Tasks', meetings: 'Meetings',
-  notes: 'Notes', documents: 'Documents', reminders: 'Reminders', templates: 'Email templates',
+  go: 'Go to',
+  leads: 'Leads',
+  projects: 'Projects',
+  contacts: 'Clients',
+  files: 'Files',
+  tasks: 'Tasks',
+  meetings: 'Meetings',
+  notes: 'Notes',
+  documents: 'Documents',
+  reminders: 'Reminders',
+  templates: 'Email templates',
 };
 
 function highlight(text: string, words: string[]): ReactNode {
   if (!words.length || !text) return text;
   const re = new RegExp(`(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'ig');
-  return text.split(re).map((part, i) => (i % 2 ? <mark key={i} className="rounded bg-acc-soft px-0.5 text-acc">{part}</mark> : part));
+  return text.split(re).map((part, i) =>
+    i % 2 ? (
+      <mark key={i} className="rounded bg-acc-soft px-0.5 text-acc">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  );
 }
 
 /** Cmd/Ctrl+K command palette over the whole workspace. */
@@ -105,7 +122,10 @@ export function GlobalSearch({ isAdmin }: { isAdmin: boolean }) {
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-[12vh]" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-card shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-2 border-b border-line px-4">
               <Search className="h-4 w-4 text-mute" />
               <input
@@ -145,14 +165,24 @@ export function GlobalSearch({ isAdmin }: { isAdmin: boolean }) {
                         key={`${g.key}-${h.id}`}
                         onMouseEnter={() => setActive(idx)}
                         onClick={() => openHit(h)}
-                        className={cn('mx-2 flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2', idx === active && 'bg-acc-soft')}
+                        className={cn(
+                          'mx-2 flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2',
+                          idx === active && 'bg-acc-soft',
+                        )}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className={cn('truncate text-sm font-medium', h.archived && 'text-mute line-through')}>{highlight(h.title, words)}</p>
+                          <p className={cn('truncate text-sm font-medium', h.archived && 'text-mute line-through')}>
+                            {highlight(h.title, words)}
+                          </p>
                           {h.sub && <p className="truncate text-xs text-mute">{highlight(h.sub, words)}</p>}
                         </div>
                         {h.download && (
-                          <a href={h.download} onClick={(e) => e.stopPropagation()} className="rounded-md p-1 text-mute hover:text-ink" aria-label="Download">
+                          <a
+                            href={h.download}
+                            onClick={(e) => e.stopPropagation()}
+                            className="rounded-md p-1 text-mute hover:text-ink"
+                            aria-label="Download"
+                          >
                             <Download className="h-4 w-4" />
                           </a>
                         )}

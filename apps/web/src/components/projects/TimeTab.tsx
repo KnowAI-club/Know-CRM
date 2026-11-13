@@ -43,7 +43,12 @@ export function TimeTab({ projectId }: { projectId: string }) {
     if (!minutes || minutes > 1440) return setErrors({ minutes: 'Enter time like 1:30, 1.5 or 45m (max 24h).' });
     setSaving(true);
     try {
-      const entry = await post<Entry>(`/projects/${projectId}/time-entries`, { workDate: form.workDate, minutes, description: form.description, billable: form.billable });
+      const entry = await post<Entry>(`/projects/${projectId}/time-entries`, {
+        workDate: form.workDate,
+        minutes,
+        description: form.description,
+        billable: form.billable,
+      });
       setData((list) => [entry, ...(list ?? [])].sort((a, b) => b.work_date.localeCompare(a.work_date)));
       setForm({ ...form, duration: '', description: '' });
       setErrors({});
@@ -91,13 +96,29 @@ export function TimeTab({ projectId }: { projectId: string }) {
       >
         <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr_auto_auto]" noValidate>
           <Field label="Date" error={errors.workDate}>
-            <input className="input" type="date" max={today()} value={form.workDate} onChange={(e) => setForm({ ...form, workDate: e.target.value })} />
+            <input
+              className="input"
+              type="date"
+              max={today()}
+              value={form.workDate}
+              onChange={(e) => setForm({ ...form, workDate: e.target.value })}
+            />
           </Field>
           <Field label="Duration" error={errors.minutes} hint="e.g. 1:30 or 45m">
-            <input className="input" value={form.duration} placeholder="1:30" onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+            <input
+              className="input"
+              value={form.duration}
+              placeholder="1:30"
+              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+            />
           </Field>
           <Field label="What did you work on?" error={errors.description}>
-            <input className="input" value={form.description} maxLength={1000} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <input
+              className="input"
+              value={form.description}
+              maxLength={1000}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
           </Field>
           <label className="flex items-center gap-2 self-center text-sm sm:pt-5">
             <input type="checkbox" checked={form.billable} onChange={(e) => setForm({ ...form, billable: e.target.checked })} /> Billable

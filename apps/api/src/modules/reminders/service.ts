@@ -17,7 +17,10 @@ export interface ReminderTarget {
  * Checked when scheduling and again at delivery time.
  */
 export async function reminderContext(r: ReminderTarget): Promise<{ link: string; recipient: { email: string; name: string } } | null> {
-  const recipient = await one<{ id: string; role: string; email: string; name: string }>(`SELECT id, role, email, name FROM users WHERE id=$1 AND disabled_at IS NULL`, [r.recipient_id]);
+  const recipient = await one<{ id: string; role: string; email: string; name: string }>(
+    `SELECT id, role, email, name FROM users WHERE id=$1 AND disabled_at IS NULL`,
+    [r.recipient_id],
+  );
   const creator = await one(`SELECT 1 FROM users WHERE id=$1 AND disabled_at IS NULL AND role<>'client'`, [r.created_by]);
   if (!recipient || !creator) return null;
   if (r.meeting_id) {
@@ -72,16 +75,13 @@ export async function deliverReminders(limit = 50) {
         await query(`UPDATE reminders SET status='sent', attempts=attempts+1, last_error='', updated_at=now() WHERE id=$1`, [r.id]);
       } catch (error) {
         const attempts = r.attempts + 1;
-        await query(
-          `UPDATE reminders SET status=$2, attempts=$3, last_error=$4, run_at=$5, updated_at=now() WHERE id=$1`,
-          [
-            r.id,
-            attempts < 5 ? 'pending' : 'failed',
-            attempts,
-            error instanceof Error ? error.message.slice(0, 500) : 'Delivery failed',
-            new Date(Date.now() + Math.min(60, 2 ** attempts) * 60_000),
-          ],
-        );
+        await query(`UPDATE reminders SET status=$2, attempts=$3, last_error=$4, run_at=$5, updated_at=now() WHERE id=$1`, [
+          r.id,
+          attempts < 5 ? 'pending' : 'failed',
+          attempts,
+          error instanceof Error ? error.message.slice(0, 500) : 'Delivery failed',
+          new Date(Date.now() + Math.min(60, 2 ** attempts) * 60_000),
+        ]);
       }
     }
   });
