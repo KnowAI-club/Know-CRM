@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Download, Search } from 'lucide-react';
+import { CornerDownLeft, Download, Search } from 'lucide-react';
 import { get } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { NAV } from './nav';
@@ -95,14 +96,16 @@ export function GlobalSearch({ isAdmin }: { isAdmin: boolean }) {
 
   const words = useMemo(() => q.toLowerCase().split(/\s+/).filter(Boolean), [q]);
   const goTo: Group | null = useMemo(() => {
-    if (!words.length) return null;
     const items = NAV.flatMap((s) => s.items)
       .filter((i) => !i.adminOnly || isAdmin)
       .filter((i) => words.every((w) => i.label.toLowerCase().includes(w)))
+      .slice(0, words.length ? 50 : 6)
       .map((i) => ({ id: i.href, title: i.label, sub: 'Page', link: i.href }));
     return items.length ? { key: 'go', total: items.length, more: false, items } : null;
   }, [words, isAdmin]);
-  const all = [...(goTo ? [goTo] : []), ...groups];
+  const all = [...(goTo ? [goTo] : []), ...(q.trim().length >= 2 ? groups : [])];
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const flat = all.flatMap((g) => g.items);
 
   const openHit = (h: Hit) => {
@@ -120,81 +123,104 @@ export function GlobalSearch({ isAdmin }: { isAdmin: boolean }) {
         <span className="flex-1 truncate text-left">Search leads, projects, clients…</span>
         <kbd className="hidden rounded border border-line px-1.5 text-[10px] text-mute sm:inline">⌘K</kbd>
       </button>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 px-4 pt-[12vh]" onClick={() => setOpen(false)}>
+      {open &&
+        mounted &&
+        createPortal(
           <div
-            className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-card shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 px-4 pt-[12vh] backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
           >
-            <div className="flex items-center gap-2 border-b border-line px-4">
-              <Search className="h-4 w-4 text-mute" />
-              <input
-                ref={input}
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') setOpen(false);
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    setActive((a) => Math.min(a + 1, flat.length - 1));
-                  }
-                  if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    setActive((a) => Math.max(a - 1, 0));
-                  }
-                  if (e.key === 'Enter' && flat[active]) openHit(flat[active]!);
-                }}
-                placeholder="Search leads, projects, clients, files, tasks, meetings…"
-                className="h-12 flex-1 bg-transparent text-sm outline-none"
-                maxLength={100}
-              />
-            </div>
-            <div className="max-h-[60vh] overflow-y-auto py-2">
-              {q.trim().length >= 2 && all.length === 0 && <p className="px-4 py-8 text-center text-sm text-mute">No matches for “{q}”.</p>}
-              {q.trim().length < 2 && <p className="px-4 py-8 text-center text-sm text-mute">Type at least two characters.</p>}
-              {all.map((g) => (
-                <div key={g.key} className="pb-1">
-                  <p className="px-4 pt-2 pb-1 text-xs font-medium text-faint">
-                    {LABELS[g.key] ?? g.key}
-                    {g.more && ' · showing top results'}
-                  </p>
-                  {g.items.map((h) => {
-                    const idx = flat.indexOf(h);
-                    return (
-                      <div
-                        key={`${g.key}-${h.id}`}
-                        onMouseEnter={() => setActive(idx)}
-                        onClick={() => openHit(h)}
-                        className={cn(
-                          'mx-2 flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2',
-                          idx === active && 'bg-acc-soft',
-                        )}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className={cn('truncate text-sm font-medium', h.archived && 'text-mute line-through')}>
-                            {highlight(h.title, words)}
-                          </p>
-                          {h.sub && <p className="truncate text-xs text-mute">{highlight(h.sub, words)}</p>}
+            <div
+              role="dialog"
+              aria-label="Search"
+              className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-card shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2 border-b border-line px-4">
+                <Search className="h-4 w-4 shrink-0 text-mute" />
+                <input
+                  ref={input}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setOpen(false);
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setActive((a) => Math.min(a + 1, flat.length - 1));
+                    }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setActive((a) => Math.max(a - 1, 0));
+                    }
+                    if (e.key === 'Enter' && flat[active]) openHit(flat[active]!);
+                  }}
+                  placeholder="Search leads, projects, clients, files, tasks…"
+                  className="h-12 flex-1 bg-transparent text-sm outline-none"
+                  maxLength={100}
+                />
+                <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-mute">Esc</kbd>
+              </div>
+              <div className="max-h-[60vh] overflow-y-auto py-2">
+                {q.trim().length >= 2 && all.length === 0 && (
+                  <p className="px-4 py-8 text-center text-sm text-mute">No matches for “{q}”.</p>
+                )}
+                {q.trim().length === 1 && <p className="px-4 pt-2 pb-1 text-xs text-faint">Keep typing to search records…</p>}
+                {all.map((g) => (
+                  <div key={g.key} className="pb-1">
+                    <p className="px-4 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-faint uppercase">
+                      {g.key === 'go' && !words.length ? 'Jump to' : (LABELS[g.key] ?? g.key)}
+                      {g.more && ' · showing top results'}
+                    </p>
+                    {g.items.map((h) => {
+                      const idx = flat.indexOf(h);
+                      return (
+                        <div
+                          key={`${g.key}-${h.id}`}
+                          onMouseEnter={() => setActive(idx)}
+                          onClick={() => openHit(h)}
+                          className={cn(
+                            'mx-2 flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2',
+                            idx === active && 'bg-acc-soft',
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className={cn('truncate text-sm font-medium', h.archived && 'text-mute line-through')}>
+                              {highlight(h.title, words)}
+                            </p>
+                            {h.sub && <p className="truncate text-xs text-mute">{highlight(h.sub, words)}</p>}
+                          </div>
+                          {idx === active && !h.download && <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-acc" />}
+                          {h.download && (
+                            <a
+                              href={h.download}
+                              onClick={(e) => e.stopPropagation()}
+                              className="rounded-md p-1 text-mute hover:text-ink"
+                              aria-label="Download"
+                            >
+                              <Download className="h-4 w-4" />
+                            </a>
+                          )}
                         </div>
-                        {h.download && (
-                          <a
-                            href={h.download}
-                            onClick={(e) => e.stopPropagation()}
-                            className="rounded-md p-1 text-mute hover:text-ink"
-                            aria-label="Download"
-                          >
-                            <Download className="h-4 w-4" />
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              <div className="hidden items-center gap-4 border-t border-line bg-subtle px-4 py-2 text-[11px] text-mute sm:flex">
+                <span>
+                  <kbd className="font-sans">↑↓</kbd> navigate
+                </span>
+                <span>
+                  <kbd className="font-sans">↵</kbd> open
+                </span>
+                <span>
+                  <kbd className="font-sans">Esc</kbd> close
+                </span>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

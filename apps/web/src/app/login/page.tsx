@@ -6,6 +6,7 @@ import { BRAND } from '@/lib/brand';
 import { useSession } from '@/lib/session';
 import { Button, Field, Spinner } from '@/components/ui';
 import { CURRENCIES } from '@know-crm/shared';
+import { BrandMark } from '@/components/shell/BrandMark';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function LoginPage() {
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex items-center gap-2.5">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-acc text-sm font-bold text-acc-ink">K</span>
+          <BrandMark className="h-9 w-9 rounded-xl" />
           <span className="text-lg font-semibold">{BRAND}</span>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">{setup ? 'Set up your workspace' : 'Welcome back'}</h1>
