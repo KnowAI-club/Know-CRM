@@ -1,3 +1,5 @@
+# KnowBook CRM — `docker compose up -d` starts the whole app on http://localhost:3010.
+# Values below can be overridden from a .env file next to this file (see .env.example).
 name: know-crm
 services:
   postgres:
@@ -16,6 +18,7 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+
   # Local mail catcher: every email the CRM sends lands here (web UI on :8030).
   mailpit:
     image: axllent/mailpit:v1.27
@@ -23,5 +26,45 @@ services:
       - '127.0.0.1:${SMTP_PORT:-1030}:1025'
       - '127.0.0.1:${MAILPIT_UI_PORT:-8030}:8025'
     restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      target: api
+    image: knowbook-crm-api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-knowcrm}:${POSTGRES_PASSWORD:-knowcrm-local-only}@postgres:5432/${POSTGRES_DB:-knowcrm}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3010}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_DAYS: ${SESSION_DAYS:-14}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: ${MAIL_FROM:-KnowBook CRM <no-reply@knowbook-crm.local>}
+      WORKER_ENABLED: 'true'
+      DEMO_SEED: ${DEMO_SEED:-false}
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: web
+    image: knowbook-crm-web
+    ports:
+      - '${WEB_PORT:-3010}:3010'
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  storage:
