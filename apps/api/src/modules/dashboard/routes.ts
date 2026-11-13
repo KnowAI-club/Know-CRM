@@ -105,7 +105,8 @@ const MINE = `(m.organizer_id=$1 OR l.data->>'ownerId' = $1::text
   OR EXISTS (SELECT 1 FROM meeting_participants mp WHERE mp.meeting_id=m.id AND mp.user_id=$1))`;
 
 async function calls(userId: string, mine: boolean, from: string, to: string) {
-  const scope = mine ? `AND ${MINE}` : '';
+  // Team scope still binds $1 (typed) so every query keeps the same parameters.
+  const scope = mine ? `AND ${MINE}` : 'AND $1::uuid IS NOT NULL';
   const [today, upcoming, outcomePending] = await Promise.all([
     many(`${CALL_SELECT} WHERE m.status<>'cancelled' AND m.source<>'upload' AND m.start_at >= $2 AND m.start_at < $3 ${scope} ORDER BY m.start_at`, [userId, from, to]),
     many(
