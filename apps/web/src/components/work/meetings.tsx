@@ -5,7 +5,7 @@ import { get, patch, post } from '@/lib/api';
 import { today } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { useSession } from '@/lib/session';
-import { Button, Field, Modal, useToast } from '@/components/ui';
+import { Button, Field, Modal, useToast, NumberInput } from '@/components/ui';
 import { MEETING_KINDS, formErrors, fromLocalInput, noticeLabel, toLocalInput, type MeetingKind } from './util';
 import { splitTarget, useTargets, type TargetValue } from './useTargets';
 import { TargetSelect } from './TargetSelect';
@@ -258,12 +258,11 @@ export function MeetingModal({
             />
           </Field>
           <Field label="Length (minutes)" required error={errors.durationMinutes}>
-            <input
-              type="number"
+            <NumberInput
               min={1}
               max={480}
               step={5}
-              className="input"
+
               value={form.durationMinutes}
               disabled={booked || uploaded}
               onChange={(e) => set('durationMinutes', e.target.value)}

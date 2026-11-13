@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { BookOpen, Plus, Trash2 } from 'lucide-react';
 import { amountInWords, calculateTotals, lineAmount, percentLabel } from '@know-crm/shared';
-import { Button, Card, Field, Menu, MoneyInput, Segmented, useToast } from '@/components/ui';
+import { Button, Card, Field, Menu, MoneyInput, Segmented, useToast, NumberInput } from '@/components/ui';
 import { ApiError, patch, post } from '@/lib/api';
 import { money } from '@/lib/format';
 import { useLoad } from '@/lib/useLoad';
@@ -405,9 +405,9 @@ export function InvoiceEditor({
                   <input className="input" value={l.name} onChange={(e) => setLine(l.key, { name: e.target.value })} maxLength={500} />
                 </Field>
                 <Field label="Quantity" error={err(`lines.${i}.quantity`)} className="sm:col-span-2">
-                  <input
-                    className="input text-right tabular-nums"
-                    inputMode="decimal"
+                  <NumberInput
+                    step="any"
+                    className="text-right tabular-nums"
                     value={l.quantity}
                     onChange={(e) => setLine(l.key, { quantity: e.target.value })}
                   />
@@ -480,10 +480,11 @@ export function InvoiceEditor({
                   </div>
                 )}
                 {discountType === 'percent' && (
-                  <input
+                  <NumberInput
+                    max={100}
+                    step="any"
                     aria-label="Discount percent"
-                    className="input w-24 text-right"
-                    inputMode="decimal"
+                    className="w-24 text-right"
                     value={discountPercent}
                     onChange={(e) => setDiscountPercent(e.target.value)}
                     placeholder="10"
@@ -494,9 +495,10 @@ export function InvoiceEditor({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Field label="Service charge %" error={err('serviceChargeRate')}>
-                <input
-                  className="input text-right"
-                  inputMode="decimal"
+                <NumberInput
+                  max={100}
+                  step="any"
+                  className="text-right"
                   value={serviceCharge}
                   onChange={(e) => setServiceCharge(e.target.value)}
                   placeholder="0"
@@ -562,10 +564,11 @@ export function InvoiceEditor({
                     </div>
                     <div className="w-28">
                       <div className="relative">
-                        <input
+                        <NumberInput
+                          max={100}
+                          step="any"
                           aria-label="Tax rate percent"
-                          className="input pr-7 text-right"
-                          inputMode="decimal"
+                          className="pr-7 text-right"
                           value={t.rate}
                           placeholder="9"
                           onChange={(e) => setTaxes((ts) => ts.map((x) => (x.key === t.key ? { ...x, rate: e.target.value } : x)))}

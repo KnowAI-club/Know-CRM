@@ -22,6 +22,7 @@ import {
   Skeleton,
   useConfirm,
   useToast,
+  NumberInput,
 } from '@/components/ui';
 import { OwnerSelect } from './OwnerSelect';
 import { fieldErrors, type Lead } from './types';
@@ -60,6 +61,7 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
     const local: Record<string, string> = {};
     if (!form.title.trim()) local.title = 'Add a title.';
     if (!form.start) local.startAt = 'Choose a start time.';
+    if (!Number.isInteger(form.duration) || form.duration < 5 || form.duration > 480) local.durationMinutes = 'Between 5 and 480 minutes.';
     setErrors(local);
     if (Object.keys(local).length) return;
     setSaving(true);
@@ -158,9 +160,7 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
             />
           </Field>
           <Field label="Duration (minutes)" error={errors.durationMinutes}>
-            <input
-              className="input"
-              type="number"
+            <NumberInput
               min={5}
               max={480}
               step={5}

@@ -1,6 +1,6 @@
 'use client';
 import { ArrowDown, ArrowUp, Heading, ListChecks, PenLine, Plus, ShoppingBag, Trash2, Type } from 'lucide-react';
-import { Button, Field, Menu, MoneyInput } from '@/components/ui';
+import { Button, Field, Menu, MoneyInput, NumberInput } from '@/components/ui';
 import { uuid } from '@/components/money/util';
 
 export type Block =
@@ -149,9 +149,9 @@ export function BlocksEditor({
                   <input className="input" value={b.name} maxLength={200} onChange={(e) => update(b.id, { name: e.target.value })} />
                 </Field>
                 <Field label="Qty">
-                  <input
-                    className="input text-right"
-                    inputMode="decimal"
+                  <NumberInput
+                    step="any"
+                    className="text-right"
                     value={b.quantity}
                     onChange={(e) => update(b.id, { quantity: Number(e.target.value) || 0 })}
                   />

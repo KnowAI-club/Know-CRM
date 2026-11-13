@@ -34,8 +34,11 @@ export function MoneyInput({
         value={text}
         disabled={disabled}
         onChange={(e) => {
-          setText(e.target.value);
-          onChange(toMinor(e.target.value));
+          // Digits and one decimal point only, at most 2 decimals; never negative.
+          const raw = e.target.value.replace(/,/g, '');
+          if (!/^\d*(\.\d{0,2})?$/.test(raw)) return;
+          setText(raw);
+          onChange(toMinor(raw));
         }}
       />
     </div>

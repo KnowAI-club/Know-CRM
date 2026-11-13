@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { patch, post } from '@/lib/api';
-import { Button, Field, Modal, useToast } from '@/components/ui';
+import { Button, Field, Modal, useToast, NumberInput } from '@/components/ui';
 import { browserZone, fieldErrors, WEEKDAYS } from './util';
 
 export interface Window {
@@ -120,6 +120,8 @@ export function BookingTypeModal({
         errs[`availability.${i}`] = 'Windows on the same day cannot overlap.';
     });
     if (!(form.horizon >= 1 && form.horizon <= 365)) errs.horizon = 'Between 1 and 365 days.';
+    if (!(form.bufferBefore >= 0 && form.bufferBefore <= 240)) errs.bufferBefore = 'Between 0 and 240 minutes.';
+    if (!(form.bufferAfter >= 0 && form.bufferAfter <= 240)) errs.bufferAfter = 'Between 0 and 240 minutes.';
     return errs;
   };
 
@@ -220,19 +222,10 @@ export function BookingTypeModal({
             </select>
           </Field>
           <Field label="Book up to (days ahead)" error={errors.horizon}>
-            <input
-              className="input"
-              type="number"
-              min={1}
-              max={365}
-              value={form.horizon}
-              onChange={(e) => set('horizon', Number(e.target.value))}
-            />
+            <NumberInput min={1} max={365} value={form.horizon} onChange={(e) => set('horizon', Number(e.target.value))} />
           </Field>
           <Field label="Buffer before (min)" error={errors.bufferBefore}>
-            <input
-              className="input"
-              type="number"
+            <NumberInput
               min={0}
               max={240}
               step={5}
@@ -241,15 +234,7 @@ export function BookingTypeModal({
             />
           </Field>
           <Field label="Buffer after (min)" error={errors.bufferAfter}>
-            <input
-              className="input"
-              type="number"
-              min={0}
-              max={240}
-              step={5}
-              value={form.bufferAfter}
-              onChange={(e) => set('bufferAfter', Number(e.target.value))}
-            />
+            <NumberInput min={0} max={240} step={5} value={form.bufferAfter} onChange={(e) => set('bufferAfter', Number(e.target.value))} />
           </Field>
           <Field label="Time zone" error={errors.timezone}>
             <select className="input" value={form.timezone} onChange={(e) => set('timezone', e.target.value)}>

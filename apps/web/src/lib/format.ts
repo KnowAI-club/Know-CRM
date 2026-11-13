@@ -78,7 +78,7 @@ export function titleCase(s?: string | null) {
 export function toMinor(text: string | number): number | null {
   const clean = String(text).replace(/[,\s]/g, '');
   if (clean === '') return 0;
-  if (!/^\d+(\.\d{0,2})?$/.test(clean)) return null;
+  if (!/^(\d+(\.\d{0,2})?|\.\d{1,2})$/.test(clean)) return null;
   const [whole, frac = ''] = clean.split('.');
   return Number(whole) * 100 + Number(frac.padEnd(2, '0'));
 }

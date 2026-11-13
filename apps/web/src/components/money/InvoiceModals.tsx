@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHODS } from '@know-crm/shared';
-import { Button, Field, Modal, MoneyInput, useToast } from '@/components/ui';
+import { Button, Field, Modal, MoneyInput, useToast, NumberInput } from '@/components/ui';
 import { ApiError, post } from '@/lib/api';
 import { money, today } from '@/lib/format';
 import type { Invoice } from './types';
@@ -215,10 +215,10 @@ export function RecurringModal({ invoice, onClose, onSaved }: { invoice: Invoice
           <input type="date" className="input" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} />
         </Field>
         <Field label="Maximum drafts" error={errors.maxOccurrences}>
-          <input className="input" inputMode="numeric" value={maxOccurrences} onChange={(e) => setMax(e.target.value)} />
+          <NumberInput min={1} max={120} step={1} value={maxOccurrences} onChange={(e) => setMax(e.target.value)} />
         </Field>
         <Field label="Due after (days)" error={errors.dueDays}>
-          <input className="input" inputMode="numeric" value={dueDays} onChange={(e) => setDueDays(e.target.value)} />
+          <NumberInput max={90} step={1} value={dueDays} onChange={(e) => setDueDays(e.target.value)} />
         </Field>
       </form>
     </Modal>
