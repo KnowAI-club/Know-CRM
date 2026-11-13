@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Docker images for the API and web app, and a Docker Compose stack that starts PostgreSQL, Mailpit, the API and the web app with a single `docker compose up -d`.
+- `DEMO_SEED` setting to load the demo workspace when the API starts with an empty database.
+
+### Changed
+
+- The product is now called KnowBook CRM on the sign-in page, in the sidebar, in page titles, on public pages and in the default email sender.
+- The API origin check also accepts the browser-facing host forwarded by the web proxy, so the app works whether it is opened via `localhost` or `127.0.0.1`.
+
 ## [0.1.0] - 2026-11-13
 
 First public release.

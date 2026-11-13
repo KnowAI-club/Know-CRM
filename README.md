@@ -1,4 +1,4 @@
-# Know CRM
+# KnowBook CRM
 
 An open-source, self-hosted CRM for studios, agencies and service businesses. It covers the full journey from first enquiry to paid invoice: leads, sales pipeline, nurture sequences, follow-ups and meetings, deal closing, project delivery with a client portal, GST-ready invoicing, reports, team collaboration and access control.
 
@@ -28,26 +28,73 @@ Everything runs on your own machine or server. There are no third-party SaaS int
 - **Background worker:** in-process job runner with a PostgreSQL advisory lock (email outbox, reminders, nurture sends, recurring invoices)
 - **Monorepo:** npm workspaces — `apps/web`, `apps/api`, `packages/shared` (money and tax maths, domain constants shared by both apps)
 
-## Quick start
+## Run with Docker (recommended)
 
-Requirements: Node.js 22.13+ and Docker (for PostgreSQL and Mailpit). You can also point the app at your own PostgreSQL and SMTP server instead.
+The only requirement is Docker with Docker Compose. One command builds and starts everything: PostgreSQL, the API, the web app and a local Mailpit mail catcher.
 
 ```bash
 git clone https://github.com/KnowAI-club/Know-CRM.git
 cd Know-CRM
-cp .env.example .env          # change POSTGRES_PASSWORD for anything beyond local use
-npm install
-npm run db:up                 # PostgreSQL on :5440, Mailpit on :1030 (UI on :8030)
-npm run db:seed               # optional: runs migrations and loads a demo workspace
-npm run dev                   # API on :4010, web on :3010
+docker compose up -d
 ```
 
-Open http://127.0.0.1:3010.
+When the containers report healthy, open http://localhost:3010. The first visit shows a setup screen where you create the admin account and the workspace. Database migrations run automatically every time the API starts.
 
-- **With demo data:** sign in as `admin@example.com` / `demo-password-123`. The seed also creates `sam@example.com` (sales), `jamie@example.com` (designer) and `client@example.com` (client portal), all with the same password.
-- **Without demo data:** the first visit shows a setup screen where you create the admin account and the workspace.
+**Try it with demo data** — start the stack with `DEMO_SEED=true` on an empty database:
 
-Every email the app sends in development is caught by Mailpit at http://127.0.0.1:8030.
+```bash
+DEMO_SEED=true docker compose up -d
+```
+
+Then sign in as `admin@example.com` / `demo-password-123`. The demo also creates `sam@example.com` (sales), `jamie@example.com` (designer) and `client@example.com` (client portal), all with the same password. Seeding is skipped when users already exist.
+
+| Service    | Address                                           | Notes                                                    |
+| ---------- | ------------------------------------------------- | -------------------------------------------------------- |
+| Web app    | http://localhost:3010                             | The only service you need; it proxies `/api` to the API. |
+| Mailpit    | http://localhost:8030                             | Every email the app sends is caught here.                |
+| PostgreSQL | `localhost:5440`                                  | Bound to localhost only.                                 |
+| API        | internal only (`api:4010` on the compose network) |                                                          |
+
+Useful commands:
+
+```bash
+docker compose ps                  # status and health of each container
+docker compose logs -f api web     # follow application logs
+docker compose up -d --build       # rebuild after pulling new code
+docker compose down                # stop (data is kept)
+docker compose down -v             # stop and delete all data (database and uploaded files)
+```
+
+Data lives in two named volumes: `postgres_data` (database) and `storage` (uploaded files).
+
+### Docker settings
+
+Compose reads optional overrides from a `.env` file next to `docker-compose.yml`:
+
+| Variable                    | Default                                      | Purpose                                                                   |
+| --------------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
+| `WEB_PORT`                  | `3010`                                       | Port the web app is published on.                                         |
+| `APP_ORIGIN`                | `http://localhost:3010`                      | Public URL of the app, used in emails, booking links and lead form links. |
+| `POSTGRES_PASSWORD`         | `knowcrm-local-only`                         | **Change this** for anything beyond local use.                            |
+| `COOKIE_SECURE`             | `false`                                      | Set to `true` when the app is served over HTTPS.                          |
+| `DEMO_SEED`                 | `false`                                      | Load the demo workspace into an empty database.                           |
+| `MAIL_FROM`, `MAIL_ENABLED` | `KnowBook CRM <no-reply@knowbook-crm.local>` | Sender address, and whether email is sent at all.                         |
+
+To deliver real email instead of catching it in Mailpit, set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER` and `SMTP_PASS` under the `api` service in `docker-compose.yml`.
+
+## Local development
+
+For working on the code you can run the apps directly with Node.js 22.13+ and use Docker only for PostgreSQL and Mailpit:
+
+```bash
+cp .env.example .env
+npm install
+npm run db:up                 # PostgreSQL on :5440, Mailpit on :1030 (UI on :8030)
+npm run db:seed               # optional: runs migrations and loads the demo workspace
+npm run dev                   # API on :4010, web on :3010 with hot reload
+```
+
+Stop the `web` and `api` containers first (`docker compose stop web api`) if the full Docker stack is running, since they use the same ports.
 
 ## Scripts
 
@@ -68,7 +115,7 @@ Run from the repository root.
 
 ## Configuration
 
-All settings live in `.env` at the repository root; `.env.example` documents every variable.
+When running with Node.js directly, all settings live in `.env` at the repository root; `.env.example` documents every variable.
 
 | Variable                                    | Purpose                                                                                                  |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -79,10 +126,13 @@ All settings live in `.env` at the repository root; `.env.example` documents eve
 | `WORKER_ENABLED`, `WORKER_INTERVAL_SECONDS` | Background jobs. Disable on extra API replicas if you run more than one.                                 |
 | `COOKIE_SECURE`, `SESSION_DAYS`             | Session cookie settings. Set `COOKIE_SECURE=true` behind HTTPS.                                          |
 | `API_INTERNAL_URL`, `WEB_PORT`              | Where the web server proxies `/api` requests, and its port.                                              |
+| `DEMO_SEED`                                 | Load the demo workspace when the API starts with an empty database.                                      |
 
 ## Project structure
 
 ```
+Dockerfile             Multi-stage image build (api and web targets)
+docker-compose.yml     Full stack: PostgreSQL, Mailpit, API, web
 apps/
   api/                 Express API
     src/modules/       One folder per module (routes, validation, business rules)
@@ -102,11 +152,13 @@ The browser only ever talks to the web origin; Next.js proxies `/api/*` to the E
 
 ## Production deployment
 
-1. Provision PostgreSQL and an SMTP server, then set `DATABASE_URL`, `SMTP_*`, `MAIL_FROM`, a real `APP_ORIGIN` and `COOKIE_SECURE=true` in `.env`.
-2. `npm ci && npm run build`
-3. `npm start` (migrations run automatically when the API starts).
+1. On your server, clone the repository and create a `.env` next to `docker-compose.yml` with at least a strong `POSTGRES_PASSWORD`, your public `APP_ORIGIN` (for example `https://crm.example.com`) and `COOKIE_SECURE=true`.
+2. Point the `api` service at your SMTP server (see [Docker settings](#docker-settings)).
+3. `docker compose up -d --build`
 4. Put a reverse proxy with HTTPS (for example Caddy or nginx) in front of the web port.
-5. Back up the PostgreSQL database and the `STORAGE_DIR` directory together.
+5. Back up the PostgreSQL database and the `storage` volume together.
+
+Without Docker: provision PostgreSQL and SMTP, set `DATABASE_URL`, `SMTP_*`, `APP_ORIGIN` and `COOKIE_SECURE=true` in `.env`, then run `npm ci && npm run build && npm start`.
 
 ## Contributing
 
@@ -114,4 +166,4 @@ Issues and pull requests are welcome. Please use [Conventional Commits](https://
 
 ## License
 
-Know CRM is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+KnowBook CRM is licensed under the [GNU Affero General Public License v3.0](LICENSE).
