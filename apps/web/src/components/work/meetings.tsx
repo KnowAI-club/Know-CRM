@@ -132,7 +132,9 @@ export function MeetingModal({
         notifications: [{ channel: 'in_app', minutes: 15 }],
       });
     }
-  }, [open, meeting, participants, defaultTarget]);
+    // Keyed by id: a background refresh of the list must not wipe edits in an open form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, meeting?.id, participants === undefined, defaultTarget]);
 
   const projectId = splitTarget(form.target).projectId;
   useEffect(() => {

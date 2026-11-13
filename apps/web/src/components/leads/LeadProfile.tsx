@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { patch } from '@/lib/api';
+import { useSyncedForm } from '@/lib/useSyncedForm';
 import { useSession } from '@/lib/session';
 import { Button, Field, useToast } from '@/components/ui';
 import { OptionSelect } from './OptionSelect';
@@ -37,13 +38,9 @@ export function LeadProfile({
   const { isAdmin } = useSession();
   const toast = useToast();
   const initial = useMemo<Form>(() => ({ ...withDefaults(lead.data), name: lead.name }), [lead]);
-  const [form, setForm] = useState<Form>(initial);
+  const [form, setForm] = useSyncedForm<Form>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    setForm(initial);
-    setErrors({});
-  }, [initial]);
 
   const readOnly = lead.state === 'won';
   const phoneLocked = !isAdmin && Boolean(initial.phone);

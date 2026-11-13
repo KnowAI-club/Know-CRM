@@ -99,8 +99,9 @@ export function BookingTypeModal({
           }
         : blank(),
     );
+    // Keyed by id: a background refresh of the list must not wipe edits in an open form.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, type]);
+  }, [open, type?.id]);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
   const setWindow = (i: number, w: Partial<Window>) =>

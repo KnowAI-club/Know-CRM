@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { FolderKanban, Mail, MessageSquare, Phone, Trash2, UserRound } from 'lucide-react';
 import { del, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
+import { useSyncedForm } from '@/lib/useSyncedForm';
 import { useSession } from '@/lib/session';
 import { date, money, relative } from '@/lib/format';
 import {
@@ -62,13 +63,9 @@ export default function ClientPage() {
   );
 
   const base = useMemo(() => toForm(contact.data), [contact.data]);
-  const [form, setForm] = useState(base);
+  const [form, setForm] = useSyncedForm(base);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    setForm(base);
-    setErrors({});
-  }, [base]);
 
   if (contact.error) return <ErrorBox error={contact.error} retry={contact.reload} />;
   if (!contact.data)
