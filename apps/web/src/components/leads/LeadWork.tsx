@@ -52,7 +52,7 @@ export function LeadMeetings({ lead, meetings, onCreated }: { lead: Lead; meetin
   const [form, setForm] = useState({ title: '', kind: 'video', start: '', duration: 30, meetingUrl: '', location: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const canSchedule = lead.state === 'active' || lead.state === 'nurture';
+  const canSchedule = lead.state === 'active';
   const [now] = useState(() => Date.now());
 
   const submit = async (e: React.FormEvent) => {
@@ -696,15 +696,9 @@ export interface HistoryEntry {
 
 const ACTION_LABELS: Record<string, string> = {
   exit: 'Exited the pipeline',
-  nurture: 'Moved to Nurtures',
   archive: 'Archived',
   restore: 'Back to pipeline',
-  reply: 'Lead replied',
   won: 'Closed won',
-  nurture_save: 'Nurture updated',
-  nurture_confirm: 'Nurture confirmed',
-  nurture_archive: 'Nurture archived',
-  nurture_repark: 'Re-parked in Nurtures',
 };
 
 export function LeadHistory({ history, stageLabel }: { history: HistoryEntry[]; stageLabel: (id: string) => string }) {
@@ -740,13 +734,13 @@ export function LeadHistory({ history, stageLabel }: { history: HistoryEntry[]; 
 interface Cycle {
   createdAt: string;
   wonAt: string | null;
-  segments: { stage: string; nurture: boolean; start: string; end: string }[];
+  segments: { stage: string; start: string; end: string }[];
 }
 
 const days = (a: string, b: string) => Math.max(0, (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
 const fmtDays = (n: number) => (n < 1 ? '<1 day' : `${Math.round(n)} day${Math.round(n) === 1 ? '' : 's'}`);
 
-/** Time spent in each stage and in nurture across the lead's life. */
+/** Time spent in each stage across the lead's life. */
 export function LeadCycle({
   leadId,
   version,
@@ -779,7 +773,7 @@ export function LeadCycle({
                     key={i}
                     style={{
                       width: `${(days(s.start, s.end) / (total || 1)) * 100}%`,
-                      background: s.nurture ? 'var(--warn)' : stageColor(s.stage),
+                      background: stageColor(s.stage),
                     }}
                   />
                 ))}
@@ -787,8 +781,8 @@ export function LeadCycle({
               <ul className="space-y-1 text-sm">
                 {data.segments.map((s, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full" style={{ background: s.nurture ? 'var(--warn)' : stageColor(s.stage) }} />
-                    <span className="flex-1 truncate">{s.nurture ? `Nurture (from ${stageLabel(s.stage)})` : stageLabel(s.stage)}</span>
+                    <span className="h-2 w-2 rounded-full" style={{ background: stageColor(s.stage) }} />
+                    <span className="flex-1 truncate">{stageLabel(s.stage)}</span>
                     <span className="text-xs text-mute tabular-nums">{fmtDays(days(s.start, s.end))}</span>
                   </li>
                 ))}

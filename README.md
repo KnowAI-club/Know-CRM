@@ -1,6 +1,6 @@
 # KnowBook CRM
 
-An open-source, self-hosted CRM for studios, agencies and service businesses. It covers the full journey from first enquiry to paid invoice: leads, sales pipeline, nurture sequences, follow-ups and meetings, deal closing, project delivery with a client portal, GST-ready invoicing, reports, team collaboration and access control.
+An open-source, self-hosted CRM for studios, agencies and service businesses. It covers the full journey from first enquiry to paid invoice: leads, sales pipeline, follow-ups and meetings, deal closing, project delivery with a client portal, GST-ready invoicing, reports, team collaboration and access control.
 
 Everything runs on your own machine or server. There are no third-party SaaS integrations: files are stored on local disk, email goes through any SMTP server (a local Mailpit catcher is bundled for development), and booking pages, lead forms and the client portal are served by the app itself.
 
@@ -10,7 +10,6 @@ Everything runs on your own machine or server. There are no third-party SaaS int
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Lead management**       | Capture leads manually, through hosted lead forms, booking pages or CSV import. Sources, industries, owners, temperature, attachments, notes, comments with @mentions and a full change history.                                                   |
 | **Sales pipeline**        | Configurable stages with a kanban board and list view, stage timing, optimistic locking so two people can't overwrite each other, and CSV export.                                                                                                  |
-| **Nurtures**              | Park leads that aren't ready (exit status, reason, tags, resume date), run email sequences with day/time schedules and merge fields, track sent/replied, pause, discard and restore.                                                               |
 | **Follow-ups & meetings** | Meetings for leads and projects (video, phone, in person), guest suggestions, notifications, outcome recording with next steps, reminders, and self-hosted booking pages with availability, notice periods and guest reschedule/cancel links.      |
 | **Deal closing**          | Close a lead as won with value and due date; the CRM creates the client, the delivery project and its milestones in one step. Proposal documents with priced services, questions, client decisions and typed signatures.                           |
 | **Project delivery**      | Project stages and board, milestones, tasks, internal and client-visible notes, file versions, meetings, documents, messages, time tracking and an activity log.                                                                                   |
@@ -25,7 +24,7 @@ Everything runs on your own machine or server. There are no third-party SaaS int
 - **Web:** Next.js (App Router), React, TypeScript, Tailwind CSS
 - **API:** Node.js, Express, TypeScript, Zod validation
 - **Database:** PostgreSQL with plain SQL migrations
-- **Background worker:** in-process job runner with a PostgreSQL advisory lock (email outbox, reminders, nurture sends, recurring invoices)
+- **Background worker:** in-process job runner with a PostgreSQL advisory lock (email outbox, reminders, recurring invoices)
 - **Monorepo:** npm workspaces — `apps/web`, `apps/api`, `packages/shared` (money and tax maths, domain constants shared by both apps)
 
 ## Run with Docker (recommended)

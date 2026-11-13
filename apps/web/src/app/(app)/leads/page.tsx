@@ -3,7 +3,7 @@ import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Download, KanbanSquare, List, Plus, Search } from 'lucide-react';
-import { EXIT_LABELS, NURTURE_TAG_LABELS, type ExitStatus } from '@know-crm/shared';
+import { EXIT_LABELS, type ExitStatus } from '@know-crm/shared';
 import { get, patch, qs } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useTeam } from '@/lib/team';
@@ -17,7 +17,6 @@ import { isConflict, withDefaults, type Lead, type LeadState, type Stage } from 
 
 const STATES: { value: LeadState; label: string }[] = [
   { value: 'active', label: 'Pipeline' },
-  { value: 'nurture', label: 'In nurture' },
   { value: 'dropped', label: 'Archived' },
   { value: 'won', label: 'Closed won' },
 ];
@@ -212,8 +211,8 @@ function LeadTable({ leads, state, stageLabel }: { leads: Lead[]; state: LeadSta
             <th>Company</th>
             <th>{state === 'active' ? 'Stage' : state === 'won' ? 'Project' : 'Left from'}</th>
             <th>{state === 'active' ? 'Source' : state === 'won' ? 'Won' : 'Reason'}</th>
-            <th>{state === 'nurture' ? 'POC' : 'Owner'}</th>
-            <th>{state === 'nurture' ? 'Revisit' : 'Updated'}</th>
+            <th>Owner</th>
+            <th>Updated</th>
           </tr>
         </thead>
         <tbody>
@@ -238,7 +237,7 @@ function LeadTable({ leads, state, stageLabel }: { leads: Lead[]; state: LeadSta
                       '—'
                     )
                   ) : (
-                    <Badge>{stageLabel(state === 'active' ? l.stage : (l.nurture?.entry_stage ?? l.stage))}</Badge>
+                    <Badge>{stageLabel(l.stage)}</Badge>
                   )}
                 </td>
                 <td className="max-w-64 text-mute">
@@ -248,24 +247,13 @@ function LeadTable({ leads, state, stageLabel }: { leads: Lead[]; state: LeadSta
                     date(l.won_at)
                   ) : (
                     <div className="space-y-1">
-                      <div className="flex flex-wrap gap-1">
-                        {l.exit_status && <Badge tone="warn">{EXIT_LABELS[l.exit_status as ExitStatus] ?? l.exit_status}</Badge>}
-                        {(l.nurture?.tags ?? []).map((t) => (
-                          <Badge key={t} tone="info">
-                            {NURTURE_TAG_LABELS[t] ?? t}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="line-clamp-1 text-xs">{l.nurture?.reason || l.exit_reason || '—'}</p>
+                      {l.exit_status && <Badge tone="warn">{EXIT_LABELS[l.exit_status as ExitStatus] ?? l.exit_status}</Badge>}
+                      <p className="line-clamp-1 text-xs">{l.exit_reason || '—'}</p>
                     </div>
                   )}
                 </td>
-                <td className="whitespace-nowrap">
-                  {(state === 'nurture' ? l.nurture?.owner_name : l.owner_name) ?? <span className="text-faint">Unassigned</span>}
-                </td>
-                <td className="whitespace-nowrap text-mute">
-                  {state === 'nurture' ? date(l.nurture?.revisit_date) : relative(l.updated_at)}
-                </td>
+                <td className="whitespace-nowrap">{l.owner_name ?? <span className="text-faint">Unassigned</span>}</td>
+                <td className="whitespace-nowrap text-mute">{relative(l.updated_at)}</td>
               </tr>
             );
           })}

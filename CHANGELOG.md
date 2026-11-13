@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Removed
+
+- Nurtures module: sequences, tracking, discard and import, the Nurtures page, and the parked "nurture" lead state. Exited leads are now archived; existing parked leads are archived by migration 009.
+
 ### Added
 
 - Docker images for the API and web app, and a Docker Compose stack that starts PostgreSQL, Mailpit, the API and the web app with a single `docker compose up -d`.

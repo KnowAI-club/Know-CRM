@@ -120,20 +120,6 @@ router.patch('/settings', requireAdmin, async (req, res) => {
       timezone: z.string().max(60).optional(),
       billing: billingSchema.optional(),
       defaultLeadOwnerId: z.union([z.literal(''), z.string().uuid()]).optional(),
-      nurture: z
-        .object({
-          contactNumber: z.union([
-            z.literal(''),
-            z
-              .string()
-              .trim()
-              .max(40)
-              .regex(/^[+\d][\d\s()-]*$/, 'Enter a valid phone number'),
-          ]),
-          bookingLink: z.union([z.literal(''), z.string().trim().url().max(300)]),
-        })
-        .partial()
-        .optional(),
     }),
     req.body,
   );
@@ -156,7 +142,6 @@ router.patch('/settings', requireAdmin, async (req, res) => {
   }
   const nextData = { ...current.data };
   if (data.billing) nextData.billing = data.billing;
-  if (data.nurture) nextData.nurture = { ...(current.data.nurture ?? {}), ...data.nurture };
   if (data.defaultLeadOwnerId !== undefined) nextData.defaultLeadOwnerId = data.defaultLeadOwnerId;
   await query(`UPDATE workspace_settings SET name=$1, currency=$2, timezone=$3, data=$4, updated_at=now() WHERE id=1`, [
     data.name ?? current.name,

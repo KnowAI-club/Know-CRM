@@ -16,7 +16,7 @@ router.get('/email-templates', async (_req, res) => {
 router.post('/email-templates', async (req, res) => {
   const d = parse(
     z.object({
-      group: z.enum(['EM', 'NU']),
+      group: z.enum(['EM']),
       title: z.string().trim().min(1, 'Enter a template name.').max(200),
       subject: z.string().trim().max(300).default(''),
       body: z.string().max(50000).default(''),

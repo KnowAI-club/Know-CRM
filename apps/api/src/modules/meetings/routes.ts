@@ -218,7 +218,7 @@ router.patch('/meetings/:id/record', requireStaff, async (req, res) => {
 
     if (outcomeChanged && outcome && m.lead_id) {
       const lead = await one('SELECT * FROM leads WHERE id=$1 FOR UPDATE', [m.lead_id]);
-      if (lead && ['active', 'nurture'].includes(lead.state) && (outcome === 'attended' || outcome === 'no_show')) {
+      if (lead && lead.state === 'active' && (outcome === 'attended' || outcome === 'no_show')) {
         const data = dataSchema.parse(lead.data ?? {});
         Object.assign(data, outcome === 'attended' ? { attendance: 'yes', outcome: 'ideal' } : { attendance: 'no', outcome: 'no_show' });
         await query('UPDATE leads SET data=$2, version=version+1, updated_at=now() WHERE id=$1', [lead.id, JSON.stringify(data)]);

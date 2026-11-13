@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/api';
 
-export type LeadState = 'active' | 'nurture' | 'won' | 'dropped';
+export type LeadState = 'active' | 'won' | 'dropped';
 
 /** Profile fields stored in leads.data (all optional on older rows). */
 export interface LeadData {
@@ -61,24 +61,6 @@ export const EMPTY_DATA: LeadData = {
   taxId: '',
 };
 
-export interface Nurture {
-  status: 'parked' | 'archived' | string;
-  tags: string[];
-  reason: string;
-  source?: string;
-  owner_id: string;
-  owner_name?: string | null;
-  entry_stage: string;
-  entered_at: string;
-  revisit_date: string | null;
-  confirmation_due_at: string | null;
-  confirmed_at: string | null;
-  confirmed_by_name?: string | null;
-  archived_at: string | null;
-  archive_reason: string;
-  discarded_at?: string | null;
-}
-
 export interface Lead {
   id: string;
   name: string;
@@ -97,7 +79,6 @@ export interface Lead {
   created_at: string;
   updated_at: string;
   won_at: string | null;
-  nurture: Nurture | null;
   owner_name: string | null;
   project_name: string | null;
   project_archived: boolean | null;
@@ -124,12 +105,11 @@ export const withDefaults = (data: Partial<LeadData> | null | undefined): LeadDa
 
 export const STATE_LABELS: Record<LeadState, string> = {
   active: 'In pipeline',
-  nurture: 'In nurture',
   dropped: 'Archived',
   won: 'Closed won',
 };
 
-export const STATE_TONES = { active: 'acc', nurture: 'warn', dropped: 'neutral', won: 'ok' } as const;
+export const STATE_TONES = { active: 'acc', dropped: 'neutral', won: 'ok' } as const;
 
 /** Field-level messages from an API validation error. */
 export function fieldErrors(e: unknown): Record<string, string> {

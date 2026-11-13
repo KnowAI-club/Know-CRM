@@ -9,7 +9,7 @@ import { date } from '@/lib/format';
 import { Badge, Card, ErrorBox, PageHeader, Skeleton, Tabs } from '@/components/ui';
 import { useLeadMeta } from '@/components/leads/useLeadMeta';
 import { LeadProfile } from '@/components/leads/LeadProfile';
-import { LeadStatusCard, NurtureCard } from '@/components/leads/LeadStatus';
+import { LeadStatusCard } from '@/components/leads/LeadStatus';
 import {
   LeadCycle,
   LeadFiles,
@@ -136,7 +136,6 @@ function LeadDetail() {
 
         <aside className="space-y-4">
           <LeadStatusCard lead={lead} stages={meta.stages} onChanged={applyLead} onConflict={reload} />
-          {lead.nurture && <NurtureCard lead={lead} onChanged={applyLead} onConflict={reload} />}
           <Card title="Summary">
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <div>

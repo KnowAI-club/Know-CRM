@@ -141,10 +141,9 @@ export function LeadProfile({
           <OwnerSelect
             value={form.ownerId}
             onChange={(v) => set('ownerId', v)}
-            disabled={readOnly || Boolean(lead.nurture)}
+            disabled={readOnly}
             extra={lead.owner_name ? { id: initial.ownerId, name: lead.owner_name } : null}
           />
-          {lead.nurture && <span className="mt-1 block text-xs text-faint">Change the POC from Nurture management.</span>}
         </Field>
         <Field label="Source" error={errors.source}>
           <OptionSelect

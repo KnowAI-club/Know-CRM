@@ -44,10 +44,10 @@ router.get('/search', requireStaff, async (req, res) => {
 
   const sources: Record<string, Promise<Hit[]>> = {
     leads: many(
-      `SELECT l.id, l.name AS title, CASE WHEN l.state='nurture' THEN 'Nurture' ELSE s.label END || ' · ' || COALESCE(NULLIF(l.data->>'company',''), l.email) AS sub,
+      `SELECT l.id, l.name AS title, s.label || ' · ' || COALESCE(NULLIF(l.data->>'company',''), l.email) AS sub,
               '/leads/' || l.id AS link, l.updated_at AS at
          FROM leads l JOIN lead_stages s ON s.id=l.stage
-        WHERE l.state IN ('active','nurture') AND ${match(`l.name, l.email, l.data->>'company', l.data->>'phone'`)} LIMIT 30`,
+        WHERE l.state='active' AND ${match(`l.name, l.email, l.data->>'company', l.data->>'phone'`)} LIMIT 30`,
       [patterns],
     ),
     projects: many(

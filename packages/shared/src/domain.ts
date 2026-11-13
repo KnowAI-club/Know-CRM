@@ -11,7 +11,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'CAD', 'AUD'] as const;
 
-export const LEAD_STATES = ['active', 'nurture', 'won', 'dropped'] as const;
+export const LEAD_STATES = ['active', 'won', 'dropped'] as const;
 export type LeadState = (typeof LEAD_STATES)[number];
 
 export const EXIT_STATUSES = ['no_show', 'on_hold', 'closed_lost', 'disqualified'] as const;
@@ -23,18 +23,10 @@ export const EXIT_LABELS: Record<ExitStatus, string> = {
   disqualified: 'Disqualified',
 };
 export const EXIT_HELP: Record<ExitStatus, string> = {
-  no_show: 'Missed the call and did not reply to follow-ups. Moves to Nurtures.',
-  on_hold: 'The client asked to pause; record a resume date. Moves to Nurtures.',
-  closed_lost: 'Chose another option, budget, timing, or no longer a priority. Moves to Nurtures.',
-  disqualified: 'Spam, a test, or no fit. Archives the lead; it does not enter Nurtures.',
-};
-
-export const NURTURE_TAGS = ['follow_up', 'not_ready', 'client_alumni'] as const;
-export const NURTURE_TAG_LABELS: Record<string, string> = {
-  follow_up: 'Follow-up',
-  not_ready: 'Not ready',
-  client_alumni: 'Client alumni',
-  archived: 'Archived',
+  no_show: 'Missed the call and did not reply to follow-ups.',
+  on_hold: 'The client asked to pause; record a resume date.',
+  closed_lost: 'Chose another option, budget, timing, or no longer a priority.',
+  disqualified: 'Spam, a test, or no fit.',
 };
 
 export const PROJECT_CATEGORIES = ['inquiry', 'in_progress', 'completed', 'archived'] as const;
@@ -82,7 +74,6 @@ export const EXPENSE_CATEGORIES: Record<string, string> = {
 
 export const NOTIFICATION_KINDS: Record<string, string> = {
   mention: 'Someone @mentions you',
-  nurture_review: 'A nurture entry needs your confirmation',
   task_assigned: 'A task is assigned to you',
   reminder: 'A reminder is due',
   booking: 'Bookings, reschedules and cancellations',
@@ -109,6 +100,5 @@ export const MERGE_FIELDS = [
   'meeting_date',
   'next_step',
   'booking_link',
-  'revisit_month',
   'project_name',
 ] as const;

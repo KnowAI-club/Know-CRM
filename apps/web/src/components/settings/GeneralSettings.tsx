@@ -25,8 +25,6 @@ export function GeneralSettings({ settings, onSaved }: { settings: WorkspaceSett
   const [currency, setCurrency] = useState(settings.currency);
   const [timezone, setTimezone] = useState(settings.timezone);
   const [owner, setOwner] = useState(settings.data.defaultLeadOwnerId ?? '');
-  const [contactNumber, setContactNumber] = useState(settings.data.nurture?.contactNumber ?? '');
-  const [bookingLink, setBookingLink] = useState(settings.data.nurture?.bookingLink ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const zones = ZONES.includes(timezone) ? ZONES : [timezone, ...ZONES];
@@ -35,9 +33,6 @@ export function GeneralSettings({ settings, onSaved }: { settings: WorkspaceSett
     e.preventDefault();
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = 'Name the workspace.';
-    if (bookingLink && !/^https?:\/\/\S+$/.test(bookingLink.trim()))
-      errs['nurture.bookingLink'] = 'Enter a full URL starting with http(s)://';
-    if (contactNumber && !/^[+\d][\d\s()-]*$/.test(contactNumber.trim())) errs['nurture.contactNumber'] = 'Enter a valid phone number';
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setSaving(true);
@@ -46,7 +41,6 @@ export function GeneralSettings({ settings, onSaved }: { settings: WorkspaceSett
         name: name.trim(),
         timezone,
         defaultLeadOwnerId: owner,
-        nurture: { contactNumber: contactNumber.trim(), bookingLink: bookingLink.trim() },
       };
       if (currency !== settings.currency) body.currency = currency;
       const next = await patch<WorkspaceSettings>('/settings', body);
@@ -78,7 +72,7 @@ export function GeneralSettings({ settings, onSaved }: { settings: WorkspaceSett
                 ))}
               </select>
             </Field>
-            <Field label="Time zone" hint="Used for reminders, booking slots and nurture send times" error={errors.timezone}>
+            <Field label="Time zone" hint="Used for reminders and booking slots" error={errors.timezone}>
               <select className="input" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
                 {zones.map((z) => (
                   <option key={z} value={z}>
@@ -96,28 +90,6 @@ export function GeneralSettings({ settings, onSaved }: { settings: WorkspaceSett
                   </option>
                 ))}
               </select>
-            </Field>
-          </div>
-        </Card>
-        <Card title="Nurture emails">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Contact number" hint="Available as a sign-off in nurture emails" error={errors['nurture.contactNumber']}>
-              <input
-                className="input"
-                value={contactNumber}
-                maxLength={40}
-                onChange={(e) => setContactNumber(e.target.value)}
-                placeholder="+91 98450 00000"
-              />
-            </Field>
-            <Field label="Booking link" hint="Fills the {{booking_link}} merge field" error={errors['nurture.bookingLink']}>
-              <input
-                className="input"
-                value={bookingLink}
-                maxLength={300}
-                onChange={(e) => setBookingLink(e.target.value)}
-                placeholder="https://crm.example.com/book/…"
-              />
             </Field>
           </div>
         </Card>
