@@ -3,12 +3,14 @@ import { migrate } from './db/migrate.js';
 import { pool } from './db/pool.js';
 import { createApp } from './app.js';
 import { startWorker } from './jobs/runner.js';
+import { registerJobs } from './jobs/index.js';
 
 await migrate();
 const app = createApp();
 const server = app.listen(env.API_PORT, env.API_HOST, () => {
   console.log(`[api] listening on http://${env.API_HOST}:${env.API_PORT}`);
 });
+registerJobs();
 const stopWorker = env.WORKER_ENABLED ? startWorker() : () => undefined;
 
 async function shutdown(signal: string) {

@@ -11,9 +11,12 @@ import { router as invoices } from './invoices/routes.js';
 import { router as leadStages } from './leads/stages.js';
 import { router as leads } from './leads/routes.js';
 import { router as nurtures } from './nurtures/routes.js';
+import { router as meetings } from './meetings/routes.js';
+import { router as reminders } from './reminders/routes.js';
+import { router as booking, publicRouter as publicBooking } from './booking/routes.js';
 
 /** Routers reachable without a session (they enforce their own access rules). */
-export const publicRouters: Router[] = [auth];
+export const publicRouters: Router[] = [auth, publicBooking];
 
 /** Routers mounted behind requireAuth. */
-export const privateRouters: Router[] = [workspace, contacts, projectStages, projects, projectWork, tasks, files, invoices, leadStages, leads, nurtures];
+export const privateRouters: Router[] = [workspace, contacts, projectStages, projects, projectWork, tasks, files, invoices, leadStages, leads, nurtures, meetings, booking, reminders];
