@@ -1,0 +1,181 @@
+@import 'tailwindcss';
+
+/* Design tokens: warm neutrals with a deep green accent, light and dark. */
+:root {
+  --bg: #f7f6f2;
+  --card: #ffffff;
+  --subtle: #f1efe9;
+  --ink: #1a1a17;
+  --mute: #66645c;
+  --faint: #8f8c82;
+  --line: #e4e1d8;
+  --acc: #2f5d50;
+  --acc-hover: #264c42;
+  --acc-soft: #e3eee9;
+  --acc-ink: #ffffff;
+  --warn: #8a5a14;
+  --warn-soft: #f6ecdb;
+  --danger: #a3302a;
+  --danger-soft: #f8e4e2;
+  --info: #2d5b8a;
+  --info-soft: #e1ebf5;
+  --ok: #2f6b3a;
+  --ok-soft: #e2f0e4;
+  --violet: #5b4a8a;
+  --violet-soft: #ebe6f5;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #141513;
+    --card: #1d1f1c;
+    --subtle: #242622;
+    --ink: #ecebe6;
+    --mute: #a3a197;
+    --faint: #7a786f;
+    --line: #2f322d;
+    --acc: #8cc7b2;
+    --acc-hover: #a3d6c3;
+    --acc-soft: #1f2e29;
+    --acc-ink: #10201a;
+    --warn: #e0b46a;
+    --warn-soft: #2e2619;
+    --danger: #ef8a83;
+    --danger-soft: #3a1f1d;
+    --info: #8db8e6;
+    --info-soft: #1c2735;
+    --ok: #93cf9d;
+    --ok-soft: #1c2e20;
+    --violet: #b9a8ea;
+    --violet-soft: #29233a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #141513;
+  --card: #1d1f1c;
+  --subtle: #242622;
+  --ink: #ecebe6;
+  --mute: #a3a197;
+  --faint: #7a786f;
+  --line: #2f322d;
+  --acc: #8cc7b2;
+  --acc-hover: #a3d6c3;
+  --acc-soft: #1f2e29;
+  --acc-ink: #10201a;
+  --warn: #e0b46a;
+  --warn-soft: #2e2619;
+  --danger: #ef8a83;
+  --danger-soft: #3a1f1d;
+  --info: #8db8e6;
+  --info-soft: #1c2735;
+  --ok: #93cf9d;
+  --ok-soft: #1c2e20;
+  --violet: #b9a8ea;
+  --violet-soft: #29233a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-subtle: var(--subtle);
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-acc: var(--acc);
+  --color-acc-hover: var(--acc-hover);
+  --color-acc-soft: var(--acc-soft);
+  --color-acc-ink: var(--acc-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-card: 14px;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply rounded-[14px] border border-line bg-card;
+  }
+  .input {
+    @apply h-9 w-full rounded-lg border border-line bg-card px-3 text-sm text-ink outline-none transition placeholder:text-faint focus:border-acc focus:ring-2 focus:ring-acc/20 disabled:opacity-60;
+  }
+  textarea.input {
+    @apply h-auto min-h-20 py-2;
+  }
+  select.input {
+    @apply pr-8;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium text-mute;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-[0.08em] text-acc uppercase;
+  }
+  .table {
+    @apply w-full text-left text-sm;
+  }
+  .table th {
+    @apply border-b border-line px-3 py-2 text-xs font-medium whitespace-nowrap text-mute;
+  }
+  .table td {
+    @apply border-b border-line px-3 py-2.5 align-middle;
+  }
+  .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .table tbody tr.clickable {
+    @apply cursor-pointer hover:bg-subtle;
+  }
+  .prose-crm p {
+    @apply my-1.5;
+  }
+  .prose-crm ul {
+    @apply my-1.5 list-disc pl-5;
+  }
+  .prose-crm ol {
+    @apply my-1.5 list-decimal pl-5;
+  }
+  .prose-crm h1,
+  .prose-crm h2,
+  .prose-crm h3 {
+    @apply mt-3 mb-1 font-semibold;
+  }
+  .prose-crm a {
+    @apply text-acc underline;
+  }
+  .mention {
+    @apply rounded bg-acc-soft px-1 font-medium text-acc;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
