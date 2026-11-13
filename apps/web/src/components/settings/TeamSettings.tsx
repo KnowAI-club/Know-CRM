@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { MoreHorizontal, Plus, UserCheck, UserX } from 'lucide-react';
 import { ROLE_LABELS, TEAM_ROLES } from '@know-crm/shared';
-import { Avatar, Badge, Button, Card, ErrorBox, Field, Menu, Modal, Spinner, useConfirm, useToast } from '@/components/ui';
+import { Avatar, Badge, Button, Card, ErrorBox, Field, Menu, Modal, Spinner, useConfirm, useToast, PasswordInput } from '@/components/ui';
 import { ApiError, get, patch, post } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
@@ -218,7 +218,7 @@ function AddMemberModal({ onClose, onSaved }: { onClose: () => void; onSaved: (m
           <input className="input" value={form.phone} maxLength={40} onChange={set('phone')} />
         </Field>
         <Field label="Temporary password" required hint="At least 12 characters" error={errors.password} className="sm:col-span-2">
-          <input type="password" className="input" value={form.password} autoComplete="new-password" onChange={set('password')} />
+          <PasswordInput value={form.password} autoComplete="new-password" onChange={set('password')} />
         </Field>
       </form>
     </Modal>

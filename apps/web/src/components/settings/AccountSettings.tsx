@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Button, Card, ErrorBox, Field, Spinner, useToast } from '@/components/ui';
+import { Button, Card, ErrorBox, Field, Spinner, useToast, PasswordInput } from '@/components/ui';
 import { ApiError, get, post, put } from '@/lib/api';
 import { useLoad } from '@/lib/useLoad';
 import { useSession } from '@/lib/session';
@@ -91,19 +91,13 @@ export function PasswordSettings() {
       <Card>
         <form onSubmit={submit} className="grid max-w-md gap-4">
           <Field label="Current password" error={errors.currentPassword}>
-            <input
-              type="password"
-              className="input"
-              autoComplete="current-password"
-              value={current}
-              onChange={(e) => setCurrent(e.target.value)}
-            />
+            <PasswordInput autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
           </Field>
           <Field label="New password" hint="At least 12 characters" error={errors.newPassword}>
-            <input type="password" className="input" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
+            <PasswordInput autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
           </Field>
           <Field label="Confirm new password" error={errors.again}>
-            <input type="password" className="input" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} />
+            <PasswordInput autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} />
           </Field>
           <div>
             <Button type="submit" loading={saving}>
