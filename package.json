@@ -17,7 +17,7 @@
     "test": "npm run build -w @know-crm/shared && npm run test -w @know-crm/api",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "docker compose up -d --wait postgres mailpit",
+    "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
     "db:migrate": "npm run migrate -w @know-crm/api",
     "db:seed": "npm run seed -w @know-crm/api"

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 
+- Bundled Mailpit container. Email is now off by default (`MAIL_ENABLED=false`) until an SMTP server is configured.
 - Nurtures module: sequences, tracking, discard and import, the Nurtures page, and the parked "nurture" lead state. Exited leads are now archived; existing parked leads are archived by migration 009.
 
 ### Added

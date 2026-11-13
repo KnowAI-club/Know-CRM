@@ -2,7 +2,7 @@
 
 An open-source, self-hosted CRM for studios, agencies and service businesses. It covers the full journey from first enquiry to paid invoice: leads, sales pipeline, follow-ups and meetings, deal closing, project delivery with a client portal, GST-ready invoicing, reports, team collaboration and access control.
 
-Everything runs on your own machine or server. There are no third-party SaaS integrations: files are stored on local disk, email goes through any SMTP server (a local Mailpit catcher is bundled for development), and booking pages, lead forms and the client portal are served by the app itself.
+Everything runs on your own machine or server. There are no third-party SaaS integrations: files are stored on local disk, email goes through any SMTP server you configure, and booking pages, lead forms and the client portal are served by the app itself.
 
 ## Features
 
@@ -29,7 +29,7 @@ Everything runs on your own machine or server. There are no third-party SaaS int
 
 ## Run with Docker (recommended)
 
-The only requirement is Docker with Docker Compose. One command builds and starts everything: PostgreSQL, the API, the web app and a local Mailpit mail catcher.
+The only requirement is Docker with Docker Compose. One command builds and starts everything: PostgreSQL, the API and the web app.
 
 ```bash
 git clone https://github.com/KnowAI-club/Know-CRM.git
@@ -50,7 +50,6 @@ Then sign in as `admin@example.com` / `demo-password-123`. The demo also creates
 | Service    | Address                                           | Notes                                                    |
 | ---------- | ------------------------------------------------- | -------------------------------------------------------- |
 | Web app    | http://localhost:3010                             | The only service you need; it proxies `/api` to the API. |
-| Mailpit    | http://localhost:8030                             | Every email the app sends is caught here.                |
 | PostgreSQL | `localhost:5440`                                  | Bound to localhost only.                                 |
 | API        | internal only (`api:4010` on the compose network) |                                                          |
 
@@ -70,25 +69,25 @@ Data lives in two named volumes: `postgres_data` (database) and `storage` (uploa
 
 Compose reads optional overrides from a `.env` file next to `docker-compose.yml`:
 
-| Variable                    | Default                                      | Purpose                                                                   |
-| --------------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
-| `WEB_PORT`                  | `3010`                                       | Port the web app is published on.                                         |
-| `APP_ORIGIN`                | `http://localhost:3010`                      | Public URL of the app, used in emails, booking links and lead form links. |
-| `POSTGRES_PASSWORD`         | `knowcrm-local-only`                         | **Change this** for anything beyond local use.                            |
-| `COOKIE_SECURE`             | `false`                                      | Set to `true` when the app is served over HTTPS.                          |
-| `DEMO_SEED`                 | `false`                                      | Load the demo workspace into an empty database.                           |
-| `MAIL_FROM`, `MAIL_ENABLED` | `KnowBook CRM <no-reply@knowbook-crm.local>` | Sender address, and whether email is sent at all.                         |
+| Variable                    | Default                                               | Purpose                                                                   |
+| --------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| `WEB_PORT`                  | `3010`                                                | Port the web app is published on.                                         |
+| `APP_ORIGIN`                | `http://localhost:3010`                               | Public URL of the app, used in emails, booking links and lead form links. |
+| `POSTGRES_PASSWORD`         | `knowcrm-local-only`                                  | **Change this** for anything beyond local use.                            |
+| `COOKIE_SECURE`             | `false`                                               | Set to `true` when the app is served over HTTPS.                          |
+| `DEMO_SEED`                 | `false`                                               | Load the demo workspace into an empty database.                           |
+| `MAIL_FROM`, `MAIL_ENABLED` | `KnowBook CRM <no-reply@knowbook-crm.local>`, `false` | Sender address, and whether email is sent at all.                         |
 
-To deliver real email instead of catching it in Mailpit, set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER` and `SMTP_PASS` under the `api` service in `docker-compose.yml`.
+Email is off by default and only recorded in the outbox table. To deliver it, set `MAIL_ENABLED=true` plus `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER` and `SMTP_PASS` in `.env`.
 
 ## Local development
 
-For working on the code you can run the apps directly with Node.js 22.13+ and use Docker only for PostgreSQL and Mailpit:
+For working on the code you can run the apps directly with Node.js 22.13+ and use Docker only for PostgreSQL:
 
 ```bash
 cp .env.example .env
 npm install
-npm run db:up                 # PostgreSQL on :5440, Mailpit on :1030 (UI on :8030)
+npm run db:up                 # PostgreSQL on :5440
 npm run db:seed               # optional: runs migrations and loads the demo workspace
 npm run dev                   # API on :4010, web on :3010 with hot reload
 ```
@@ -104,7 +103,7 @@ Run from the repository root.
 | `npm run dev`               | Start shared package watcher, API and web in watch mode                                     |
 | `npm run build`             | Build all packages for production                                                           |
 | `npm start`                 | Start the built API and web servers                                                         |
-| `npm run db:up` / `db:down` | Start or stop the local PostgreSQL and Mailpit containers                                   |
+| `npm run db:up` / `db:down` | Start or stop the local PostgreSQL container                                                |
 | `npm run db:migrate`        | Apply pending database migrations (the API also migrates on start)                          |
 | `npm run db:seed`           | Migrate and load the demo workspace (skipped if users already exist; refused in production) |
 | `npm run typecheck`         | Type-check every workspace                                                                  |
@@ -131,7 +130,7 @@ When running with Node.js directly, all settings live in `.env` at the repositor
 
 ```
 Dockerfile             Multi-stage image build (api and web targets)
-docker-compose.yml     Full stack: PostgreSQL, Mailpit, API, web
+docker-compose.yml     Full stack: PostgreSQL, API, web
 apps/
   api/                 Express API
     src/modules/       One folder per module (routes, validation, business rules)
