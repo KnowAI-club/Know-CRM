@@ -113,6 +113,8 @@ body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* Long unbroken user text (links, pasted strings) wraps instead of overflowing its box. */
+  overflow-wrap: anywhere;
 }
 
 @layer components {
@@ -145,6 +147,8 @@ body {
   }
   .table {
     @apply w-full text-left text-sm;
+    /* Keep column widths stable; wide tables scroll inside their overflow-x-auto wrapper. */
+    overflow-wrap: break-word;
   }
   .table th {
     @apply border-b border-line px-3 py-2 text-xs font-medium whitespace-nowrap text-mute;
