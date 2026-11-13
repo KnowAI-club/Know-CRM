@@ -11,7 +11,8 @@ export const DEMO_PASSWORD = 'demo-password-123';
  * goes through the same validation and business rules as the app.
  */
 export async function seedDemo() {
-  if (env.NODE_ENV === 'production') throw new Error('Refusing to seed demo data in production.');
+  if (env.NODE_ENV === 'production' && !env.DEMO_SEED)
+    throw new Error('Refusing to seed demo data in production (set DEMO_SEED=true to allow).');
   if (await one('SELECT 1 FROM users LIMIT 1')) {
     console.log('[seed] users already exist; skipping demo data.');
     return;

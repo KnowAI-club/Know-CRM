@@ -6,6 +6,10 @@ import { startWorker } from './jobs/runner.js';
 import { registerJobs } from './jobs/index.js';
 
 await migrate();
+if (env.DEMO_SEED) {
+  const { seedDemo } = await import('./db/seed.js');
+  await seedDemo();
+}
 const app = createApp();
 const server = app.listen(env.API_PORT, env.API_HOST, () => {
   console.log(`[api] listening on http://${env.API_HOST}:${env.API_PORT}`);

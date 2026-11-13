@@ -27,9 +27,11 @@ const schema = z.object({
   SMTP_SECURE: bool(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  MAIL_FROM: z.string().default('Know CRM <no-reply@know-crm.local>'),
+  MAIL_FROM: z.string().default('KnowBook CRM <no-reply@knowbook-crm.local>'),
   WORKER_ENABLED: bool(true),
   WORKER_INTERVAL_SECONDS: z.coerce.number().int().min(5).default(60),
+  // Loads the demo workspace on start when the database has no users yet.
+  DEMO_SEED: bool(false),
 });
 
 export type Env = z.infer<typeof schema>;

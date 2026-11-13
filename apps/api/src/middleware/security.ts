@@ -25,7 +25,9 @@ export const sameOrigin: RequestHandler = (req, _res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
   const origin = req.get('origin');
   if (!origin) return next();
-  const allowed = new Set([new URL(env.APP_ORIGIN).origin, `http://${req.get('host')}`, `https://${req.get('host')}`]);
+  // Behind the web server's /api proxy the browser-facing host arrives as X-Forwarded-Host.
+  const hosts = [req.get('host'), req.get('x-forwarded-host')?.split(',')[0]?.trim()].filter(Boolean);
+  const allowed = new Set([new URL(env.APP_ORIGIN).origin, ...hosts.flatMap((h) => [`http://${h}`, `https://${h}`])]);
   if (!allowed.has(origin)) throw new HttpError(403, 'Cross-origin request blocked.', 'forbidden');
   next();
 };
