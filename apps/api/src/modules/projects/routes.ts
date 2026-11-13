@@ -202,7 +202,13 @@ async function projectDetail(req: any, id: string, portal: boolean) {
     ? await many('SELECT id, body, author_name, author_role, author_id, created_at FROM messages WHERE project_id=$1 ORDER BY created_at', [id])
     : [];
   const invoices = await invoiceViewsForProject(id, portal);
-  if (portal) return { project, tasks, notes, files, milestones, meetings, documents, messages, invoices };
+  if (portal) {
+    const activity = await many(
+      `SELECT id, description, actor_name, created_at FROM activities WHERE project_id=$1 AND visibility='client' ORDER BY created_at DESC LIMIT 100`,
+      [id],
+    );
+    return { project, tasks, notes, files, milestones, meetings, documents, messages, invoices, activity };
+  }
   const [activity, participants, contact, lead] = await Promise.all([
     many('SELECT * FROM activities WHERE project_id=$1 ORDER BY created_at DESC LIMIT 300', [id]),
     many(

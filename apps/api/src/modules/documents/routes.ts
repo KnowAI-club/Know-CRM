@@ -96,6 +96,18 @@ router.delete('/document-templates/:id', requireStaff, async (req, res) => {
 // ── Project documents ────────────────────────────────────────────────────────
 const LIST_COLUMNS = 'id, project_id, template_id, title, kind, status, content_hash, published_at, created_at, updated_at';
 
+router.get('/documents', requireStaff, async (_req, res) => {
+  res.json(
+    await many(
+      `SELECT ${LIST_COLUMNS.split(', ').map((c) => `d.${c}`).join(', ')}, p.name AS project_name, c.name AS contact_name,
+              (SELECT count(*)::int FROM document_actions a WHERE a.document_id=d.id) AS action_count,
+              (SELECT a.action FROM document_actions a WHERE a.document_id=d.id ORDER BY a.created_at DESC LIMIT 1) AS last_action
+         FROM documents d JOIN projects p ON p.id=d.project_id JOIN contacts c ON c.id=p.contact_id
+        ORDER BY d.updated_at DESC LIMIT 1000`,
+    ),
+  );
+});
+
 router.get('/projects/:id/documents', async (req, res) => {
   const me = currentUser(req);
   const id = parse(uuid, req.params.id);
