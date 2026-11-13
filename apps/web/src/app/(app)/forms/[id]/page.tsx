@@ -113,7 +113,7 @@ function Builder() {
           .split('\n')
           .map((o) => o.trim())
           .filter(Boolean);
-        if (opts.length < 2 || new Set(opts).size !== opts.length)
+        if (opts.length < 2 || opts.length > 30 || new Set(opts).size !== opts.length)
           errs[`fields.${i}.options`] = 'Add 2–30 different options, one per line.';
       }
     });
