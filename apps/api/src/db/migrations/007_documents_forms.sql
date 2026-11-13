@@ -1,4 +1,4 @@
--- Proposal / contract / questionnaire documents, public lead forms and skills.
+-- Proposal / contract / questionnaire documents and public lead forms.
 
 CREATE TABLE document_templates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -93,13 +93,3 @@ CREATE TABLE lead_submissions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX lead_submissions_form ON lead_submissions (form_id, created_at DESC);
-
-CREATE TABLE skills (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL CHECK (length(name) BETWEEN 1 AND 120),
-  description text NOT NULL CHECK (length(description) BETWEEN 1 AND 20000),
-  created_by uuid REFERENCES users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-CREATE UNIQUE INDEX skills_name ON skills (lower(name));
